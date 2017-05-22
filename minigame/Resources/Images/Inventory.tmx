@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" nextobjectid="4">
+ <tileset firstgid="1" name="inventory" tilewidth="32" tileheight="32" spacing="1" margin="1" tilecount="18" columns="6">
+  <image source="inventory.png" width="199" height="100"/>
+  <tile id="0">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="Item" value="NO"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Background" width="5" height="3">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgYELCzEDMDsQcSJgTiHmBmA8J8wMxAApcAHk=
+  </data>
+ </layer>
+ <objectgroup name="Objects">
+  <properties>
+   <property name="Inventory" value="YES"/>
+  </properties>
+ </objectgroup>
+ <layer name="Items" width="5" height="3">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAfAAAAPAAB
+  </data>
+ </layer>
+ <layer name="MetaInfo" width="5" height="3">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAfAAAAPAAB
+  </data>
+ </layer>
+</map>
