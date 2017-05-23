@@ -121,6 +121,7 @@ void HelloWorld::createDragon()
 	dragon = Sprite::createWithSpriteFrameName("man_01.png");
 	dragon->setAnchorPoint(Point(0.5, 0));
 	dragon->setPosition(dragonPosition);
+	isAction = false;
 	this->addChild(dragon, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 }
 
@@ -332,6 +333,11 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	if (isAction == true)
+	{
+		return;
+	}
+
 	Point playerPos = dragon->getPosition();
 	Sprite * spr;
 
@@ -394,7 +400,7 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	Point position = dragon->getPosition() / 32;
 
 	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.
-	dragon->stopAction(animate);
+	//dragon->stopAction(animate);
 
 	switch (key)
 	{
@@ -437,5 +443,24 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	}
 	
 	animate = Animate::create(animation);
-	dragon->runAction(animate);
+	auto actionStartCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionStarted));
+	auto actionFinishCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionFinished));
+
+	auto sequence = Sequence::create(actionStartCallback, animate, actionFinishCallback, NULL);
+	dragon->runAction(sequence);
+}
+
+void HelloWorld::actionStarted()
+{
+	// do something on complete
+	isAction = true;
+	CCLOG("action started!");
+}
+
+void HelloWorld::actionFinished()
+{
+	// do something on complete
+	isAction = false;
+	CCLOG("action finished!");
+
 }

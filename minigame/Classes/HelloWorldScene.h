@@ -36,6 +36,7 @@ public:
 	cocos2d::Point dragonPosition;											//드래곤 위치
 	cocos2d::Sprite* dragon;												//드래곤 객체
 	cocos2d::Animate * animate;												//드래곤 애니메이션
+	bool isAction;													//드레곤 액션 여부
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
 	cocos2d::TMXLayer * inventory_background;								//아이템창의 배경 레이어
@@ -70,6 +71,9 @@ public:
 	void setPlayerPosition(cocos2d::Point position);
 
 	void setAnimation(cocos2d::EventKeyboard::KeyCode key);
+
+	void actionStarted();
+	void actionFinished();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
