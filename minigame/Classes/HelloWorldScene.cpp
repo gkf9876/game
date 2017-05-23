@@ -81,6 +81,7 @@ bool HelloWorld::init()
 	this->addChild(title, TITLE_PRIORITY_Z_ORDER, TITLE);
 
 	this->setViewpointCenter(dragon->getPosition());
+
 	return true;
 }
 
@@ -122,6 +123,8 @@ void HelloWorld::createDragon()
 	dragon->setAnchorPoint(Point(0.5, 0));
 	dragon->setPosition(dragonPosition);
 	isAction = false;
+	isRunning = false;
+	seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 	this->addChild(dragon, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 }
 
@@ -333,6 +336,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	//이동 모션을 기다린뒤에 이동한다.
 	if (isAction == true)
 	{
 		return;
@@ -344,28 +348,53 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	switch (key)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-		spr = Sprite::createWithSpriteFrameName("man_13.png");
-		dragon->setSpriteFrame(spr->getSpriteFrame());
+		//이동 방향을 보고있으면 그 방향으로 이동한다.
+		if (seeDirection == key)
+		{
+			spr = Sprite::createWithSpriteFrameName("man_13.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
 
-		playerPos.y += tmap->getTileSize().height;
+			playerPos.y += tmap->getTileSize().height;
+		}
+
+		isRunning = true;
+		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-		spr = Sprite::createWithSpriteFrameName("man_01.png");
-		dragon->setSpriteFrame(spr->getSpriteFrame());
+		//이동 방향을 보고있으면 그 방향으로 이동한다.
+		if (seeDirection == key)
+		{
+			spr = Sprite::createWithSpriteFrameName("man_01.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
 
-		playerPos.y -= tmap->getTileSize().height;
+			playerPos.y -= tmap->getTileSize().height;
+		}
+		isRunning = true;
+		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-		spr = Sprite::createWithSpriteFrameName("man_09.png");
-		dragon->setSpriteFrame(spr->getSpriteFrame());
+		//이동 방향을 보고있으면 그 방향으로 이동한다.
+		if (seeDirection == key)
+		{
+			spr = Sprite::createWithSpriteFrameName("man_09.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
 
-		playerPos.x += tmap->getTileSize().width;
+			playerPos.x += tmap->getTileSize().width;
+		}
+		isRunning = true;
+		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-		spr = Sprite::createWithSpriteFrameName("man_05.png");
-		dragon->setSpriteFrame(spr->getSpriteFrame());
+		//이동 방향을 보고있으면 그 방향으로 이동한다.
+		if (seeDirection == key)
+		{
+			spr = Sprite::createWithSpriteFrameName("man_05.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
 
-		playerPos.x -= tmap->getTileSize().width;
+			playerPos.x -= tmap->getTileSize().width;
+		}
+		isRunning = true;
+		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_I:
 		if(inventory->isVisible() == true)
@@ -389,6 +418,7 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 
 void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	isRunning = false;
 	return;
 }
 
@@ -396,7 +426,7 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 {
 	SpriteFrame * frame;
 	auto animation = Animation::create();
-	animation->setDelayPerUnit(0.3);
+	animation->setDelayPerUnit(0.2);
 	Point position = dragon->getPosition() / 32;
 
 	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.

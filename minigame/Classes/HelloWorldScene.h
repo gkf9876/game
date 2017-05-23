@@ -36,7 +36,9 @@ public:
 	cocos2d::Point dragonPosition;											//드래곤 위치
 	cocos2d::Sprite* dragon;												//드래곤 객체
 	cocos2d::Animate * animate;												//드래곤 애니메이션
-	bool isAction;													//드레곤 액션 여부
+	bool isAction;															//드래곤 액션 여부
+	bool isRunning;															//드래곤이 이동중인지
+	cocos2d::EventKeyboard::KeyCode seeDirection;							//드래곤이 어딜 보고있는지
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
 	cocos2d::TMXLayer * inventory_background;								//아이템창의 배경 레이어
