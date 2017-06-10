@@ -607,10 +607,5 @@ void HelloWorld::update(float fDelta)
 		{
 			this->setPlayerPosition(playerPos);
 		}
-
-		//모션
-		this->setAnimation(seeDirection);
-		//플레이어가 화면 가운데로 오게 조절
-		this->setViewpointCenter(dragon->getPosition());
 	}
 }
