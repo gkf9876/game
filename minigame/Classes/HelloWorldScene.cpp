@@ -76,11 +76,16 @@ bool HelloWorld::init()
 	this->addChild(mapName, MAP_NAME_PRIORITY_Z_ORDER, MAP_NAME);
 	//
 
+	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("images/title.png");
 	title->setAnchorPoint(Point(0.5, 1));
 	this->addChild(title, TITLE_PRIORITY_Z_ORDER, TITLE);
 
+	//플레이어를 화면의 중앙에 위치하도록 화면을 이동.
 	this->setViewpointCenter(dragon->getPosition());
+
+	//매 프레임마다 update() 함수를 호출
+	this->scheduleUpdate();
 
 	return true;
 }
@@ -124,6 +129,7 @@ void HelloWorld::createDragon()
 	dragon->setPosition(dragonPosition);
 	isAction = false;
 	isRunning = false;
+	isKeepKeyPressed = false;
 	seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 	this->addChild(dragon, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 }
@@ -285,6 +291,7 @@ void HelloWorld::setPlayerPosition(Point position)
 				
 			if (exit == "YES")
 			{
+				CCLOG("Move other map..");
 				std::string stair = properties.asValueMap()["Stair"].asString();
 				std::string frontdoor = properties.asValueMap()["Frontdoor"].asString();
 
@@ -331,14 +338,24 @@ void HelloWorld::setPlayerPosition(Point position)
 
 	dragonPosition = position;
 	dragon->setPosition(dragonPosition);
+
+	//모션
+	this->setAnimation(seeDirection);
+	//플레이어가 화면 가운데로 오게 조절
+	this->setViewpointCenter(dragon->getPosition());
+	isRunning = true;
 }
 
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	CCLOG("KeyPress..(%d)", key);
+	isKeepKeyPressed = true;
+
 	//이동 모션을 기다린뒤에 이동한다.
 	if (isAction == true)
 	{
+		CCLOG("Motion Ready...");
 		return;
 	}
 
@@ -348,6 +365,7 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	switch (key)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
 		if (seeDirection == key)
 		{
@@ -355,12 +373,33 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.y += tmap->getTileSize().height;
+
+			//좌표 이동
+			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
+				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
+				playerPos.x >= 0 &&
+				playerPos.x >= 0)
+			{
+				this->setPlayerPosition(playerPos);
+			}
+
+			//모션
+			this->setAnimation(key);
+			//플레이어가 화면 가운데로 오게 조절
+			this->setViewpointCenter(dragon->getPosition());
+			isRunning = true;
+		}
+		else
+		{
+			//방향 전환
+			spr = Sprite::createWithSpriteFrameName("man_13.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
 		}
 
-		isRunning = true;
 		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
 		if (seeDirection == key)
 		{
@@ -368,11 +407,27 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.y -= tmap->getTileSize().height;
+
+			//좌표 이동
+			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
+				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
+				playerPos.x >= 0 &&
+				playerPos.x >= 0)
+			{
+				this->setPlayerPosition(playerPos);
+			}
 		}
-		isRunning = true;
+		else
+		{
+			//방향 전환
+			spr = Sprite::createWithSpriteFrameName("man_01.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
+		}
+
 		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
 		if (seeDirection == key)
 		{
@@ -380,11 +435,27 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.x += tmap->getTileSize().width;
+
+			//좌표 이동
+			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
+				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
+				playerPos.x >= 0 &&
+				playerPos.x >= 0)
+			{
+				this->setPlayerPosition(playerPos);
+			}
 		}
-		isRunning = true;
+		else
+		{
+			//방향 전환
+			spr = Sprite::createWithSpriteFrameName("man_09.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
+		}
+
 		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
 		if (seeDirection == key)
 		{
@@ -392,8 +463,23 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.x -= tmap->getTileSize().width;
+
+			//좌표 이동
+			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
+				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
+				playerPos.x >= 0 &&
+				playerPos.x >= 0)
+			{
+				this->setPlayerPosition(playerPos);
+			}
 		}
-		isRunning = true;
+		else
+		{
+			//방향 전환
+			spr = Sprite::createWithSpriteFrameName("man_05.png");
+			dragon->setSpriteFrame(spr->getSpriteFrame());
+		}
+
 		seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_I:
@@ -403,21 +489,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			inventory->setVisible(true);
 		break;
 	}
-
-	if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-		playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-		playerPos.x >= 0 &&
-		playerPos.x >= 0)
-	{
-		this->setPlayerPosition(playerPos);
-	}
-
-	this->setAnimation(key);
-	this->setViewpointCenter(dragon->getPosition());
 }
 
 void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	CCLOG("KeyRelease..(%d)", key);
+
+	isKeepKeyPressed = false;
 	isRunning = false;
 	return;
 }
@@ -431,6 +509,10 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 
 	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.
 	//dragon->stopAction(animate);
+
+	isAction = true;
+	CCLOG("action started!");
+	CCLOG("Motion Run");
 
 	switch (key)
 	{
@@ -483,8 +565,6 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 void HelloWorld::actionStarted()
 {
 	// do something on complete
-	isAction = true;
-	CCLOG("action started!");
 }
 
 void HelloWorld::actionFinished()
@@ -493,4 +573,44 @@ void HelloWorld::actionFinished()
 	isAction = false;
 	CCLOG("action finished!");
 
+}
+
+void HelloWorld::update(float fDelta)
+{
+	if (isRunning == true && isAction == false)
+	{
+		CCLOG("Keep Running..");
+
+		Point playerPos = dragon->getPosition();
+
+		switch (seeDirection)
+		{
+		case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+			playerPos.y += tmap->getTileSize().height;
+			break;
+		case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+			playerPos.y -= tmap->getTileSize().height;
+			break;
+		case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+			playerPos.x += tmap->getTileSize().width;
+			break;
+		case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+			playerPos.x -= tmap->getTileSize().width;
+			break;
+		}
+
+		//좌표 이동
+		if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
+			playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
+			playerPos.x >= 0 &&
+			playerPos.x >= 0)
+		{
+			this->setPlayerPosition(playerPos);
+		}
+
+		//모션
+		this->setAnimation(seeDirection);
+		//플레이어가 화면 가운데로 오게 조절
+		this->setViewpointCenter(dragon->getPosition());
+	}
 }

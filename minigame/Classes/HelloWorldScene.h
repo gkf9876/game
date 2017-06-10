@@ -38,6 +38,7 @@ public:
 	cocos2d::Animate * animate;												//드래곤 애니메이션
 	bool isAction;															//드래곤 액션 여부
 	bool isRunning;															//드래곤이 이동중인지
+	bool isKeepKeyPressed;													//키를 누르고 있는지
 	cocos2d::EventKeyboard::KeyCode seeDirection;							//드래곤이 어딜 보고있는지
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
@@ -76,6 +77,9 @@ public:
 
 	void actionStarted();
 	void actionFinished();
+
+	//매 프레임마다 호출되는 함수.
+	void update(float fDelta);												
 };
 
 #endif // __HELLOWORLD_SCENE_H__
