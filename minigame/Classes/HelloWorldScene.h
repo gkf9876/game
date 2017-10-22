@@ -2,8 +2,10 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include "cocos-ext.h"
 
 USING_NS_CC;
+USING_NS_CC_EXT;
 
 #define DRAGON_TAG 10														//화면에서 그리는 개체 태그.
 #define MAP_TAG 11
@@ -13,6 +15,7 @@ USING_NS_CC;
 #define MAP_NAME		3
 #define TITLE			4
 #define INVENTORY		5
+#define CHATTING_INPUT	6
 
 //수치가 높을수록 그림이 맨 위에 위치.
 #define MAP_PRIORITY_Z_ORDER		1										//맵 우선순위	
@@ -22,7 +25,7 @@ USING_NS_CC;
 #define TITLE_PRIORITY_Z_ORDER		5										//맵 이름 간판 우선순위
 #define INVENTORY_PRIORITY_Z_ORDER	4										//아이템창 우선순위
 
-class HelloWorld : public cocos2d::Layer
+class HelloWorld : public cocos2d::Layer, public EditBoxDelegate
 {
 public:
 	static cocos2d::Scene* createScene();
@@ -58,7 +61,9 @@ public:
 	cocos2d::LabelTTF * mapName;											//맵 이름
 	cocos2d::Sprite * title;												//맵 이름 배경.
 
-	cocos2d::LabelTTF * text;									//테스트 할때 사용하는 객체.
+	cocos2d::ui::EditBox * chattingInput;									//채팅 입력창
+
+	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
 
 
 	virtual void onEnter();
@@ -67,6 +72,10 @@ public:
 	virtual void onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *event);
 	virtual void onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 	virtual void onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
+	virtual void editBoxReturn(EditBox * editBox);
+	virtual void editBoxEditingDidBegin(EditBox * editBox);
+	virtual void editBoxEditingDidEnd(EditBox * editBox);
+	virtual void editBoxTextChanged(EditBox * editBox, const std::string& text);
 
 	void createDragon();
 	void setViewpointCenter(cocos2d::Point position);

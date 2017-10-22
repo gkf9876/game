@@ -76,6 +76,18 @@ bool HelloWorld::init()
 	this->addChild(mapName, MAP_NAME_PRIORITY_Z_ORDER, MAP_NAME);
 	//
 
+	//채팅창 띄우기
+	chattingInput = EditBox::create(Size(400, 25), Scale9Sprite::create());
+	chattingInput->setAnchorPoint(Point(0, 0));
+	chattingInput->setFont("Arial", 10);
+	chattingInput->setInputMode(EditBox::InputMode::ANY);
+	chattingInput->setFontColor(Color3B::GREEN);
+	chattingInput->setPlaceholderFontColor(Color3B::GREEN);
+	chattingInput->setPlaceHolder("input: ");
+	chattingInput->setMaxLength(20);
+	chattingInput->setDelegate(this);
+	this->addChild(chattingInput, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_INPUT);
+
 	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("images/title.png");
 	title->setAnchorPoint(Point(0.5, 1));
@@ -204,6 +216,9 @@ void HelloWorld::setViewpointCenter(Point position)
 
 	//아이템창은 항상 플레이어를 따라다녀야함.
 	inventory->setPosition(Point(actualPosition.x, actualPosition.y));
+
+	//채팅창은 화면 아래, 좌측에 붙어있어야함.
+	chattingInput->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2));
 
 	this->setPosition(viewPoint);
 }
@@ -382,12 +397,6 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			{
 				this->setPlayerPosition(playerPos);
 			}
-
-			//모션
-			this->setAnimation(key);
-			//플레이어가 화면 가운데로 오게 조절
-			this->setViewpointCenter(dragon->getPosition());
-			isRunning = true;
 		}
 		else
 		{
@@ -487,6 +496,9 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			inventory->setVisible(false);
 		else
 			inventory->setVisible(true);
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_ENTER:
+		chattingInput->touchDownAction(chattingInput, cocos2d::ui::Widget::TouchEventType::ENDED);
 		break;
 	}
 }
@@ -608,4 +620,25 @@ void HelloWorld::update(float fDelta)
 			this->setPlayerPosition(playerPos);
 		}
 	}
+}
+
+void HelloWorld::editBoxReturn(EditBox * editBox)
+{
+	CCLOG("--- editBoxReturn ---");
+	editBox->setText("");
+}
+
+void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
+{
+	CCLOG("--- editBoxEditingDidBegin ---");
+}
+
+void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
+{
+	CCLOG("--- editBoxEditingDidEnd ---");
+}
+
+void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
+{
+	CCLOG("--- editBoxTextChanged ---");
 }
