@@ -77,16 +77,33 @@ bool HelloWorld::init()
 	//
 
 	//채팅창 띄우기
-	chattingInput = EditBox::create(Size(400, 25), Scale9Sprite::create());
+	chattingInput = EditBox::create(Size(400, 20), Scale9Sprite::create());
 	chattingInput->setAnchorPoint(Point(0, 0));
 	chattingInput->setFont("Arial", 10);
-	chattingInput->setInputMode(EditBox::InputMode::ANY);
+	chattingInput->setInputMode(EditBox::InputMode::SINGLE_LINE);
 	chattingInput->setFontColor(Color3B::GREEN);
 	chattingInput->setPlaceholderFontColor(Color3B::GREEN);
-	chattingInput->setPlaceHolder("input: ");
+	chattingInput->setPlaceHolder("");
 	chattingInput->setMaxLength(20);
 	chattingInput->setDelegate(this);
 	this->addChild(chattingInput, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_INPUT);
+
+	//채팅화면 띄우기
+	showLabel = LabelTTF::create("non-Select", "Arial", 10);
+	showLabel->setPosition(Point(450, 400));
+	this->addChild(showLabel);
+
+	tableView = TableView::create(this, Size(400, 120));
+	tableView->setAnchorPoint(Point(0, 0));
+	tableView->setDirection(ScrollView::Direction::VERTICAL);
+	tableView->setDelegate(this);
+	this->addChild(tableView, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_VIEW);
+
+	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
+	tableView->reloadData();
+
+	com = new CustomNetworkCommunication();
+	com->init();
 
 	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("images/title.png");
@@ -128,6 +145,7 @@ void HelloWorld::onEnter()
 void HelloWorld::onExit()
 {
 	_eventDispatcher->removeEventListenersForType(EventListener::Type::TOUCH_ONE_BY_ONE);
+	com->close();
 
 	Layer::onExit();
 }
@@ -219,6 +237,7 @@ void HelloWorld::setViewpointCenter(Point position)
 
 	//채팅창은 화면 아래, 좌측에 붙어있어야함.
 	chattingInput->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2));
+	tableView->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2 + 25));
 
 	this->setPosition(viewPoint);
 }
@@ -625,7 +644,21 @@ void HelloWorld::update(float fDelta)
 void HelloWorld::editBoxReturn(EditBox * editBox)
 {
 	CCLOG("--- editBoxReturn ---");
+
+	const char * buf = chattingInput->getText();
+
+	if (strlen(buf) == 0)
+		return;
+
+	String * message = String::createWithFormat("%s", buf);
+	element.pushBack(message);
+	tableView->reloadData();
+	tableView->setContentOffset(Vec2(0, 0), false);
 	editBox->setText("");
+
+	char name[50];
+	WideCharToMultiByte(CP_UTF8, 0, L"김동우", -1, name, 50, NULL, NULL);
+	com->chatting(name, message->getCString());
 }
 
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
@@ -641,4 +674,66 @@ void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
 void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
 {
 	CCLOG("--- editBoxTextChanged ---");
+}
+
+void HelloWorld::scrollViewDidScroll(ScrollView* view)
+{
+	CCLOG("---- scrollViewDidScroll ----");
+}
+
+void HelloWorld::scrollViewDidZoom(ScrollView* view)
+{
+	CCLOG("---- scrollViewDidZoom ----");
+}
+
+//셀을 터치하면 콜백
+void HelloWorld::tableCellTouched(TableView* table, TableViewCell* cell)
+{
+	CCLOG("---- tableCellTouched ----");
+}
+
+Size HelloWorld::tableCellSizeForIndex(TableView *table, ssize_t idx)
+{
+	CCLOG("---- tableCellSizeForIndex ----");
+
+	return Size(60, 10);
+}
+
+//reload가 호출되거나, 스크롤이 움직여 안보이는 셀이 보여질 때 호출
+TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
+{
+	CCLOG("---- tableCellAtIndex ----");
+	int count = element.size();
+	String * string = element.at(count - (idx + 1));
+
+	//테이블이 사용 중인 셀이 있다면 재활용한다.
+	TableViewCell* cell = table->dequeueCell();
+
+	if (!cell)
+	{
+		cell = new CustomTableViewCell();
+		cell->autorelease();
+
+		LabelTTF * label = LabelTTF::create(string->getCString(), "Arial", 10);
+		label->setPosition(Point::ZERO);
+		label->setAnchorPoint(Point::ZERO);
+		label->setColor(Color3B::GREEN);
+		label->setTag(CHATTING_VIEW_ELEMENT);
+		cell->addChild(label);
+	}
+	else
+	{
+		auto label = (Label*)cell->getChildByTag(CHATTING_VIEW_ELEMENT);
+		label->setString(string->getCString());
+	}
+
+	return cell;
+}
+
+//테이블이 셀 갯수에 대한 정보를 가져가는 곳
+ssize_t HelloWorld::numberOfCellsInTableView(TableView *table)
+{
+	CCLOG("---- numberOfCellsInTableView ----");
+	int count = element.size();
+	return count;
 }

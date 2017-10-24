@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 #include "cocos-ext.h"
+#include "CustomTableViewCell.h"
+#include "CustomNetworkCommunication.h"
 
 USING_NS_CC;
 USING_NS_CC_EXT;
@@ -16,6 +18,8 @@ USING_NS_CC_EXT;
 #define TITLE			4
 #define INVENTORY		5
 #define CHATTING_INPUT	6
+#define CHATTING_VIEW	7
+#define CHATTING_VIEW_ELEMENT 8
 
 //수치가 높을수록 그림이 맨 위에 위치.
 #define MAP_PRIORITY_Z_ORDER		1										//맵 우선순위	
@@ -25,7 +29,7 @@ USING_NS_CC_EXT;
 #define TITLE_PRIORITY_Z_ORDER		5										//맵 이름 간판 우선순위
 #define INVENTORY_PRIORITY_Z_ORDER	4										//아이템창 우선순위
 
-class HelloWorld : public cocos2d::Layer, public EditBoxDelegate
+class HelloWorld : public cocos2d::Layer, public EditBoxDelegate, public TableViewDataSource, public TableViewDelegate
 {
 public:
 	static cocos2d::Scene* createScene();
@@ -65,17 +69,32 @@ public:
 
 	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
 
+	TableView* tableView;													//채팅 띄우는 창
+	LabelTTF* showLabel;													//채팅창에 띄울 문장
+	Vector<String*> element;
+
+	CustomNetworkCommunication * com;										//서버와 통신하는 객체
 
 	virtual void onEnter();
 	virtual void onExit();
+
 	virtual bool onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *event);
 	virtual void onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *event);
 	virtual void onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 	virtual void onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
+
 	virtual void editBoxReturn(EditBox * editBox);
 	virtual void editBoxEditingDidBegin(EditBox * editBox);
 	virtual void editBoxEditingDidEnd(EditBox * editBox);
 	virtual void editBoxTextChanged(EditBox * editBox, const std::string& text);
+
+	virtual void scrollViewDidScroll(ScrollView* view);
+	virtual void scrollViewDidZoom(ScrollView* view);
+
+	virtual void tableCellTouched(TableView* table, TableViewCell* cell);
+	virtual Size tableCellSizeForIndex(TableView* table, ssize_t idx);
+	virtual TableViewCell* tableCellAtIndex(TableView *table, ssize_t idx);
+	virtual ssize_t numberOfCellsInTableView(TableView *table);
 
 	void createDragon();
 	void setViewpointCenter(cocos2d::Point position);
@@ -88,7 +107,8 @@ public:
 	void actionFinished();
 
 	//매 프레임마다 호출되는 함수.
-	void update(float fDelta);												
+	void update(float fDelta);			
+
 };
 
 #endif // __HELLOWORLD_SCENE_H__
