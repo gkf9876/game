@@ -102,8 +102,23 @@ bool HelloWorld::init()
 	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
 	tableView->reloadData();
 
+	//서버와 통신 설정
 	com = new CustomNetworkCommunication();
 	com->init();
+
+	//캐릭터 위에 말풍선으로 문자열 출력.
+	balloon = Sprite::create("Images/balloon.png");
+	balloon->setAnchorPoint(Point(1, 0));
+	balloon->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2, dragonPosition.y + dragon->getContentSize().height));
+	balloon->setVisible(false);
+	this->addChild(balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
+
+	balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
+	balloonContent->setColor(Color3B::BLACK);
+	balloonContent->setAnchorPoint(Point(1, 0));
+	balloonContent->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2 - 50, dragonPosition.y + dragon->getContentSize().height + 50));
+	balloonContent->setVisible(false);
+	this->addChild(balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
 
 	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("images/title.png");
@@ -238,6 +253,10 @@ void HelloWorld::setViewpointCenter(Point position)
 	//채팅창은 화면 아래, 좌측에 붙어있어야함.
 	chattingInput->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2));
 	tableView->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2 + 25));
+
+	//말풍선은 항상 캐릭터를 따라다녀야함
+	balloon->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2, dragonPosition.y + dragon->getContentSize().height));
+	balloonContent->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2 - 50, dragonPosition.y + dragon->getContentSize().height + 50));
 
 	this->setPosition(viewPoint);
 }
@@ -639,12 +658,23 @@ void HelloWorld::update(float fDelta)
 			this->setPlayerPosition(playerPos);
 		}
 	}
+
+	//말풍선이 떠있으면 일정시간후 없앤다.
+	if (balloon->isVisible() == true)
+		balloonTime++;
+	if (balloonTime % 120 == 119)
+	{
+		balloon->setVisible(false);
+		balloonContent->setVisible(false);
+		balloonTime = 0;
+	}
 }
 
 void HelloWorld::editBoxReturn(EditBox * editBox)
 {
 	CCLOG("--- editBoxReturn ---");
 
+	//채팅입력하고 엔터키 누르면 채팅창에 입력한 문자열이 등록.
 	const char * buf = chattingInput->getText();
 
 	if (strlen(buf) == 0)
@@ -659,6 +689,12 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	char name[50];
 	WideCharToMultiByte(CP_UTF8, 0, L"김동우", -1, name, 50, NULL, NULL);
 	com->chatting(name, message->getCString());
+
+	//캐릭터 위에 말풍선으로 문자열 출력.
+	balloon->setVisible(true);
+	balloonContent->setString(message->getCString());
+	balloonContent->setVisible(true);
+	balloonTime = 0;
 }
 
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)

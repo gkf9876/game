@@ -20,14 +20,18 @@ USING_NS_CC_EXT;
 #define CHATTING_INPUT	6
 #define CHATTING_VIEW	7
 #define CHATTING_VIEW_ELEMENT 8
+#define CHATTING_BALLOON 9
+#define CHATTING_BALLOON_CONTENT 10
 
 //수치가 높을수록 그림이 맨 위에 위치.
-#define MAP_PRIORITY_Z_ORDER		1										//맵 우선순위	
-#define DRAGON_PRIORITY_Z_ORDER		2										//드래곤 우선순위
-#define OTHERS_PRIORITY_Z_ORDER		3										//기타 객체 우선순위
-#define MAP_NAME_PRIORITY_Z_ORDER	6										//맵 이름 우선순위
-#define TITLE_PRIORITY_Z_ORDER		5										//맵 이름 간판 우선순위
-#define INVENTORY_PRIORITY_Z_ORDER	4										//아이템창 우선순위
+#define MAP_PRIORITY_Z_ORDER			1										//맵 우선순위	
+#define DRAGON_PRIORITY_Z_ORDER			2										//드래곤 우선순위
+#define OTHERS_PRIORITY_Z_ORDER			3										//기타 객체 우선순위
+#define BALLON_PRIORITY_Z_ORDER			4										//말풍선 우선순위
+#define BALLON_CONTENT_PRIORITY_Z_ORDER	5										//말풍선 내용 우선순위
+#define INVENTORY_PRIORITY_Z_ORDER		6										//아이템창 우선순위
+#define TITLE_PRIORITY_Z_ORDER			7										//맵 이름 간판 우선순위
+#define MAP_NAME_PRIORITY_Z_ORDER		8										//맵 이름 우선순위
 
 class HelloWorld : public cocos2d::Layer, public EditBoxDelegate, public TableViewDataSource, public TableViewDelegate
 {
@@ -71,7 +75,11 @@ public:
 
 	TableView* tableView;													//채팅 띄우는 창
 	LabelTTF* showLabel;													//채팅창에 띄울 문장
-	Vector<String*> element;
+	Vector<String*> element;												//채팅창 채팅목록
+	cocos2d::LabelTTF * balloonContent;										//말풍선 내용
+	Sprite * balloon;														//말풍선
+
+	int balloonTime = 0;													//말풍선 떠있는 시간.
 
 	CustomNetworkCommunication * com;										//서버와 통신하는 객체
 
