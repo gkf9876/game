@@ -10,9 +10,13 @@ void CustomNetworkCommunication::init()
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
 
+	host = gethostbyname("sourcecake.iptime.org");
+	if (!host)
+		error_handling("gethost... error");
+
 	memset(&serv_adr, 0, sizeof(serv_adr));
 	serv_adr.sin_family = AF_INET;
-	serv_adr.sin_addr.s_addr = inet_addr("192.168.56.102");
+	serv_adr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)host->h_addr_list[0]));
 	serv_adr.sin_port = htons(atoi("9190"));
 
 	if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == SOCKET_ERROR)

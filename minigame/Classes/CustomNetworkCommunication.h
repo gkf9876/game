@@ -16,6 +16,7 @@ class CustomNetworkCommunication
 private :
 	WSADATA wsaData;
 	SOCKET sock;
+	struct hostent * host;
 	char message[BUF_SIZE], buf[BUF_SIZE];
 	int str_len, recv_len, recv_cnt;
 	SOCKADDR_IN serv_adr;
