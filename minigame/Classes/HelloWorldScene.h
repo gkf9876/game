@@ -5,6 +5,7 @@
 #include "cocos-ext.h"
 #include "CustomTableViewCell.h"
 #include "CustomNetworkCommunication.h"
+#include <process.h>
 
 USING_NS_CC;
 USING_NS_CC_EXT;
@@ -42,6 +43,8 @@ public:
 
 	// implement the "static create()" method manually
 	CREATE_FUNC(HelloWorld);
+
+	String * userName;														//유저 이름
 
 	cocos2d::Size winSize;													//화면 크기
 	cocos2d::Point dragonPosition;											//드래곤 위치
@@ -83,6 +86,9 @@ public:
 
 	CustomNetworkCommunication * com;										//서버와 통신하는 객체
 
+	int code;																//서버로부터 받아올 데이터 Code
+	String content;															//서버로부터 받아올 데이터 Content
+
 	virtual void onEnter();
 	virtual void onExit();
 
@@ -116,7 +122,6 @@ public:
 
 	//매 프레임마다 호출되는 함수.
 	void update(float fDelta);			
-
 };
 
 #endif // __HELLOWORLD_SCENE_H__

@@ -106,6 +106,9 @@ bool HelloWorld::init()
 	com = new CustomNetworkCommunication();
 	com->init();
 
+	// 유저 정보 불러오기
+	com->getUserInfo();
+
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	balloon = Sprite::create("Images/balloon.png");
 	balloon->setAnchorPoint(Point(1, 0));
@@ -668,6 +671,19 @@ void HelloWorld::update(float fDelta)
 		balloonContent->setVisible(false);
 		balloonTime = 0;
 	}
+
+	//채팅창을 업데이트. 다른 사람의 채팅내용을 띄운다.
+
+	for (int i = 0; i < com->chattingInfo.size(); i++)
+	{
+		if (element.size() <= i)
+		{
+			element.pushBack(com->chattingInfo.at(i));
+			CCLOG("%s", com->chattingInfo.at(i));
+		}
+	}
+	tableView->reloadData();
+	tableView->setContentOffset(Vec2(0, 0), false);
 }
 
 void HelloWorld::editBoxReturn(EditBox * editBox)
@@ -680,15 +696,12 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	if (strlen(buf) == 0)
 		return;
 
+	//채팅입력창 업데이트
 	String * message = String::createWithFormat("%s", buf);
-	element.pushBack(message);
-	tableView->reloadData();
-	tableView->setContentOffset(Vec2(0, 0), false);
 	editBox->setText("");
 
 	char name[50];
-	WideCharToMultiByte(CP_UTF8, 0, L"김동우", -1, name, 50, NULL, NULL);
-	com->chatting(name, message->getCString());
+	com->chatting(com->user.name, message->getCString());
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	balloon->setVisible(true);
@@ -699,38 +712,38 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
 {
-	CCLOG("--- editBoxEditingDidBegin ---");
+	//CCLOG("--- editBoxEditingDidBegin ---");
 }
 
 void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
 {
-	CCLOG("--- editBoxEditingDidEnd ---");
+	//CCLOG("--- editBoxEditingDidEnd ---");
 }
 
 void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
 {
-	CCLOG("--- editBoxTextChanged ---");
+	//CCLOG("--- editBoxTextChanged ---");
 }
 
 void HelloWorld::scrollViewDidScroll(ScrollView* view)
 {
-	CCLOG("---- scrollViewDidScroll ----");
+	//CCLOG("---- scrollViewDidScroll ----");
 }
 
 void HelloWorld::scrollViewDidZoom(ScrollView* view)
 {
-	CCLOG("---- scrollViewDidZoom ----");
+	//CCLOG("---- scrollViewDidZoom ----");
 }
 
 //셀을 터치하면 콜백
 void HelloWorld::tableCellTouched(TableView* table, TableViewCell* cell)
 {
-	CCLOG("---- tableCellTouched ----");
+	//CCLOG("---- tableCellTouched ----");
 }
 
 Size HelloWorld::tableCellSizeForIndex(TableView *table, ssize_t idx)
 {
-	CCLOG("---- tableCellSizeForIndex ----");
+	//CCLOG("---- tableCellSizeForIndex ----");
 
 	return Size(60, 10);
 }
@@ -738,7 +751,7 @@ Size HelloWorld::tableCellSizeForIndex(TableView *table, ssize_t idx)
 //reload가 호출되거나, 스크롤이 움직여 안보이는 셀이 보여질 때 호출
 TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 {
-	CCLOG("---- tableCellAtIndex ----");
+	//CCLOG("---- tableCellAtIndex ----");
 	int count = element.size();
 	String * string = element.at(count - (idx + 1));
 
@@ -769,7 +782,7 @@ TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 //테이블이 셀 갯수에 대한 정보를 가져가는 곳
 ssize_t HelloWorld::numberOfCellsInTableView(TableView *table)
 {
-	CCLOG("---- numberOfCellsInTableView ----");
+	//CCLOG("---- numberOfCellsInTableView ----");
 	int count = element.size();
 	return count;
 }
