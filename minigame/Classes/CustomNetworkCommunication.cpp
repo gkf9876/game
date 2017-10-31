@@ -50,6 +50,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 			{
 				com->isLogin = false;
 				CCLOG("Login Fail!!");
+				com->popupLoginFail = true;
 			}
 
 			break;

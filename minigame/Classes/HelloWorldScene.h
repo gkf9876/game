@@ -48,6 +48,7 @@ public:
 	bool isLogin;
 	Sprite * loginBackground;
 	EditBox * loginID;
+	Sprite * loginFail;
 
 	cocos2d::Size winSize;													//화면 크기
 	cocos2d::Vec2 origin;													//화면 좌표

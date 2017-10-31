@@ -33,6 +33,7 @@ bool HelloWorld::init()
 	origin = Director::getInstance()->getVisibleOrigin();
 	isLogin = false;
 
+	//로그인 화면
 	loginBackground = Sprite::create("login.jpg");
 	loginBackground->setAnchorPoint(Point::ZERO);
 	loginBackground->setPosition(Point(0, 0));
@@ -40,6 +41,7 @@ bool HelloWorld::init()
 	loginBackground->setVisible(true);
 	this->addChild(loginBackground);
 
+	//로그인 아이디 입력창
 	loginID = EditBox::create(Size(200, 20), Scale9Sprite::create());
 	loginID->setAnchorPoint(Point(0, 0.5));
 	loginID->setFont("Arial", 50);
@@ -51,6 +53,14 @@ bool HelloWorld::init()
 	loginID->setDelegate(this);
 	loginID->setPosition(Vec2(origin.x + winSize.width / 2 - loginID->getSize().width/2, origin.y + winSize.height / 2));
 	this->addChild(loginID, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_INPUT);
+
+	//로그인 실패시 띄우는 창
+	loginFail = Sprite::create("loginfail.jpg");
+	loginFail->setAnchorPoint(Point(0.5,0.5));
+	loginFail->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
+	loginFail->setContentSize(Size(288, 105));
+	loginFail->setVisible(false);
+	this->addChild(loginFail, MAP_NAME_PRIORITY_Z_ORDER + 1, CHATTING_INPUT + 1);
 
 	//서버와 통신 설정
 	com = new CustomNetworkCommunication();
@@ -437,7 +447,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		switch (key)
 		{
 		case cocos2d::EventKeyboard::KeyCode::KEY_ENTER:
-			loginID->touchDownAction(loginID, cocos2d::ui::Widget::TouchEventType::ENDED);
+			if (com->popupLoginFail == true)
+				com->popupLoginFail = false;
+			else
+				loginID->touchDownAction(loginID, cocos2d::ui::Widget::TouchEventType::ENDED);
 			break;
 		}
 		return;
@@ -684,6 +697,11 @@ void HelloWorld::update(float fDelta)
 			com->getUserInfo();
 			start();
 		}
+
+		if(com->popupLoginFail == true)
+			loginFail->setVisible(true);
+		else
+			loginFail->setVisible(false);
 
 		return;
 	}

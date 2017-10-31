@@ -44,6 +44,7 @@ private :
 public :
 	User user;
 	bool isLogin = false;
+	bool popupLoginFail = false;
 	char sendBuf[BUF_SIZE];
 	char recvBuf[BUF_SIZE];
 	Vector<String*> chattingInfo;
