@@ -45,8 +45,12 @@ public:
 	CREATE_FUNC(HelloWorld);
 
 	String * userName;														//유저 이름
+	bool isLogin;
+	Sprite * loginBackground;
+	EditBox * loginID;
 
 	cocos2d::Size winSize;													//화면 크기
+	cocos2d::Vec2 origin;													//화면 좌표
 	cocos2d::Point dragonPosition;											//드래곤 위치
 	cocos2d::Sprite* dragon;												//드래곤 객체
 	cocos2d::Animate * animate;												//드래곤 애니메이션
@@ -88,6 +92,8 @@ public:
 
 	int code;																//서버로부터 받아올 데이터 Code
 	String content;															//서버로부터 받아올 데이터 Content
+
+	void start();
 
 	virtual void onEnter();
 	virtual void onExit();

@@ -13,6 +13,10 @@ USING_NS_CC;
 
 #define BUF_SIZE 1024
 
+#define REQUEST_USER_INFO				1
+#define REQUEST_LOGIN					2
+#define CHATTING_PROCESS				3
+
 typedef struct user
 {
 	int sock;
@@ -39,6 +43,7 @@ private :
 
 public :
 	User user;
+	bool isLogin = false;
 	char sendBuf[BUF_SIZE];
 	char recvBuf[BUF_SIZE];
 	Vector<String*> chattingInfo;
@@ -53,6 +58,7 @@ public :
 
 	void chatting(const char * name, const char * content);
 	void getUserInfo();
+	void requestLogin(char * userName);
 
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
 };

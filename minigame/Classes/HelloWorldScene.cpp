@@ -30,7 +30,40 @@ bool HelloWorld::init()
 	}
 
 	winSize = Director::getInstance()->getWinSize();
+	origin = Director::getInstance()->getVisibleOrigin();
+	isLogin = false;
 
+	loginBackground = Sprite::create("login.jpg");
+	loginBackground->setAnchorPoint(Point::ZERO);
+	loginBackground->setPosition(Point(0, 0));
+	loginBackground->setContentSize(winSize);
+	loginBackground->setVisible(true);
+	this->addChild(loginBackground);
+
+	loginID = EditBox::create(Size(200, 20), Scale9Sprite::create());
+	loginID->setAnchorPoint(Point(0, 0.5));
+	loginID->setFont("Arial", 50);
+	loginID->setInputMode(EditBox::InputMode::SINGLE_LINE);
+	loginID->setFontColor(Color3B::GREEN);
+	loginID->setPlaceholderFontColor(Color3B::GREEN);
+	loginID->setPlaceHolder("Insert ID");
+	loginID->setMaxLength(20);
+	loginID->setDelegate(this);
+	loginID->setPosition(Vec2(origin.x + winSize.width / 2 - loginID->getSize().width/2, origin.y + winSize.height / 2));
+	this->addChild(loginID, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_INPUT);
+
+	//서버와 통신 설정
+	com = new CustomNetworkCommunication();
+	com->init();
+
+	//매 프레임마다 update() 함수를 호출
+	this->scheduleUpdate();
+
+	return true;
+}
+
+void HelloWorld::start()
+{
 	//맵 세팅
 	address = "TileMaps/KonyangUniv.Daejeon/JukhunDigitalFacilitie/floor_08/";
 	std::string map = address;
@@ -102,13 +135,6 @@ bool HelloWorld::init()
 	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
 	tableView->reloadData();
 
-	//서버와 통신 설정
-	com = new CustomNetworkCommunication();
-	com->init();
-
-	// 유저 정보 불러오기
-	com->getUserInfo();
-
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	balloon = Sprite::create("Images/balloon.png");
 	balloon->setAnchorPoint(Point(1, 0));
@@ -130,11 +156,6 @@ bool HelloWorld::init()
 
 	//플레이어를 화면의 중앙에 위치하도록 화면을 이동.
 	this->setViewpointCenter(dragon->getPosition());
-
-	//매 프레임마다 update() 함수를 호출
-	this->scheduleUpdate();
-
-	return true;
 }
 
 void HelloWorld::onEnter()
@@ -184,11 +205,17 @@ void HelloWorld::createDragon()
 
 bool HelloWorld::onTouchBegan(Touch *touch, Event *event)
 {
+	if (isLogin != true)
+		return false;
+
 	return true;
 }
 
 void HelloWorld::onTouchEnded(Touch *touch, Event *event)
 {
+	if (isLogin != true)
+		return;
+
 	auto touchPoint = touch->getLocation();
 	touchPoint = this->convertToNodeSpace(touchPoint);
 
@@ -405,6 +432,17 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	if (isLogin != true)
+	{
+		switch (key)
+		{
+		case cocos2d::EventKeyboard::KeyCode::KEY_ENTER:
+			loginID->touchDownAction(loginID, cocos2d::ui::Widget::TouchEventType::ENDED);
+			break;
+		}
+		return;
+	}
+
 	CCLOG("KeyPress..(%d)", key);
 	isKeepKeyPressed = true;
 
@@ -546,6 +584,9 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 
 void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	if (isLogin != true)
+		return;
+
 	CCLOG("KeyRelease..(%d)", key);
 
 	isKeepKeyPressed = false;
@@ -630,6 +671,23 @@ void HelloWorld::actionFinished()
 
 void HelloWorld::update(float fDelta)
 {
+	if (isLogin != true)
+	{
+		//로그인 됬는지 확인
+		if (com->isLogin == true)
+		{
+			isLogin = true;
+			loginBackground->setVisible(false);
+			loginID->setVisible(false);
+
+			// 유저 정보 불러오기
+			com->getUserInfo();
+			start();
+		}
+
+		return;
+	}
+
 	if (isRunning == true && isAction == false)
 	{
 		CCLOG("Keep Running..");
@@ -690,6 +748,17 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 {
 	CCLOG("--- editBoxReturn ---");
 
+	if (isLogin != true)
+	{
+		char userName[50];
+		strcpy(userName, loginID->getText());
+		com->requestLogin(userName);
+
+		CCLOG("isLogin : %d", com->isLogin);
+
+		return;
+	}
+
 	//채팅입력하고 엔터키 누르면 채팅창에 입력한 문자열이 등록.
 	const char * buf = chattingInput->getText();
 
@@ -713,16 +782,22 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
 {
 	//CCLOG("--- editBoxEditingDidBegin ---");
+	if (isLogin != true)
+		return;
 }
 
 void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
 {
 	//CCLOG("--- editBoxEditingDidEnd ---");
+	if (isLogin != true)
+		return;
 }
 
 void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
 {
 	//CCLOG("--- editBoxTextChanged ---");
+	if (isLogin != true)
+		return;
 }
 
 void HelloWorld::scrollViewDidScroll(ScrollView* view)

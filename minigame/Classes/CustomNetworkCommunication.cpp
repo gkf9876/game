@@ -28,16 +28,30 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 
 		switch (code)
 		{
-		case 1:
+		case REQUEST_USER_INFO:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
 			strcpy(com->user.name, buf[0]);
 			com->user.xpos = atoi(buf[1]);
 			com->user.ypos = atoi(buf[2]);
 			com->user.field = atoi(buf[3]);
 			break;
-		case 2:
+		case CHATTING_PROCESS:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
 			com->chattingInfo.pushBack(String::createWithFormat("%s : %s", buf[0], buf[1]));
+			break;
+		case REQUEST_LOGIN:
+
+			if (!strcmp(com->recvBuf, "login okey"))
+			{
+				com->isLogin = true;
+				CCLOG("Login Okey!!");
+			}
+			else
+			{
+				com->isLogin = false;
+				CCLOG("Login Fail!!");
+			}
+
 			break;
 		default:
 			break;
@@ -123,6 +137,8 @@ int CustomNetworkCommunication::sendCommand(int code, char * message)
 		return -1;
 	else
 		return len;
+
+	CCLOG("Code : %d, Content : %s", code, message);
 }
 
 int CustomNetworkCommunication::readCommand(int * code, char * buf)
@@ -158,7 +174,7 @@ void CustomNetworkCommunication::chatting(const char * name, const char * conten
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(2, this->sendBuf);
+	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf);
 }
 
 void CustomNetworkCommunication::getUserInfo()
@@ -167,7 +183,16 @@ void CustomNetworkCommunication::getUserInfo()
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(1, "request user information");
+	str_len = sendCommand(REQUEST_USER_INFO, "request user information");
+}
+
+void CustomNetworkCommunication::requestLogin(char * userName)
+{
+	String * message = String::createWithFormat("%s", userName);
+
+	strcpy(this->sendBuf, message->getCString());
+
+	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
 }
 
 int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag)
