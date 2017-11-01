@@ -52,7 +52,9 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				CCLOG("Login Fail!!");
 				com->popupLoginFail = true;
 			}
-
+			break;
+		case USER_MOVE_UPDATE:
+			CCLOG("user move!!");
 			break;
 		default:
 			break;
@@ -121,15 +123,9 @@ int CustomNetworkCommunication::sendCommand(int code, char * message)
 	char buf[BUF_SIZE];
 	int len = strlen(message);
 
-	buf[0] = (len & 0xff000000) >> 24;
-	buf[1] = (len & 0x00ff0000) >> 16;
-	buf[2] = (len & 0x0000ff00) >> 8;
-	buf[3] = (len & 0x000000ff);
+	IntToChar(len, &buf[0]);
+	IntToChar(code, &buf[4]);
 
-	buf[4] = (code & 0xff000000) >> 24;
-	buf[5] = (code & 0x00ff0000) >> 16;
-	buf[6] = (code & 0x0000ff00) >> 8;
-	buf[7] = (code & 0x000000ff);
 	strcpy(&buf[8], message);
 
 	int writeLen = send(this->sock, buf, len + 8, 0);
@@ -144,6 +140,8 @@ int CustomNetworkCommunication::sendCommand(int code, char * message)
 
 int CustomNetworkCommunication::readCommand(int * code, char * buf)
 {
+	int len;
+
 	if (buf == NULL)
 		return -1;
 
@@ -154,14 +152,14 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	else if (readLen == 0)
 		return 0;
 
-	int len = (int)((buf[0] << 24) & 0xff000000) + (int)((buf[1] << 16) & 0x00ff0000) + (int)((buf[2] << 8) & 0x0000ff00) + buf[3];
+	CharToInt(&buf[0], &len);
 
 	readLen = recv(this->sock, buf, 4, 0);
 
 	if (readLen == -1)
 		return -1;
 
-	*code = (int)((buf[0] << 24) & 0xff000000) + (int)((buf[1] << 16) & 0x00ff0000) + (int)((buf[2] << 8) & 0x0000ff00) + buf[3];
+	CharToInt(&buf[0], code);
 
 	recv(this->sock, buf, len, 0);
 	buf[len] = 0;
@@ -194,6 +192,14 @@ void CustomNetworkCommunication::requestLogin(char * userName)
 	strcpy(this->sendBuf, message->getCString());
 
 	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
+}
+
+void CustomNetworkCommunication::userMoveUpdate(char * userName, Point point, char * field)
+{
+	sprintf(this->sendBuf, "%s\n%d\n%d\n%s", userName, (int)point.x, (int)point.y, field);
+	CCLOG("%s %d %d %s", userName, (int)point.x, (int)point.y, field);
+
+	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
 }
 
 int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag)
@@ -232,4 +238,19 @@ int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE],
 	}
 
 	return count;
+}
+
+void CustomNetworkCommunication::IntToChar(int value, char * result)
+{
+	result[0] = (value & 0xff000000) >> 24;
+	result[1] = (value & 0x00ff0000) >> 16;
+	result[2] = (value & 0x0000ff00) >> 8;
+	result[3] = (value & 0x000000ff);
+}
+void CustomNetworkCommunication::CharToInt(char * value, int * result)
+{
+	*result = (int)((value[0] << 24) & 0xff000000);
+	*result += (int)((value[1] << 16) & 0x00ff0000);
+	*result += (int)((value[2] << 8) & 0x0000ff00);
+	*result += value[3];
 }

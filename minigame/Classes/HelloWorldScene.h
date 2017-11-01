@@ -10,6 +10,8 @@
 USING_NS_CC;
 USING_NS_CC_EXT;
 
+#define TILE_SIZE	32														//타일 사이즈
+
 #define DRAGON_TAG 10														//화면에서 그리는 개체 태그.
 #define MAP_TAG 11
 #define HOME_TAG 1
@@ -76,6 +78,7 @@ public:
 	std::string address;													//출력할 맵이미지 경로
 	cocos2d::LabelTTF * mapName;											//맵 이름
 	cocos2d::Sprite * title;												//맵 이름 배경.
+	std::string currentFlag;												//현재 있는 맵 경로
 
 	cocos2d::ui::EditBox * chattingInput;									//채팅 입력창
 

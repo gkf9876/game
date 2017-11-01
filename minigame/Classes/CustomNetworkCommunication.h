@@ -16,6 +16,7 @@ USING_NS_CC;
 #define REQUEST_USER_INFO				1
 #define REQUEST_LOGIN					2
 #define CHATTING_PROCESS				3
+#define USER_MOVE_UPDATE				4
 
 typedef struct user
 {
@@ -60,8 +61,11 @@ public :
 	void chatting(const char * name, const char * content);
 	void getUserInfo();
 	void requestLogin(char * userName);
+	void userMoveUpdate(char * userName, Point point, char * field);
 
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
+	void IntToChar(int value, char * result);
+	void CharToInt(char * value, int * result);
 };
 
 #endif

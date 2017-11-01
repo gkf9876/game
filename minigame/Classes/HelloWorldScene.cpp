@@ -80,6 +80,7 @@ void HelloWorld::start()
 	map.append("floor.tmx");
 
 	tmap = TMXTiledMap::create(map);
+	currentFlag = map;
 	background = tmap->getLayer("Background");
 	items = tmap->getLayer("Items");
 	metainfo = tmap->getLayer("MetaInfo");
@@ -362,16 +363,16 @@ void HelloWorld::setPlayerPosition(Point position)
 				
 
 				//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
-				if (items_coodinate.x >= (32 * 4))
+				if (items_coodinate.x >= (TILE_SIZE * 4))
 				{
 					items_coodinate.x = 0;
 
-					items_coodinate.y -= 32;
+					items_coodinate.y -= TILE_SIZE;
 				}
 				else
 				{
 					//아이템을 추가하고 옆으로 커서를 이동.
-					items_coodinate.x += 32;
+					items_coodinate.x += TILE_SIZE;
 				}
 			}
 
@@ -404,6 +405,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 				this->removeChildByTag(MAP_TAG);
 				tmap = TMXTiledMap::create(destination);
+				currentFlag = destination;
 				background = tmap->getLayer("Background");
 				items = tmap->getLayer("Items");
 				metainfo = tmap->getLayer("MetaInfo");
@@ -424,6 +426,10 @@ void HelloWorld::setPlayerPosition(Point position)
 				//맵의 이름을 화면 상단에 출력.
 				mapName->setString(objects->getProperty("Name").asString());
 
+				//이동한 내용을 DB에 반영
+				char sendMapName[100];
+				strcpy(sendMapName, String(currentFlag).getCString());
+				com->userMoveUpdate(com->user.name, cocos2d::Point(dragon->getPosition().x / TILE_SIZE, dragon->getPosition().y / TILE_SIZE), sendMapName);
 				return;
 			}
 		}
@@ -431,6 +437,12 @@ void HelloWorld::setPlayerPosition(Point position)
 
 	dragonPosition = position;
 	dragon->setPosition(dragonPosition);
+
+	//이동한 내용을 DB에 반영
+	Value& properties = tmap->getPropertiesForGID(tileGid);
+	char sendMapName[100];
+	strcpy(sendMapName, String(currentFlag).getCString());
+	com->userMoveUpdate(com->user.name, cocos2d::Point(dragon->getPosition().x / TILE_SIZE, dragon->getPosition().y / TILE_SIZE), sendMapName);
 
 	//모션
 	this->setAnimation(seeDirection);
@@ -612,7 +624,7 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	SpriteFrame * frame;
 	auto animation = Animation::create();
 	animation->setDelayPerUnit(0.2);
-	Point position = dragon->getPosition() / 32;
+	Point position = dragon->getPosition() / TILE_SIZE;
 
 	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.
 	//dragon->stopAction(animate);
