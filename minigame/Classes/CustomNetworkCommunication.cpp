@@ -33,7 +33,8 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 			strcpy(com->user.name, buf[0]);
 			com->user.xpos = atoi(buf[1]);
 			com->user.ypos = atoi(buf[2]);
-			com->user.field = atoi(buf[3]);
+			strcpy(com->user.field, buf[3]);
+			com->isGetUserInfo = true;
 			break;
 		case CHATTING_PROCESS:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
@@ -74,7 +75,7 @@ void CustomNetworkCommunication::init()
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
 
-	host = gethostbyname("192.168.56.101");
+	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
 

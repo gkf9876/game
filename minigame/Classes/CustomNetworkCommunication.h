@@ -25,7 +25,7 @@ typedef struct user
 	char password[50];
 	int xpos;
 	int ypos;
-	int field;
+	char field[100];
 }User;
 
 class CustomNetworkCommunication
@@ -45,6 +45,7 @@ private :
 public :
 	User user;
 	bool isLogin = false;
+	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
 	char sendBuf[BUF_SIZE];
 	char recvBuf[BUF_SIZE];

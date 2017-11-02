@@ -79,8 +79,8 @@ void HelloWorld::start()
 	std::string map = address;
 	map.append("floor.tmx");
 
-	tmap = TMXTiledMap::create(map);
-	currentFlag = map;
+	tmap = TMXTiledMap::create(com->user.field);
+	currentFlag = com->user.field;
 	background = tmap->getLayer("Background");
 	items = tmap->getLayer("Items");
 	metainfo = tmap->getLayer("MetaInfo");
@@ -90,13 +90,7 @@ void HelloWorld::start()
 
 	//플레이어 만들기
 	objects = tmap->getObjectGroup("Objects");
-
-	spawnPoint = objects->getObject("SpawnPoint");
-
-	int x = spawnPoint.at("x").asInt() + tmap->getTileSize().width / 2;
-	int y = spawnPoint.at("y").asInt();
-
-	dragonPosition = Point(x, y);
+	dragonPosition = Point(com->user.xpos * TILE_SIZE + TILE_SIZE / 2, com->user.ypos * TILE_SIZE);
 
 	this->createDragon();
 	//
@@ -438,6 +432,8 @@ void HelloWorld::setPlayerPosition(Point position)
 	dragonPosition = position;
 	dragon->setPosition(dragonPosition);
 
+	CCLOG("xpos : %d, ypos : %d", (int)position.x, (int)position.y);
+
 	//이동한 내용을 DB에 반영
 	Value& properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
@@ -707,6 +703,10 @@ void HelloWorld::update(float fDelta)
 
 			// 유저 정보 불러오기
 			com->getUserInfo();
+
+			//유저 정보 불러올때까지 대기.
+			while (com->isGetUserInfo != true);
+
 			start();
 		}
 
