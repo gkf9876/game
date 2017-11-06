@@ -29,9 +29,11 @@ bool HelloWorld::init()
 		return false;
 	}
 
+	this->mainUser = new User();
+	this->mainUser->isLogin = false;
+
 	winSize = Director::getInstance()->getWinSize();
 	origin = Director::getInstance()->getVisibleOrigin();
-	isLogin = false;
 
 	//로그인 화면
 	loginBackground = Sprite::create("login.jpg");
@@ -79,8 +81,8 @@ void HelloWorld::start()
 	std::string map = address;
 	map.append("floor.tmx");
 
-	tmap = TMXTiledMap::create(com->user.field);
-	currentFlag = com->user.field;
+	tmap = TMXTiledMap::create(com->mainUser->field);
+	currentFlag = com->mainUser->field;
 	background = tmap->getLayer("Background");
 	items = tmap->getLayer("Items");
 	metainfo = tmap->getLayer("MetaInfo");
@@ -90,7 +92,7 @@ void HelloWorld::start()
 
 	//플레이어 만들기
 	objects = tmap->getObjectGroup("Objects");
-	dragonPosition = Point(com->user.xpos * TILE_SIZE + TILE_SIZE / 2, com->user.ypos * TILE_SIZE);
+	this->mainUser->dragonPosition = Point(com->mainUser->xpos * TILE_SIZE + TILE_SIZE / 2, com->mainUser->ypos * TILE_SIZE);
 
 	this->createDragon();
 	//
@@ -143,14 +145,14 @@ void HelloWorld::start()
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	balloon = Sprite::create("Images/balloon.png");
 	balloon->setAnchorPoint(Point(1, 0));
-	balloon->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2, dragonPosition.y + dragon->getContentSize().height));
+	balloon->setPosition(Point(this->mainUser->dragonPosition.x + this->mainUser->dragon->getContentSize().width / 2, this->mainUser->dragonPosition.y + this->mainUser->dragon->getContentSize().height));
 	balloon->setVisible(false);
 	this->addChild(balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
 
 	balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
 	balloonContent->setColor(Color3B::BLACK);
 	balloonContent->setAnchorPoint(Point(1, 0));
-	balloonContent->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2 - 50, dragonPosition.y + dragon->getContentSize().height + 50));
+	balloonContent->setPosition(Point(this->mainUser->dragonPosition.x + this->mainUser->dragon->getContentSize().width / 2 - 50, this->mainUser->dragonPosition.y + this->mainUser->dragon->getContentSize().height + 50));
 	balloonContent->setVisible(false);
 	this->addChild(balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
 
@@ -160,7 +162,7 @@ void HelloWorld::start()
 	this->addChild(title, TITLE_PRIORITY_Z_ORDER, TITLE);
 
 	//플레이어를 화면의 중앙에 위치하도록 화면을 이동.
-	this->setViewpointCenter(dragon->getPosition());
+	this->setViewpointCenter(this->mainUser->dragon->getPosition());
 }
 
 void HelloWorld::onEnter()
@@ -198,19 +200,19 @@ void HelloWorld::createDragon()
 {
 	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
 
-	dragon = Sprite::createWithSpriteFrameName("man_01.png");
-	dragon->setAnchorPoint(Point(0.5, 0));
-	dragon->setPosition(dragonPosition);
-	isAction = false;
-	isRunning = false;
-	isKeepKeyPressed = false;
-	seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
-	this->addChild(dragon, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
+	this->mainUser->dragon = Sprite::createWithSpriteFrameName("man_01.png");
+	this->mainUser->dragon->setAnchorPoint(Point(0.5, 0));
+	this->mainUser->dragon->setPosition(this->mainUser->dragonPosition);
+	this->mainUser->isAction = false;
+	this->mainUser->isRunning = false;
+	this->mainUser->isKeepKeyPressed = false;
+	this->mainUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
+	this->addChild(this->mainUser->dragon, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 }
 
 bool HelloWorld::onTouchBegan(Touch *touch, Event *event)
 {
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return false;
 
 	return true;
@@ -218,13 +220,13 @@ bool HelloWorld::onTouchBegan(Touch *touch, Event *event)
 
 void HelloWorld::onTouchEnded(Touch *touch, Event *event)
 {
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return;
 
 	auto touchPoint = touch->getLocation();
 	touchPoint = this->convertToNodeSpace(touchPoint);
 
-	Point playerPos = dragon->getPosition();
+	Point playerPos = this->mainUser->dragon->getPosition();
 
 	Point diff = touchPoint - playerPos;
 
@@ -234,13 +236,13 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event)
 		{
 			playerPos.x += tmap->getTileSize().width;
 
-			dragon->setFlippedX(true);
+			this->mainUser->dragon->setFlippedX(true);
 		}
 		else
 		{
 			playerPos.x -= tmap->getTileSize().width;
 
-			dragon->setFlippedX(false);
+			this->mainUser->dragon->setFlippedX(false);
 		}
 	}
 	else
@@ -263,7 +265,7 @@ void HelloWorld::onTouchEnded(Touch *touch, Event *event)
 		this->setPlayerPosition(playerPos);
 	}
 
-	this->setViewpointCenter(dragon->getPosition());
+	this->setViewpointCenter(this->mainUser->dragon->getPosition());
 }
 
 void HelloWorld::setViewpointCenter(Point position)
@@ -290,8 +292,8 @@ void HelloWorld::setViewpointCenter(Point position)
 	tableView->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2 + 25));
 
 	//말풍선은 항상 캐릭터를 따라다녀야함
-	balloon->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2, dragonPosition.y + dragon->getContentSize().height));
-	balloonContent->setPosition(Point(dragonPosition.x + dragon->getContentSize().width / 2 - 50, dragonPosition.y + dragon->getContentSize().height + 50));
+	balloon->setPosition(Point(this->mainUser->dragonPosition.x + this->mainUser->dragon->getContentSize().width / 2, this->mainUser->dragonPosition.y + this->mainUser->dragon->getContentSize().height));
+	balloonContent->setPosition(Point(this->mainUser->dragonPosition.x + this->mainUser->dragon->getContentSize().width / 2 - 50, this->mainUser->dragonPosition.y + this->mainUser->dragon->getContentSize().height + 50));
 
 	this->setPosition(viewPoint);
 }
@@ -413,9 +415,9 @@ void HelloWorld::setPlayerPosition(Point position)
 				int x = spawnPoint.at("x").asInt() + tmap->getTileSize().width / 2;
 				int y = spawnPoint.at("y").asInt();
 				
-				dragonPosition = Point(x, y);
-				dragon->setPosition(dragonPosition);
-				this->setViewpointCenter(dragon->getPosition());
+				this->mainUser->dragonPosition = Point(x, y);
+				this->mainUser->dragon->setPosition(this->mainUser->dragonPosition);
+				this->setViewpointCenter(this->mainUser->dragon->getPosition());
 
 				//맵의 이름을 화면 상단에 출력.
 				mapName->setString(objects->getProperty("Name").asString());
@@ -423,14 +425,15 @@ void HelloWorld::setPlayerPosition(Point position)
 				//이동한 내용을 DB에 반영
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
-				com->userMoveUpdate(com->user.name, cocos2d::Point(dragon->getPosition().x / TILE_SIZE, dragon->getPosition().y / TILE_SIZE), sendMapName);
+				com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
+				
 				return;
 			}
 		}
 	}
 
-	dragonPosition = position;
-	dragon->setPosition(dragonPosition);
+	this->mainUser->dragonPosition = position;
+	this->mainUser->dragon->setPosition(this->mainUser->dragonPosition);
 
 	CCLOG("xpos : %d, ypos : %d", (int)position.x, (int)position.y);
 
@@ -438,19 +441,19 @@ void HelloWorld::setPlayerPosition(Point position)
 	Value& properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
-	com->userMoveUpdate(com->user.name, cocos2d::Point(dragon->getPosition().x / TILE_SIZE, dragon->getPosition().y / TILE_SIZE), sendMapName);
+	com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
 
 	//모션
-	this->setAnimation(seeDirection);
+	this->setAnimation(this->mainUser->seeDirection);
 	//플레이어가 화면 가운데로 오게 조절
-	this->setViewpointCenter(dragon->getPosition());
-	isRunning = true;
+	this->setViewpointCenter(this->mainUser->dragon->getPosition());
+	this->mainUser->isRunning = true;
 }
 
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 	{
 		switch (key)
 		{
@@ -465,16 +468,16 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	}
 
 	CCLOG("KeyPress..(%d)", key);
-	isKeepKeyPressed = true;
+	this->mainUser->isKeepKeyPressed = true;
 
 	//이동 모션을 기다린뒤에 이동한다.
-	if (isAction == true)
+	if (this->mainUser->isAction == true)
 	{
 		CCLOG("Motion Ready...");
 		return;
 	}
 
-	Point playerPos = dragon->getPosition();
+	Point playerPos = this->mainUser->dragon->getPosition();
 	Sprite * spr;
 
 	switch (key)
@@ -482,10 +485,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (seeDirection == key)
+		if (this->mainUser->seeDirection == key)
 		{
 			spr = Sprite::createWithSpriteFrameName("man_13.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.y += tmap->getTileSize().height;
 
@@ -502,18 +505,18 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			//방향 전환
 			spr = Sprite::createWithSpriteFrameName("man_13.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 		}
 
-		seeDirection = key;
+		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
 
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (seeDirection == key)
+		if (this->mainUser->seeDirection == key)
 		{
 			spr = Sprite::createWithSpriteFrameName("man_01.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.y -= tmap->getTileSize().height;
 
@@ -530,18 +533,18 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			//방향 전환
 			spr = Sprite::createWithSpriteFrameName("man_01.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 		}
 
-		seeDirection = key;
+		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (seeDirection == key)
+		if (this->mainUser->seeDirection == key)
 		{
 			spr = Sprite::createWithSpriteFrameName("man_09.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.x += tmap->getTileSize().width;
 
@@ -558,18 +561,18 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			//방향 전환
 			spr = Sprite::createWithSpriteFrameName("man_09.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 		}
 
-		seeDirection = key;
+		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 
 		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (seeDirection == key)
+		if (this->mainUser->seeDirection == key)
 		{
 			spr = Sprite::createWithSpriteFrameName("man_05.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 
 			playerPos.x -= tmap->getTileSize().width;
 
@@ -586,10 +589,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			//방향 전환
 			spr = Sprite::createWithSpriteFrameName("man_05.png");
-			dragon->setSpriteFrame(spr->getSpriteFrame());
+			this->mainUser->dragon->setSpriteFrame(spr->getSpriteFrame());
 		}
 
-		seeDirection = key;
+		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_I:
 		if(inventory->isVisible() == true)
@@ -605,13 +608,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 
 void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return;
 
 	CCLOG("KeyRelease..(%d)", key);
 
-	isKeepKeyPressed = false;
-	isRunning = false;
+	this->mainUser->isKeepKeyPressed = false;
+	this->mainUser->isRunning = false;
 	return;
 }
 
@@ -620,12 +623,12 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	SpriteFrame * frame;
 	auto animation = Animation::create();
 	animation->setDelayPerUnit(0.2);
-	Point position = dragon->getPosition() / TILE_SIZE;
+	Point position = this->mainUser->dragon->getPosition() / TILE_SIZE;
 
 	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.
 	//dragon->stopAction(animate);
 
-	isAction = true;
+	this->mainUser->isAction = true;
 	CCLOG("action started!");
 	CCLOG("Motion Run");
 
@@ -669,12 +672,12 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 		break;
 	}
 	
-	animate = Animate::create(animation);
+	this->mainUser->animate = Animate::create(animation);
 	auto actionStartCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionStarted));
 	auto actionFinishCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionFinished));
 
-	auto sequence = Sequence::create(actionStartCallback, animate, actionFinishCallback, NULL);
-	dragon->runAction(sequence);
+	auto sequence = Sequence::create(actionStartCallback, this->mainUser->animate, actionFinishCallback, NULL);
+	this->mainUser->dragon->runAction(sequence);
 }
 
 void HelloWorld::actionStarted()
@@ -685,19 +688,19 @@ void HelloWorld::actionStarted()
 void HelloWorld::actionFinished()
 {
 	// do something on complete
-	isAction = false;
+	this->mainUser->isAction = false;
 	CCLOG("action finished!");
 
 }
 
 void HelloWorld::update(float fDelta)
 {
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 	{
 		//로그인 됬는지 확인
 		if (com->isLogin == true)
 		{
-			isLogin = true;
+			this->mainUser->isLogin = true;
 			loginBackground->setVisible(false);
 			loginID->setVisible(false);
 
@@ -718,13 +721,13 @@ void HelloWorld::update(float fDelta)
 		return;
 	}
 
-	if (isRunning == true && isAction == false)
+	if (this->mainUser->isRunning == true && this->mainUser->isAction == false)
 	{
 		CCLOG("Keep Running..");
 
-		Point playerPos = dragon->getPosition();
+		Point playerPos = this->mainUser->dragon->getPosition();
 
-		switch (seeDirection)
+		switch (this->mainUser->seeDirection)
 		{
 		case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 			playerPos.y += tmap->getTileSize().height;
@@ -778,7 +781,7 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 {
 	CCLOG("--- editBoxReturn ---");
 
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 	{
 		char userName[50];
 		strcpy(userName, loginID->getText());
@@ -800,7 +803,7 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	editBox->setText("");
 
 	char name[50];
-	com->chatting(com->user.name, message->getCString());
+	com->chatting(com->mainUser->name, message->getCString());
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	balloon->setVisible(true);
@@ -812,21 +815,21 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
 {
 	//CCLOG("--- editBoxEditingDidBegin ---");
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return;
 }
 
 void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
 {
 	//CCLOG("--- editBoxEditingDidEnd ---");
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return;
 }
 
 void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
 {
 	//CCLOG("--- editBoxTextChanged ---");
-	if (isLogin != true)
+	if (this->mainUser->isLogin != true)
 		return;
 }
 

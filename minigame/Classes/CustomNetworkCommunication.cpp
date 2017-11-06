@@ -17,6 +17,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 	int code;
 	int str_len;
 	char buf[50][BUF_SIZE];
+	User * user;
 
 	while (1)
 	{
@@ -30,10 +31,10 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 		{
 		case REQUEST_USER_INFO:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
-			strcpy(com->user.name, buf[0]);
-			com->user.xpos = atoi(buf[1]);
-			com->user.ypos = atoi(buf[2]);
-			strcpy(com->user.field, buf[3]);
+			strcpy(com->mainUser->name, buf[0]);
+			com->mainUser->xpos = atoi(buf[1]);
+			com->mainUser->ypos = atoi(buf[2]);
+			strcpy(com->mainUser->field, buf[3]);
 			com->isGetUserInfo = true;
 			break;
 		case CHATTING_PROCESS:
@@ -57,6 +58,63 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 		case USER_MOVE_UPDATE:
 			CCLOG("user move!!");
 			break;
+		case OTHER_USER_MAP_MOVE:
+			com->SeparateString(com->recvBuf, buf, 50, '\n');
+
+			if (!strcmp(buf[0], "out"))
+			{
+				user = new User();
+
+				strcpy(user->name, buf[1]);
+				user->xpos = atoi(buf[2]);
+				user->ypos = atoi(buf[3]);
+
+				for (int i = 0; i < com->usersInfo.size(); i++)
+				{
+					User * othersUser = (User*)com->usersInfo.at(i);
+
+					if (!strcmp(othersUser->name, user->name))
+					{
+						com->usersInfo.erase(i);
+						CCLOG("User : %s OUT!", user->name);
+						break;
+					}
+				}
+
+			}
+			else if (!strcmp(buf[0], "in"))
+			{
+				user = new User();
+
+				strcpy(user->name, buf[1]);
+				user->xpos = atoi(buf[2]);
+				user->ypos = atoi(buf[3]);
+
+				com->usersInfo.pushBack(user);
+				CCLOG("User : %s IN!", user->name);
+			}
+			else if (!strcmp(buf[0], "move"))
+			{
+				user = new User();
+
+				strcpy(user->name, buf[1]);
+				user->xpos = atoi(buf[2]);
+				user->ypos = atoi(buf[3]);
+
+				for (int i = 0; i < com->usersInfo.size(); i++)
+				{
+					User * othersUser = (User*)com->usersInfo.at(i);
+
+					if (!strcmp(othersUser->name, user->name))
+					{
+						othersUser->xpos = user->xpos;
+						othersUser->ypos = user->ypos;
+						CCLOG("User : %s MOVE!", user->name);
+						break;
+					}
+				}
+			}
+			break;
 		default:
 			break;
 		}
@@ -67,6 +125,8 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 
 void CustomNetworkCommunication::init()
 {
+	this->mainUser = new User();
+
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		error_handling("WSAStartup() error!");
 
@@ -75,7 +135,7 @@ void CustomNetworkCommunication::init()
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
 
-	host = gethostbyname("sourcecake.iptime.org");
+	host = gethostbyname("192.168.56.101");
 	if (!host)
 		error_handling("gethost... error");
 
@@ -254,4 +314,11 @@ void CustomNetworkCommunication::CharToInt(char * value, int * result)
 	*result += (int)((value[1] << 16) & 0x00ff0000);
 	*result += (int)((value[2] << 8) & 0x0000ff00);
 	*result += value[3];
+}
+
+
+CustomNetworkCommunication::~CustomNetworkCommunication()
+{
+	if(mainUser != NULL)
+		delete mainUser;
 }

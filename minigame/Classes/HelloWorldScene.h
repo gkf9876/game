@@ -6,6 +6,7 @@
 #include "CustomTableViewCell.h"
 #include "CustomNetworkCommunication.h"
 #include <process.h>
+#include "User.h"
 
 USING_NS_CC;
 USING_NS_CC_EXT;
@@ -46,21 +47,14 @@ public:
 	// implement the "static create()" method manually
 	CREATE_FUNC(HelloWorld);
 
-	String * userName;														//유저 이름
-	bool isLogin;
 	Sprite * loginBackground;
 	EditBox * loginID;
 	Sprite * loginFail;
 
+	User * mainUser;
+
 	cocos2d::Size winSize;													//화면 크기
 	cocos2d::Vec2 origin;													//화면 좌표
-	cocos2d::Point dragonPosition;											//드래곤 위치
-	cocos2d::Sprite* dragon;												//드래곤 객체
-	cocos2d::Animate * animate;												//드래곤 애니메이션
-	bool isAction;															//드래곤 액션 여부
-	bool isRunning;															//드래곤이 이동중인지
-	bool isKeepKeyPressed;													//키를 누르고 있는지
-	cocos2d::EventKeyboard::KeyCode seeDirection;							//드래곤이 어딜 보고있는지
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
 	cocos2d::TMXLayer * inventory_background;								//아이템창의 배경 레이어
@@ -99,19 +93,23 @@ public:
 
 	void start();
 
+	//게임 시작/종료시 함수
 	virtual void onEnter();
 	virtual void onExit();
 
+	//조작 관련 함수
 	virtual bool onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *event);
 	virtual void onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *event);
 	virtual void onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 	virtual void onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 
+	//채팅 입력창 관련 함수(EditBox)
 	virtual void editBoxReturn(EditBox * editBox);
 	virtual void editBoxEditingDidBegin(EditBox * editBox);
 	virtual void editBoxEditingDidEnd(EditBox * editBox);
 	virtual void editBoxTextChanged(EditBox * editBox, const std::string& text);
 
+	//채팅창 관련 함수(ScrollView)
 	virtual void scrollViewDidScroll(ScrollView* view);
 	virtual void scrollViewDidZoom(ScrollView* view);
 
@@ -120,11 +118,17 @@ public:
 	virtual TableViewCell* tableCellAtIndex(TableView *table, ssize_t idx);
 	virtual ssize_t numberOfCellsInTableView(TableView *table);
 
+	//유저 캐릭터 생성
 	void createDragon();
+
+	//유저에 포커스를 맞춰 화면 이동
 	void setViewpointCenter(cocos2d::Point position);
+
+	//해당 위치에 뭐가 있는지 확인할때 사용
 	cocos2d::Point tileCoordForPosition(cocos2d::Point position);
 	void setPlayerPosition(cocos2d::Point position);
 
+	//유저 액션
 	void setAnimation(cocos2d::EventKeyboard::KeyCode key);
 
 	void actionStarted();

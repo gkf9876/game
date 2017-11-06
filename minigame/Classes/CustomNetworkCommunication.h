@@ -8,6 +8,7 @@
 #include <process.h>
 
 #include "cocos2d.h"
+#include "User.h"
 
 USING_NS_CC;
 
@@ -17,16 +18,7 @@ USING_NS_CC;
 #define REQUEST_LOGIN					2
 #define CHATTING_PROCESS				3
 #define USER_MOVE_UPDATE				4
-
-typedef struct user
-{
-	int sock;
-	char name[50];
-	char password[50];
-	int xpos;
-	int ypos;
-	char field[100];
-}User;
+#define OTHER_USER_MAP_MOVE				5
 
 class CustomNetworkCommunication
 {
@@ -43,7 +35,9 @@ private :
 	HANDLE hRcvThread;
 
 public :
-	User user;
+	User * mainUser;
+	Vector<Node*> usersInfo;
+
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
@@ -55,18 +49,28 @@ public :
 	void close();
 	SOCKET getSock();
 
+	//서버와의 패킷통신 함수
 	void error_handling(char * message);
 	int sendCommand(int code, char * message);
 	int readCommand(int * code, char * buf);
 
+	//채팅함수
 	void chatting(const char * name, const char * content);
+
+	//메인 유저 정보 얻는함수
 	void getUserInfo();
+
+	//로그인 승낙함수
 	void requestLogin(char * userName);
+
+	//메인유저 좌표이동 함수
 	void userMoveUpdate(char * userName, Point point, char * field);
 
+	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
 	void IntToChar(int value, char * result);
 	void CharToInt(char * value, int * result);
+	~CustomNetworkCommunication();
 };
 
 #endif
