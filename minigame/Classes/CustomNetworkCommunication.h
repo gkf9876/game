@@ -1,4 +1,4 @@
-#ifndef __CUSTOM_NETWORK_COMMUNICATION_H__
+ï»¿#ifndef __CUSTOM_NETWORK_COMMUNICATION_H__
 #define __CUSTOM_NETWORK_COMMUNICATION_H__
 
 #include <stdio.h>
@@ -49,24 +49,24 @@ public :
 	void close();
 	SOCKET getSock();
 
-	//¼­¹ö¿ÍÀÇ ÆĞÅ¶Åë½Å ÇÔ¼ö
+	//ì„œë²„ì™€ì˜ íŒ¨í‚·í†µì‹  í•¨ìˆ˜
 	void error_handling(char * message);
 	int sendCommand(int code, char * message);
 	int readCommand(int * code, char * buf);
 
-	//Ã¤ÆÃÇÔ¼ö
+	//ì±„íŒ…í•¨ìˆ˜
 	void chatting(const char * name, const char * content);
 
-	//¸ŞÀÎ À¯Àú Á¤º¸ ¾ò´ÂÇÔ¼ö
+	//ë©”ì¸ ìœ ì € ì •ë³´ ì–»ëŠ”í•¨ìˆ˜
 	void getUserInfo();
 
-	//·Î±×ÀÎ ½Â³«ÇÔ¼ö
+	//ë¡œê·¸ì¸ ìŠ¹ë‚™í•¨ìˆ˜
 	void requestLogin(char * userName);
 
-	//À¯Àú ÁÂÇ¥ÀÌµ¿ ÇÔ¼ö
+	//ìœ ì € ì¢Œí‘œì´ë™ í•¨ìˆ˜
 	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to);
 
-	//¹®ÀÚ¿­ º¯È¯ÇÔ¼öµé
+	//ë¬¸ìì—´ ë³€í™˜í•¨ìˆ˜ë“¤
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
 	void IntToChar(int value, char * result);
 	void CharToInt(char * value, int * result);

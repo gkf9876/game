@@ -1,4 +1,4 @@
-#ifndef __CUSTOMTABLEVIEWCELL_H__
+﻿#ifndef __CUSTOMTABLEVIEWCELL_H__
 #define __CUSTOMTABLEVIEWCELL_H__
 
 #include "cocos2d.h"

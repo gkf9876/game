@@ -1,4 +1,4 @@
-#include "CustomNetworkCommunication.h"
+ï»¿#include "CustomNetworkCommunication.h"
 
 unsigned WINAPI SendMsg(void * arg)   // send thread main
 {
@@ -149,7 +149,7 @@ void CustomNetworkCommunication::init()
 	else
 		puts("Connected...............");
 
-	// ¼ö½Ã·Î ¼­¹ö¿Í ¼Û¼ö½ÅÇÒ¶§ »ç¿ëÇÒ ¾²·¹µå
+	// ìˆ˜ì‹œë¡œ ì„œë²„ì™€ ì†¡ìˆ˜ì‹ í• ë•Œ ì‚¬ìš©í•  ì“°ë ˆë“œ
 	hSndThread = (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)this, 0, NULL);
 	hRcvThread = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)this, 0, NULL);
 

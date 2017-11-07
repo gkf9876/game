@@ -1,4 +1,4 @@
-#ifndef __USER_H__
+ï»¿#ifndef __USER_H__
 #define __USER_H__
 
 #include "cocos2d.h"
@@ -17,13 +17,13 @@ public:
 
 	bool isLogin;
 
-	cocos2d::Point dragonPosition;											//µå·¡°ï À§Ä¡
-	cocos2d::Sprite* dragon;												//µå·¡°ï °´Ã¼
-	cocos2d::Animate * animate;												//µå·¡°ï ¾Ö´Ï¸ŞÀÌ¼Ç
-	bool isAction;															//µå·¡°ï ¾×¼Ç ¿©ºÎ
-	bool isRunning;															//µå·¡°ïÀÌ ÀÌµ¿ÁßÀÎÁö
-	bool isKeepKeyPressed;													//Å°¸¦ ´©¸£°í ÀÖ´ÂÁö
-	cocos2d::EventKeyboard::KeyCode seeDirection;							//µå·¡°ïÀÌ ¾îµô º¸°íÀÖ´ÂÁö
+	cocos2d::Point dragonPosition;											//ë“œë˜ê³¤ ìœ„ì¹˜
+	cocos2d::Sprite* dragon;												//ë“œë˜ê³¤ ê°ì²´
+	cocos2d::Animate * animate;												//ë“œë˜ê³¤ ì• ë‹ˆë©”ì´ì…˜
+	bool isAction;															//ë“œë˜ê³¤ ì•¡ì…˜ ì—¬ë¶€
+	bool isRunning;															//ë“œë˜ê³¤ì´ ì´ë™ì¤‘ì¸ì§€
+	bool isKeepKeyPressed;													//í‚¤ë¥¼ ëˆ„ë¥´ê³  ìˆëŠ”ì§€
+	cocos2d::EventKeyboard::KeyCode seeDirection;							//ë“œë˜ê³¤ì´ ì–´ë”œ ë³´ê³ ìˆëŠ”ì§€
 };
 
 #endif
