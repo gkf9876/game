@@ -63,8 +63,8 @@ public :
 	//로그인 승낙함수
 	void requestLogin(char * userName);
 
-	//메인유저 좌표이동 함수
-	void userMoveUpdate(char * userName, Point point, char * field);
+	//유저 좌표이동 함수
+	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

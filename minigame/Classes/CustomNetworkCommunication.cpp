@@ -76,7 +76,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 					if (!strcmp(othersUser->name, user->name))
 					{
 						com->usersInfo.erase(i);
-						CCLOG("User : %s OUT!", user->name);
+						CCLOG("User : %s OUT! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
 				}
@@ -91,7 +91,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				user->ypos = atoi(buf[3]);
 
 				com->usersInfo.pushBack(user);
-				CCLOG("User : %s IN!", user->name);
+				CCLOG("User : %s IN! (%d, %d)", user->name, user->xpos, user->ypos);
 			}
 			else if (!strcmp(buf[0], "move"))
 			{
@@ -109,7 +109,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 					{
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
-						CCLOG("User : %s MOVE!", user->name);
+						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
 				}
@@ -255,10 +255,10 @@ void CustomNetworkCommunication::requestLogin(char * userName)
 	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
 }
 
-void CustomNetworkCommunication::userMoveUpdate(char * userName, Point point, char * field)
+void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to)
 {
-	sprintf(this->sendBuf, "%s\n%d\n%d\n%s", userName, (int)point.x, (int)point.y, field);
-	CCLOG("%s %d %d %s", userName, (int)point.x, (int)point.y, field);
+	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
+	CCLOG("%s %d %d %s %d %d %s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
 
 	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
 }
@@ -310,10 +310,10 @@ void CustomNetworkCommunication::IntToChar(int value, char * result)
 }
 void CustomNetworkCommunication::CharToInt(char * value, int * result)
 {
-	*result = (int)((value[0] << 24) & 0xff000000);
-	*result += (int)((value[1] << 16) & 0x00ff0000);
-	*result += (int)((value[2] << 8) & 0x0000ff00);
-	*result += value[3];
+	*result = (int)(((unsigned char)value[0] << 24) & 0xff000000);
+	*result += (int)(((unsigned char)value[1] << 16) & 0x00ff0000);
+	*result += (int)(((unsigned char)value[2] << 8) & 0x0000ff00);
+	*result += (unsigned char)value[3];
 }
 
 

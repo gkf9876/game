@@ -318,6 +318,8 @@ void HelloWorld::setPlayerPosition(Point position)
 
 	int tileGid = this->metainfo->getTileGIDAt(tileCoord);
 
+	Point regionPoint = this->mainUser->dragonPosition;
+
 	if (tileGid)
 	{
 		Value& properties = tmap->getPropertiesForGID(tileGid);
@@ -328,7 +330,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 			if (wall == "YES")
 			{
-				log("Wall...");
+				CCLOG("Wall...");
 				return;
 			}
 
@@ -349,12 +351,12 @@ void HelloWorld::setPlayerPosition(Point position)
 					this->metainfo->removeTileAt(tileCoord);
 					items->removeTileAt(tileCoord);
 
-					log("get item!! : (%d, %d)", (int)items_coodinate.x, (int)items_coodinate.y);
+					CCLOG("get item!! : (%d, %d)", (int)items_coodinate.x, (int)items_coodinate.y);
 				}
 				else
 				{
 					//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
-					log("full inventory!!");
+					CCLOG("full inventory!!");
 				}
 				
 
@@ -425,8 +427,10 @@ void HelloWorld::setPlayerPosition(Point position)
 				//이동한 내용을 DB에 반영
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
-				com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
-				
+				com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
+					cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
+				strcpy(this->mainUser->field, sendMapName);
+
 				return;
 			}
 		}
@@ -441,7 +445,9 @@ void HelloWorld::setPlayerPosition(Point position)
 	Value& properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
-	com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
+	com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
+		cocos2d::Point(this->mainUser->dragon->getPosition().x / TILE_SIZE, this->mainUser->dragon->getPosition().y / TILE_SIZE), sendMapName);
+	strcpy(this->mainUser->field, sendMapName);
 
 	//모션
 	this->setAnimation(this->mainUser->seeDirection);
@@ -709,6 +715,10 @@ void HelloWorld::update(float fDelta)
 
 			//유저 정보 불러올때까지 대기.
 			while (com->isGetUserInfo != true);
+			strcpy(this->mainUser->name, com->mainUser->name);
+			strcpy(this->mainUser->field, com->mainUser->field);
+			this->mainUser->xpos = com->mainUser->xpos;
+			this->mainUser->ypos = com->mainUser->ypos;
 
 			start();
 		}
