@@ -424,6 +424,13 @@ void HelloWorld::setPlayerPosition(Point position)
 				//맵의 이름을 화면 상단에 출력.
 				mapName->setString(objects->getProperty("Name").asString());
 
+				//지금 맵의 다른 유저들을 안보이게 한다.
+				for (int i = 0; i < com->usersInfo->size(); i++)
+				{
+					User * user = com->usersInfo->at(i);
+					user->dragon->setVisible(false);
+				}
+
 				//이동한 내용을 DB에 반영
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
@@ -701,6 +708,31 @@ void HelloWorld::actionFinished()
 
 void HelloWorld::update(float fDelta)
 {
+	for (int i = 0; i < com->usersInfo->size(); i++)
+	{
+		User * user = com->usersInfo->at(i);
+
+		if (user->dragon == NULL)
+		{
+			user->dragonPosition = Point(user->xpos * 32, user->ypos * 32);
+
+			auto image = Sprite::create("a.png", Rect(0, 0, 32, 32));
+			image->setAnchorPoint(Point(0, 0));
+			image->setPosition(user->dragonPosition);
+			user->dragon = image;
+			image->setTag(100);
+			this->addChild(image, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG + 100);
+		}
+		else
+		{
+			if (user->dragon->isVisible() == false)
+			{
+				this->removeChild(user->dragon);
+				user->dragon = NULL;
+			}
+		}
+	}
+
 	if (this->mainUser->isLogin != true)
 	{
 		//로그인 됬는지 확인

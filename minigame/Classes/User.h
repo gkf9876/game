@@ -5,7 +5,7 @@
 
 USING_NS_CC;
 
-class User : public Node
+class User
 {
 public:
 	int sock;

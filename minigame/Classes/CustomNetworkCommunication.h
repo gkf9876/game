@@ -36,7 +36,7 @@ private :
 
 public :
 	User * mainUser;
-	Vector<Node*> usersInfo;
+	std::vector<User*> * usersInfo;
 
 	bool isLogin = false;
 	bool isGetUserInfo = false;

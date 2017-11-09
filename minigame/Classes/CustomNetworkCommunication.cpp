@@ -21,7 +21,6 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 
 	while (1)
 	{
-		int readCommand(int * code, char * buf);
 		str_len = com->readCommand(&code, com->recvBuf);
 
 		if (str_len == -1)
@@ -69,13 +68,14 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
 
-				for (int i = 0; i < com->usersInfo.size(); i++)
+				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
-					User * othersUser = (User*)com->usersInfo.at(i);
+					User * othersUser = com->usersInfo->at(i);
+					othersUser->dragon->setVisible(false);
 
 					if (!strcmp(othersUser->name, user->name))
 					{
-						com->usersInfo.erase(i);
+						com->usersInfo->erase(com->usersInfo->begin() + i);
 						CCLOG("User : %s OUT! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
@@ -84,14 +84,16 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 			}
 			else if (!strcmp(buf[0], "in"))
 			{
+				//맵에 진입한 다른 유저를 구현
 				user = new User();
-
 				strcpy(user->name, buf[1]);
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
+				user->dragon = NULL;
 
-				com->usersInfo.pushBack(user);
-				CCLOG("User : %s IN! (%d, %d)", user->name, user->xpos, user->ypos);
+				com->usersInfo->push_back(user); 
+				//알 수 없는 오류
+				//CCLOG("User : %s IN! (%d, %d)", user->name, user->xpos, user->ypos);
 			}
 			else if (!strcmp(buf[0], "move"))
 			{
@@ -101,14 +103,17 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
 
-				for (int i = 0; i < com->usersInfo.size(); i++)
+				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
-					User * othersUser = (User*)com->usersInfo.at(i);
+					User * othersUser = (User*)com->usersInfo->at(i);
 
 					if (!strcmp(othersUser->name, user->name))
 					{
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
+						othersUser->dragonPosition = Point(user->xpos * 32, user->ypos * 32);
+						othersUser->dragon->setPosition(othersUser->dragonPosition);
+
 						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
@@ -126,6 +131,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 void CustomNetworkCommunication::init()
 {
 	this->mainUser = new User();
+	this->usersInfo = new std::vector<User*>();
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		error_handling("WSAStartup() error!");
@@ -159,6 +165,7 @@ void CustomNetworkCommunication::init()
 
 void CustomNetworkCommunication::close()
 {
+	usersInfo->clear();
 	shutdown(sock, SD_SEND);
 	closesocket(sock);
 	WSACleanup();
@@ -259,6 +266,10 @@ void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint
 {
 	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
 	CCLOG("%s %d %d %s %d %d %s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
+
+	//맵 이동시 현재 유저목록 초기화
+	if(strcmp(from, to))
+		usersInfo->clear();
 
 	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
 }
