@@ -109,9 +109,30 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 
 					if (!strcmp(othersUser->name, user->name))
 					{
+						if (othersUser->xpos < user->xpos)
+						{
+							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW;
+							othersUser->isAction = true;
+						}
+						else if (othersUser->xpos > user->xpos)
+						{
+							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW;
+							othersUser->isAction = true;
+						}
+						else if(othersUser->ypos < user->ypos)
+						{
+							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW;
+							othersUser->isAction = true;
+						}
+						else
+						{
+							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
+							othersUser->isAction = true;
+						}
+
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
-						othersUser->dragonPosition = Point(user->xpos * 32, user->ypos * 32);
+						othersUser->dragonPosition = Point(user->xpos * 32 + 32/2, user->ypos * 32);
 						othersUser->dragon->setPosition(othersUser->dragonPosition);
 
 						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
@@ -141,7 +162,7 @@ void CustomNetworkCommunication::init()
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
 
-	host = gethostbyname("192.168.56.101");
+	host = gethostbyname("192.168.56.102");
 	if (!host)
 		error_handling("gethost... error");
 

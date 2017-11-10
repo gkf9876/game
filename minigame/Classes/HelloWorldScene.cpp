@@ -44,9 +44,9 @@ bool HelloWorld::init()
 	this->addChild(loginBackground);
 
 	//로그인 아이디 입력창
-	loginID = EditBox::create(Size(200, 20), Scale9Sprite::create());
+	loginID = EditBox::create(Size(100, 30), Scale9Sprite::create());
 	loginID->setAnchorPoint(Point(0, 0.5));
-	loginID->setFont("Arial", 50);
+	loginID->setFont("Arial", 20);
 	loginID->setInputMode(EditBox::InputMode::SINGLE_LINE);
 	loginID->setFontColor(Color3B::GREEN);
 	loginID->setPlaceholderFontColor(Color3B::GREEN);
@@ -693,6 +693,63 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	this->mainUser->dragon->runAction(sequence);
 }
 
+void HelloWorld::setOtherUsersAnimation(User * user, cocos2d::EventKeyboard::KeyCode moveDirection)
+{
+	SpriteFrame * frame;
+	auto animation = Animation::create();
+	animation->setDelayPerUnit(0.2);
+	Point position = user->dragon->getPosition() / TILE_SIZE;
+
+	user->isAction = true;
+
+	switch (moveDirection)
+	{
+	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+		if ((int)position.y % 2 != 0)
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_14.png");
+		else
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_16.png");
+		animation->addSpriteFrame(frame);
+		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_15.png");
+		animation->addSpriteFrame(frame);
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+		if ((int)position.y % 2 != 0)
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_02.png");
+		else
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_04.png");
+		animation->addSpriteFrame(frame);
+		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_03.png");
+		animation->addSpriteFrame(frame);
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+		if ((int)position.x % 2 != 0)
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_10.png");
+		else
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_12.png");
+		animation->addSpriteFrame(frame);
+		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_11.png");
+		animation->addSpriteFrame(frame);
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+		if ((int)position.x % 2 != 0)
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_06.png");
+		else
+			frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_08.png");
+		animation->addSpriteFrame(frame);
+		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_07.png");
+		animation->addSpriteFrame(frame);
+		break;
+	}
+
+	user->animate = Animate::create(animation);
+	auto actionStartCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionStarted));
+	auto actionFinishCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionFinished));
+
+	auto sequence = Sequence::create(actionStartCallback, user->animate, actionFinishCallback, NULL);
+	user->dragon->runAction(sequence);
+}
+
 void HelloWorld::actionStarted()
 {
 	// do something on complete
@@ -714,14 +771,18 @@ void HelloWorld::update(float fDelta)
 
 		if (user->dragon == NULL)
 		{
-			user->dragonPosition = Point(user->xpos * 32, user->ypos * 32);
+			//다른 유저의 모습을 출력한다.
+			SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
 
-			auto image = Sprite::create("a.png", Rect(0, 0, 32, 32));
-			image->setAnchorPoint(Point(0, 0));
-			image->setPosition(user->dragonPosition);
-			user->dragon = image;
-			image->setTag(100);
-			this->addChild(image, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG + 100);
+			user->dragon = Sprite::createWithSpriteFrameName("man_01.png");
+			user->dragon->setAnchorPoint(Point(0.5, 0));
+			user->isAction = false;
+			user->isRunning = false;
+			user->isKeepKeyPressed = false;
+			user->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
+			user->dragonPosition = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
+			user->dragon->setPosition(user->dragonPosition);
+			this->addChild(user->dragon, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
 		}
 		else
 		{
@@ -730,6 +791,12 @@ void HelloWorld::update(float fDelta)
 				this->removeChild(user->dragon);
 				user->dragon = NULL;
 			}
+		}
+
+		if (user->isAction == true)
+		{
+			this->setOtherUsersAnimation(user, user->seeDirection);
+			user->isAction = false;
 		}
 	}
 
