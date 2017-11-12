@@ -71,7 +71,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
 					User * othersUser = com->usersInfo->at(i);
-					othersUser->dragon->setVisible(false);
+					othersUser->sprite->setVisible(false);
 
 					if (!strcmp(othersUser->name, user->name))
 					{
@@ -80,7 +80,6 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 						break;
 					}
 				}
-
 			}
 			else if (!strcmp(buf[0], "in"))
 			{
@@ -89,7 +88,7 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 				strcpy(user->name, buf[1]);
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
-				user->dragon = NULL;
+				user->sprite = NULL;
 
 				com->usersInfo->push_back(user); 
 				//알 수 없는 오류
@@ -132,8 +131,8 @@ unsigned WINAPI RecvMsg(void * arg)   // read thread main
 
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
-						othersUser->dragonPosition = Point(user->xpos * 32 + 32/2, user->ypos * 32);
-						othersUser->dragon->setPosition(othersUser->dragonPosition);
+						othersUser->position = Point(user->xpos * 32 + 32/2, user->ypos * 32);
+						othersUser->sprite->setPosition(othersUser->position);
 
 						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
@@ -162,7 +161,7 @@ void CustomNetworkCommunication::init()
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
 
-	host = gethostbyname("192.168.56.102");
+	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
 

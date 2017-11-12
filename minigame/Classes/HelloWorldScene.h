@@ -121,7 +121,7 @@ public:
 	virtual ssize_t numberOfCellsInTableView(TableView *table);
 
 	//유저 캐릭터 생성
-	void createDragon();
+	void createSprite();
 
 	//유저에 포커스를 맞춰 화면 이동
 	void setViewpointCenter(cocos2d::Point position);

@@ -5,6 +5,8 @@
 
 USING_NS_CC;
 
+#define TILE_SIZE	32														//타일 사이즈
+
 class User
 {
 public:
@@ -17,8 +19,8 @@ public:
 
 	bool isLogin;
 
-	cocos2d::Point dragonPosition;											//드래곤 위치
-	cocos2d::Sprite* dragon;												//드래곤 객체
+	cocos2d::Point position;												//드래곤 위치
+	cocos2d::Sprite* sprite;												//드래곤 객체
 	cocos2d::Animate * animate;												//드래곤 애니메이션
 	bool isAction;															//드래곤 액션 여부
 	bool isRunning;															//드래곤이 이동중인지
