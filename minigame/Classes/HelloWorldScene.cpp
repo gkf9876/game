@@ -1,4 +1,4 @@
-﻿#include "HelloWorldScene.h"
+#include "HelloWorldScene.h"
 #include<stdio.h>
 #include<iostream>
 
@@ -175,7 +175,7 @@ void HelloWorld::start()
 	this->addChild(balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
 
 	//맵이름을 중앙 상단에 띄움
-	title = Sprite::create("images/title.png");
+	title = Sprite::create("Images/title.png");
 	title->setAnchorPoint(Point(0.5, 1));
 	this->addChild(title, TITLE_PRIORITY_Z_ORDER, TITLE);
 
@@ -234,6 +234,11 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 	Touch* touch;
 	Point tap;
 
+    if (this->mainUser->isLogin != true)
+    {
+        return;
+    }
+    
 	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
 	Point position = this->mainUser->sprite->getPosition();
 	int x = MAX(position.x, winSize.width / 2);
@@ -282,6 +287,11 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 	Point tap;
 	Point ntap;
 
+    if (this->mainUser->isLogin != true)
+    {
+        return;
+    }
+    
 	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
 	Point position = this->mainUser->sprite->getPosition();
 	int x = MAX(position.x, winSize.width / 2);
@@ -389,6 +399,11 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 {
 	CCLOG("-- onTouchesEnded --");
 
+    if (this->mainUser->isLogin != true)
+    {
+        return;
+    }
+    
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
@@ -405,6 +420,11 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 
 void HelloWorld::onTouchesCancelled(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
+    if (this->mainUser->isLogin != true)
+    {
+        return;
+    }
+    
 	CCLOG("-- onTouchesCancelled --");
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -501,7 +521,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 	if (tileGid)
 	{
-		Value& properties = tmap->getPropertiesForGID(tileGid);
+		Value properties = tmap->getPropertiesForGID(tileGid);
 
 		if (!properties.isNull())
 		{
@@ -628,7 +648,7 @@ void HelloWorld::setPlayerPosition(Point position)
 	CCLOG("xpos : %d, ypos : %d", (int)position.x, (int)position.y);
 
 	//이동한 내용을 DB에 반영
-	Value& properties = tmap->getPropertiesForGID(tileGid);
+	Value properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
 	com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
@@ -1052,7 +1072,6 @@ void HelloWorld::update(float fDelta)
 	}
 
 	//채팅창을 업데이트. 다른 사람의 채팅내용을 띄운다.
-
 	for (int i = 0; i < com->chattingInfo.size(); i++)
 	{
 		if (element.size() <= i)
@@ -1149,7 +1168,7 @@ TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 {
 	//CCLOG("---- tableCellAtIndex ----");
 	int count = element.size();
-	String * string = element.at(count - (idx + 1));
+    String * string = element.at(count - (idx + 1));
 
 	//테이블이 사용 중인 셀이 있다면 재활용한다.
 	TableViewCell* cell = table->dequeueCell();
@@ -1168,7 +1187,7 @@ TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 	}
 	else
 	{
-		auto label = (Label*)cell->getChildByTag(CHATTING_VIEW_ELEMENT);
+		LabelTTF * label = (LabelTTF*)cell->getChildByTag(CHATTING_VIEW_ELEMENT);
 		label->setString(string->getCString());
 	}
 

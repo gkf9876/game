@@ -1,4 +1,4 @@
-﻿#ifndef __CUSTOM_NETWORK_COMMUNICATION_H__
+#ifndef __CUSTOM_NETWORK_COMMUNICATION_H__
 #define __CUSTOM_NETWORK_COMMUNICATION_H__
 
 #include <stdio.h>
@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include <netdb.h>
 #endif
 
 #include "cocos2d.h"

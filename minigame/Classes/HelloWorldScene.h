@@ -1,11 +1,10 @@
-﻿#ifndef __HELLOWORLD_SCENE_H__
+#ifndef __HELLOWORLD_SCENE_H__
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
 #include "cocos-ext.h"
 #include "CustomTableViewCell.h"
 #include "CustomNetworkCommunication.h"
-#include <process.h>
 #include "User.h"
 
 USING_NS_CC;

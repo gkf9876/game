@@ -1,4 +1,4 @@
-﻿#include "CustomNetworkCommunication.h"
+#include "CustomNetworkCommunication.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI SendMsg(void * arg)   // send thread main
@@ -6,11 +6,11 @@ unsigned WINAPI SendMsg(void * arg)   // send thread main
 void * SendMsg(void * arg)
 #endif
 {
-	while (1)
-	{
+	//while (1)
+	//{
 		//CCLOG("SendMsg");
-		Sleep(1000);
-	}
+		//Sleep(1000);
+	//}
 
 	return 0;
 }
@@ -32,7 +32,7 @@ void * RecvMsg(void * arg)
 		str_len = com->readCommand(&code, com->recvBuf);
 
 		if (str_len == -1)
-			return -1;
+			return NULL;
 
 		switch (code)
 		{
@@ -169,8 +169,13 @@ void CustomNetworkCommunication::init()
 
 	sock = socket(PF_INET, SOCK_STREAM, 0);
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    if (sock == -1)
+        error_handling("socket() error");
+#endif
 
 	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
@@ -181,10 +186,17 @@ void CustomNetworkCommunication::init()
 	serv_adr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)host->h_addr_list[0]));
 	serv_adr.sin_port = htons(atoi("9190"));
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == SOCKET_ERROR)
 		error_handling("connect() error!");
 	else
 		puts("Connected...............");
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == -1)
+        error_handling("connect() error!");
+    else
+        puts("Connected...............");
+#endif
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	// 수시로 서버와 송수신할때 사용할 쓰레드
@@ -197,12 +209,12 @@ void CustomNetworkCommunication::init()
 	if (pthread_create(&hSndThread, NULL, SendMsg, (void*)this) != 0)
 	{
 		puts("pthread_create() error : hSndThread");
-		return -1;
+		return;
 	}
 	if (pthread_create(&hRcvThread, NULL, RecvMsg, (void*)this) != 0)
 	{
 		puts("pthread_create() error : hRcvThread");
-		return -1;
+		return;
 	}
 #endif
 }
