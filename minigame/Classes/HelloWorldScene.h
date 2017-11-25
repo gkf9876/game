@@ -28,6 +28,13 @@ USING_NS_CC_EXT;
 #define CHATTING_BALLOON_CONTENT 10
 #define OTHERS_USERS						500
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#define JOYSTICK        11
+#endif
+
+
 //수치가 높을수록 그림이 맨 위에 위치.
 #define MAP_PRIORITY_Z_ORDER			1										//맵 우선순위	
 #define DRAGON_PRIORITY_Z_ORDER			2										//드래곤 우선순위
@@ -38,6 +45,12 @@ USING_NS_CC_EXT;
 #define TITLE_PRIORITY_Z_ORDER			7										//맵 이름 간판 우선순위
 #define MAP_NAME_PRIORITY_Z_ORDER		8										//맵 이름 우선순위
 #define OTHERS_USERS_Z_ORDER			2										//다른 유저 모습 우선순위
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#define JOYSTICK_PRIORITY_Z_ORDER    7											//조이스틱 우선순위
+#endif
 
 class HelloWorld : public cocos2d::Layer, public EditBoxDelegate, public TableViewDataSource, public TableViewDelegate
 {
@@ -78,6 +91,15 @@ public:
 
 	cocos2d::ui::EditBox * chattingInput;									//채팅 입력창
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	cocos2d::Sprite * joystick;												//조이스틱
+	cocos2d::Sprite * joystickPad;											//조이스틱 패드
+	bool joystickTouched;													//조이스틱이 터치됬는지 확인
+	bool joystickDirectionSet;												//조이스틱으로 방향 조절하고 있는지 확인
+#endif
+
 	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
 
 	TableView* tableView;													//채팅 띄우는 창
@@ -100,8 +122,10 @@ public:
 	virtual void onExit();
 
 	//조작 관련 함수
-	virtual bool onTouchBegan(cocos2d::Touch *touch, cocos2d::Event *event);
-	virtual void onTouchEnded(cocos2d::Touch *touch, cocos2d::Event *event);
+	virtual void onTouchesBegan(const std::vector<Touch*>&touches, Event *event);
+	virtual void onTouchesMoved(const std::vector<Touch*>&touches, Event *event);
+	virtual void onTouchesEnded(const std::vector<Touch*>&touches, Event *event);
+	virtual void onTouchesCancelled(const std::vector<Touch*>&touches, Event *event);
 	virtual void onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 	virtual void onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event);
 

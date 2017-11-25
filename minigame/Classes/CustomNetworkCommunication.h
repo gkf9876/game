@@ -4,8 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <WinSock2.h>
 #include <process.h>
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <pthread.h>
+#endif
 
 #include "cocos2d.h"
 #include "User.h"
@@ -23,16 +31,26 @@ USING_NS_CC;
 class CustomNetworkCommunication
 {
 private :
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	WSADATA wsaData;
 	SOCKET sock;
 	SOCKADDR_IN serv_adr;
+
+	HANDLE hSndThread;
+	HANDLE hRcvThread;
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	int sock;
+	struct sockaddr_in serv_adr;
+
+	pthread_t hSndThread;
+	pthread_t hRcvThread;
+#endif
+
 	struct hostent * host;
 	int str_len, recv_len, recv_cnt;
 	int code;
 	char name[50];
 	char content[100];
-	HANDLE hSndThread;
-	HANDLE hRcvThread;
 
 public :
 	User * mainUser;
@@ -46,8 +64,13 @@ public :
 	Vector<String*> chattingInfo;
 
 	void init();
-	void close();
+	void sockClose();
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	SOCKET getSock();
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	int getSock();
+#endif
 
 	//서버와의 패킷통신 함수
 	void error_handling(char * message);

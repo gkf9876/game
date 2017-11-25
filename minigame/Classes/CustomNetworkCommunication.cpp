@@ -1,6 +1,10 @@
 ﻿#include "CustomNetworkCommunication.h"
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI SendMsg(void * arg)   // send thread main
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+void * SendMsg(void * arg)
+#endif
 {
 	while (1)
 	{
@@ -11,7 +15,11 @@ unsigned WINAPI SendMsg(void * arg)   // send thread main
 	return 0;
 }
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI RecvMsg(void * arg)   // read thread main
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+void * RecvMsg(void * arg)
+#endif
 {
 	CustomNetworkCommunication * com = ((CustomNetworkCommunication*)arg);
 	int code;
@@ -153,8 +161,11 @@ void CustomNetworkCommunication::init()
 	this->mainUser = new User();
 	this->usersInfo = new std::vector<User*>();
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		error_handling("WSAStartup() error!");
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#endif
 
 	sock = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -175,23 +186,46 @@ void CustomNetworkCommunication::init()
 	else
 		puts("Connected...............");
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	// 수시로 서버와 송수신할때 사용할 쓰레드
 	hSndThread = (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)this, 0, NULL);
 	hRcvThread = (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)this, 0, NULL);
 
 	WaitForSingleObject(hSndThread, 1000);
 	WaitForSingleObject(hRcvThread, 1000);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	if (pthread_create(&hSndThread, NULL, SendMsg, (void*)this) != 0)
+	{
+		puts("pthread_create() error : hSndThread");
+		return -1;
+	}
+	if (pthread_create(&hRcvThread, NULL, RecvMsg, (void*)this) != 0)
+	{
+		puts("pthread_create() error : hRcvThread");
+		return -1;
+	}
+#endif
 }
 
-void CustomNetworkCommunication::close()
+void CustomNetworkCommunication::sockClose()
 {
 	usersInfo->clear();
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	shutdown(sock, SD_SEND);
 	closesocket(sock);
 	WSACleanup();
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	shutdown(sock, SHUT_WR);
+	close(sock);
+#endif
 }
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 SOCKET CustomNetworkCommunication::getSock()
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+int CustomNetworkCommunication::getSock()
+#endif
 {
 	return this->sock;
 }

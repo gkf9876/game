@@ -97,6 +97,24 @@ void HelloWorld::start()
 	this->createSprite();
 	//
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	//조이스틱 구현
+	joystickPad = Sprite::create("Images/inventory.png");
+	joystickPad->setOpacity(100);
+	joystickPad->setAnchorPoint(Point(1, 0));
+	this->addChild(joystickPad, JOYSTICK_PRIORITY_Z_ORDER, JOYSTICK);
+
+	joystick = Sprite::create("Images/a.png");
+	joystick->setOpacity(150);
+	joystick->setAnchorPoint(Point(0.5, 0.5));
+	this->addChild(joystick, JOYSTICK_PRIORITY_Z_ORDER + 1, JOYSTICK);
+
+	joystickDirectionSet = false;
+	joystickTouched = false;
+#endif
+
 	//아이템창 만들기
 	inventory = TMXTiledMap::create("Images/inventory.tmx");
 	inventory_background = inventory->getLayer("Background");
@@ -117,7 +135,7 @@ void HelloWorld::start()
 	//
 
 	//채팅창 띄우기
-	chattingInput = EditBox::create(Size(400, 20), Scale9Sprite::create());
+	chattingInput = EditBox::create(Size(200, 20), Scale9Sprite::create());
 	chattingInput->setAnchorPoint(Point(0, 0));
 	chattingInput->setFont("Arial", 10);
 	chattingInput->setInputMode(EditBox::InputMode::SINGLE_LINE);
@@ -133,7 +151,7 @@ void HelloWorld::start()
 	showLabel->setPosition(Point(450, 400));
 	this->addChild(showLabel);
 
-	tableView = TableView::create(this, Size(400, 120));
+	tableView = TableView::create(this, Size(200, 120));
 	tableView->setAnchorPoint(Point(0, 0));
 	tableView->setDirection(ScrollView::Direction::VERTICAL);
 	tableView->setDelegate(this);
@@ -169,18 +187,17 @@ void HelloWorld::onEnter()
 {
 	Layer::onEnter();
 
-	auto listener = EventListenerTouchOneByOne::create();
-
-	listener->setSwallowTouches(true);
-
-	listener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
-	listener->onTouchEnded = CC_CALLBACK_2(HelloWorld::onTouchEnded, this);
-
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+	//멀티터치 함수 등록
+	auto listener = EventListenerTouchAllAtOnce::create();
+	listener->onTouchesBegan = CC_CALLBACK_2(HelloWorld::onTouchesBegan, this);
+	listener->onTouchesCancelled = CC_CALLBACK_2(HelloWorld::onTouchesCancelled, this);
+	listener->onTouchesEnded = CC_CALLBACK_2(HelloWorld::onTouchesEnded, this);
+	listener->onTouchesMoved = CC_CALLBACK_2(HelloWorld::onTouchesMoved, this);
+	_eventDispatcher->addEventListenerWithFixedPriority(listener, 1);
 
 	auto listener1 = EventListenerKeyboard::create();
 
-	listener->setEnabled(true);
+	//listener->setEnabled(true);
 
 	listener1->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
 	listener1->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
@@ -191,7 +208,7 @@ void HelloWorld::onEnter()
 void HelloWorld::onExit()
 {
 	_eventDispatcher->removeEventListenersForType(EventListener::Type::TOUCH_ONE_BY_ONE);
-	com->close();
+	com->sockClose();
 
 	Layer::onExit();
 }
@@ -210,62 +227,197 @@ void HelloWorld::createSprite()
 	this->addChild(this->mainUser->sprite, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 }
 
-bool HelloWorld::onTouchBegan(Touch *touch, Event *event)
+void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-	if (this->mainUser->isLogin != true)
-		return false;
+	CCLOG("-- onTouchesBegan --");
+	std::vector<Touch *>::const_iterator it = touches.begin();
+	Touch* touch;
+	Point tap;
 
-	return true;
+	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
+	Point position = this->mainUser->sprite->getPosition();
+	int x = MAX(position.x, winSize.width / 2);
+	int y = MAX(position.y, winSize.height / 2);
+	x = MIN(x, (tmap->getMapSize().width * tmap->getTileSize().width) - winSize.width / 2);
+	y = MIN(y, (tmap->getMapSize().height * tmap->getTileSize().height) - winSize.height / 2);
+
+	//화면에 보이는 중심 좌표
+	Point actualPosition = Point(x, y);
+
+	//화면에 보이는 좌측 최하단
+	Point plag = Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2);
+
+	//여러개의 터치포인트 확인
+	for (int i = 0; i<touches.size(); i++)
+	{
+		touch = (Touch*)(*it);
+
+		//터치된거
+		if (touch)
+		{
+			tap = touch->getLocation() + plag;
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+			//조이스틱을 터치했을 경우
+			if (joystick->getBoundingBox().containsPoint(tap) && joystickTouched == false)
+			{
+				CCLOG("Catch!!");
+				joystick->setPosition(tap);
+				joystickTouched = true;
+			}
+#endif
+		}
+		it++;
+	}
 }
 
-void HelloWorld::onTouchEnded(Touch *touch, Event *event)
+
+void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-	if (this->mainUser->isLogin != true)
-		return;
+	CCLOG("-- onTouchesMoved --");
+	std::vector<Touch *>::const_iterator it = touches.begin();
+	Touch* touch;
+	Point tap;
+	Point ntap;
 
-	auto touchPoint = touch->getLocation();
-	touchPoint = this->convertToNodeSpace(touchPoint);
+	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
+	Point position = this->mainUser->sprite->getPosition();
+	int x = MAX(position.x, winSize.width / 2);
+	int y = MAX(position.y, winSize.height / 2);
+	x = MIN(x, (tmap->getMapSize().width * tmap->getTileSize().width) - winSize.width / 2);
+	y = MIN(y, (tmap->getMapSize().height * tmap->getTileSize().height) - winSize.height / 2);
 
-	Point playerPos = this->mainUser->sprite->getPosition();
+	//화면에 보이는 중심 좌표
+	Point actualPosition = Point(x, y);
 
-	Point diff = touchPoint - playerPos;
+	//화면에 보이는 좌측 최하단
+	Point plag = Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2);
 
-	if (abs(diff.x) > abs(diff.y))
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	//조이스틱 터치시
+	if (joystickTouched)
 	{
-		if (diff.x > 0)
+		for (int i = 0; i<touches.size(); i++)
 		{
-			playerPos.x += tmap->getTileSize().width;
+			touch = (Touch*)(*it);
 
-			this->mainUser->sprite->setFlippedX(true);
-		}
-		else
-		{
-			playerPos.x -= tmap->getTileSize().width;
+			//터치가 된경우
+			if (touch)
+			{
+				tap = touch->getLocation() + plag;
+				CCLOG("%f , %f", tap.x, tap.y);
 
-			this->mainUser->sprite->setFlippedX(false);
+				//조이스틱을 조이패드 밖으로 나가지 못하게 한다.
+				if (tap.x > joystickPad->getPosition().x)
+					ntap.x = joystickPad->getPosition().x;
+				else if (tap.x < joystickPad->getPosition().x - joystickPad->getContentSize().width)
+					ntap.x = joystickPad->getPosition().x - joystickPad->getContentSize().width;
+				else
+					ntap.x = tap.x;
+
+				if (tap.y > joystickPad->getPosition().y + joystickPad->getContentSize().height)
+					ntap.y = joystickPad->getPosition().y + joystickPad->getContentSize().height;
+				else if (tap.y < joystickPad->getPosition().y)
+					ntap.y = joystickPad->getPosition().y;
+				else
+					ntap.y = tap.y;
+
+				//조이패드 기울기
+				double incline = joystickPad->getContentSize().height / joystickPad->getContentSize().width;
+
+				//좌측하단에서 우측상단으로 올라가는 그래프 y접점 좌표
+				double yAxisValueUp = joystickPad->getPosition().y
+					- incline * (joystickPad->getPosition().x - joystickPad->getContentSize().width);
+				//좌측상단에서 우측하단으로 내려가는 그래프 y접점 좌표
+				double yAxisValueDown = joystickPad->getPosition().y
+					+ incline * joystickPad->getPosition().x;
+
+				if (ntap.y < incline * ntap.x + yAxisValueUp)
+					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
+					{
+						CCLOG("Touch Direction : DOWN");
+						if (joystickDirectionSet == false)
+						{
+							joystickDirectionSet = true;
+							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW, NULL);
+						}
+					}
+					else
+					{
+						CCLOG("Touch Direction : RIGHT");
+						if (joystickDirectionSet == false)
+						{
+							joystickDirectionSet = true;
+							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW, NULL);
+						}
+					}
+				else
+					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
+					{
+						CCLOG("Touch Direction : LEFT");
+						if (joystickDirectionSet == false)
+						{
+							joystickDirectionSet = true;
+							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW, NULL);
+						}
+					}
+					else
+					{
+						CCLOG("Touch Direction : UP");
+						if (joystickDirectionSet == false)
+						{
+							joystickDirectionSet = true;
+							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW, NULL);
+						}
+					}
+
+				joystick->setPosition(ntap);
+			}
+			it++;
 		}
 	}
-	else
-	{
-		if (diff.y > 0)
-		{
-			playerPos.y += tmap->getTileSize().height;
-		}
-		else
-		{
-			playerPos.y -= tmap->getTileSize().height;
-		}
-	}
+#endif
 
-	if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-		playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-		playerPos.x >= 0 &&
-		playerPos.x >= 0)
-	{
-		this->setPlayerPosition(playerPos);
-	}
+}
 
-	this->setViewpointCenter(this->mainUser->sprite->getPosition());
+
+void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Event *event)
+{
+	CCLOG("-- onTouchesEnded --");
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
+		joystickPad->getPosition().y + joystickPad->getContentSize().height / 2);
+	joystick->setPosition(startPoint);
+	joystickTouched = false;
+
+	joystickDirectionSet = false;
+	this->mainUser->isKeepKeyPressed = false;
+	this->mainUser->isRunning = false;
+#endif
+}
+
+void HelloWorld::onTouchesCancelled(const std::vector<Touch *> &touches, cocos2d::Event *event)
+{
+	CCLOG("-- onTouchesCancelled --");
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
+		joystickPad->getPosition().y + joystickPad->getContentSize().height / 2);
+	joystick->setPosition(startPoint);
+	joystickTouched = false;
+
+	joystickDirectionSet = false;
+	this->mainUser->isKeepKeyPressed = false;
+	this->mainUser->isRunning = false;
+#endif
 }
 
 void HelloWorld::setViewpointCenter(Point position)
@@ -294,6 +446,20 @@ void HelloWorld::setViewpointCenter(Point position)
 	//말풍선은 항상 캐릭터를 따라다녀야함
 	balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
 	balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	//조이스틱은 항상 우측 하단에 붙어야함.
+	Point joystickMoveRange = Point(actualPosition.x + winSize.width / 2, actualPosition.y - winSize.height / 2) - joystickPad->getPosition();
+
+	joystickPad->setPosition(Point(actualPosition.x + winSize.width / 2, actualPosition.y - winSize.height / 2));
+	if (!joystickTouched)
+		joystick->setPosition(Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
+			joystickPad->getPosition().y + joystickPad->getContentSize().height / 2));
+	else
+		joystick->setPosition(joystick->getPosition() + joystickMoveRange);
+#endif
 
 	this->setPosition(viewPoint);
 }
