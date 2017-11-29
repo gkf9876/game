@@ -655,16 +655,14 @@ void HelloWorld::setPlayerPosition(Point position)
 		cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName);
 	strcpy(this->mainUser->field, sendMapName);
 
-	//모션
-	this->setAnimation(this->mainUser->seeDirection);
 	//플레이어가 화면 가운데로 오게 조절
 	this->setViewpointCenter(this->mainUser->sprite->getPosition());
-	this->mainUser->isRunning = true;
 }
 
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	//로그인화면에서는 키동작을 잠근다.
 	if (this->mainUser->isLogin != true)
 	{
 		switch (key)
@@ -682,128 +680,28 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	CCLOG("KeyPress..(%d)", key);
 	this->mainUser->isKeepKeyPressed = true;
 
-	//이동 모션을 기다린뒤에 이동한다.
-	if (this->mainUser->isAction == true)
-	{
-		CCLOG("Motion Ready...");
-		return;
-	}
-
 	Point playerPos = this->mainUser->sprite->getPosition();
-	Sprite * spr;
 
 	switch (key)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-
-		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (this->mainUser->seeDirection == key)
-		{
-			spr = Sprite::createWithSpriteFrameName("man_13.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-
-			playerPos.y += tmap->getTileSize().height;
-
-			//좌표 이동
-			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-				playerPos.x >= 0 &&
-				playerPos.x >= 0)
-			{
-				this->setPlayerPosition(playerPos);
-			}
-		}
-		else
-		{
-			//방향 전환
-			spr = Sprite::createWithSpriteFrameName("man_13.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-		}
-
+		this->mainUser->isRunning = true;
+		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-
-		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (this->mainUser->seeDirection == key)
-		{
-			spr = Sprite::createWithSpriteFrameName("man_01.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-
-			playerPos.y -= tmap->getTileSize().height;
-
-			//좌표 이동
-			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-				playerPos.x >= 0 &&
-				playerPos.x >= 0)
-			{
-				this->setPlayerPosition(playerPos);
-			}
-		}
-		else
-		{
-			//방향 전환
-			spr = Sprite::createWithSpriteFrameName("man_01.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-		}
-
+		this->mainUser->isRunning = true;
+		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-
-		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (this->mainUser->seeDirection == key)
-		{
-			spr = Sprite::createWithSpriteFrameName("man_09.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-
-			playerPos.x += tmap->getTileSize().width;
-
-			//좌표 이동
-			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-				playerPos.x >= 0 &&
-				playerPos.x >= 0)
-			{
-				this->setPlayerPosition(playerPos);
-			}
-		}
-		else
-		{
-			//방향 전환
-			spr = Sprite::createWithSpriteFrameName("man_09.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-		}
-
+		this->mainUser->isRunning = true;
+		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-
-		//이동 방향을 보고있으면 그 방향으로 이동한다.
-		if (this->mainUser->seeDirection == key)
-		{
-			spr = Sprite::createWithSpriteFrameName("man_05.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-
-			playerPos.x -= tmap->getTileSize().width;
-
-			//좌표 이동
-			if (playerPos.x <= (tmap->getMapSize().width * tmap->getTileSize().width) &&
-				playerPos.y <= (tmap->getMapSize().height * tmap->getTileSize().height) &&
-				playerPos.x >= 0 &&
-				playerPos.x >= 0)
-			{
-				this->setPlayerPosition(playerPos);
-			}
-		}
-		else
-		{
-			//방향 전환
-			spr = Sprite::createWithSpriteFrameName("man_05.png");
-			this->mainUser->sprite->setSpriteFrame(spr->getSpriteFrame());
-		}
-
+		this->mainUser->isRunning = true;
+		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_I:
@@ -823,10 +721,14 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Eve
 	if (this->mainUser->isLogin != true)
 		return;
 
-	CCLOG("KeyRelease..(%d)", key);
+	CCLOG("KeyRelease..(%d) %d", key, this->mainUser->seeDirection);
 
-	this->mainUser->isKeepKeyPressed = false;
-	this->mainUser->isRunning = false;
+	//여러개의 방향키가 눌렸을 경우 가장 마지막으로 키를 땠을때 이동을 중지한다.
+	if (this->mainUser->seeDirection == key)
+	{
+		this->mainUser->isKeepKeyPressed = false;
+		this->mainUser->isRunning = false;
+	}
 	return;
 }
 
@@ -1029,6 +931,7 @@ void HelloWorld::update(float fDelta)
 		return;
 	}
 
+	//메인유저가 방향키를 눌러 이동시 실행
 	if (this->mainUser->isRunning == true && this->mainUser->isAction == false)
 	{
 		CCLOG("Keep Running..");
@@ -1059,6 +962,8 @@ void HelloWorld::update(float fDelta)
 		{
 			this->setPlayerPosition(playerPos);
 		}
+
+		this->setAnimation(this->mainUser->seeDirection);
 	}
 
 	//말풍선이 떠있으면 일정시간후 없앤다.
