@@ -685,22 +685,38 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	switch (key)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-		this->mainUser->isRunning = true;
+		//제자리에서 방향키눌러 방향전환할때
+		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+			this->mainUser->sprite->setSpriteFrame("man_13.png");
+		else
+			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-		this->mainUser->isRunning = true;
+		//제자리에서 방향키눌러 방향전환할때
+		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+			this->mainUser->sprite->setSpriteFrame("man_01.png");
+		else
+			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-		this->mainUser->isRunning = true;
+		//제자리에서 방향키눌러 방향전환할때
+		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+			this->mainUser->sprite->setSpriteFrame("man_09.png");
+		else
+			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-		this->mainUser->isRunning = true;
+		//제자리에서 방향키눌러 방향전환할때
+		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+			this->mainUser->sprite->setSpriteFrame("man_05.png");
+		else
+			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
 		this->mainUser->seeDirection = key;
 		break;
