@@ -34,6 +34,8 @@ bool HelloWorld::init()
 
 	winSize = Director::getInstance()->getWinSize();
 	origin = Director::getInstance()->getVisibleOrigin();
+	updateTime = 0;
+	readyCount = 0;
 
 	//로그인 화면
 	loginBackground = Sprite::create("login.jpg");
@@ -69,7 +71,7 @@ bool HelloWorld::init()
 	com->init();
 
 	//매 프레임마다 update() 함수를 호출
-	this->scheduleUpdate();
+	this->schedule(schedule_selector(HelloWorld::update), 0.15);
 
 	return true;
 }
@@ -882,6 +884,11 @@ void HelloWorld::actionFinished()
 
 void HelloWorld::update(float fDelta)
 {
+	updateTime += fDelta;
+
+	if (updateTime >= 60)
+		updateTime = 0;
+
 	for (int i = 0; i < com->usersInfo->size(); i++)
 	{
 		User * user = com->usersInfo->at(i);
@@ -945,6 +952,17 @@ void HelloWorld::update(float fDelta)
 			loginFail->setVisible(false);
 
 		return;
+	}
+
+	if (this->mainUser->isKeepKeyPressed == true)
+	{
+		readyCount++;
+
+		if (readyCount == 3)
+		{
+			this->mainUser->isRunning = true;
+			readyCount = 0;
+		}
 	}
 
 	//메인유저가 방향키를 눌러 이동시 실행

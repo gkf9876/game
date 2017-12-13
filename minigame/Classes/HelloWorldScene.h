@@ -114,6 +114,9 @@ public:
 	int code;																//서버로부터 받아올 데이터 Code
 	String content;															//서버로부터 받아올 데이터 Content
 
+	float updateTime;														//update 함수가 호출되는 시간을 기록. 60초가 될시 0으로 초기화
+	int readyCount;																//유저의 행동 카운트
+
 	void start();
 
 	//게임 시작/종료시 함수
