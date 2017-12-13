@@ -321,7 +321,7 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 			if (touch)
 			{
 				tap = touch->getLocation() + plag;
-				CCLOG("%f , %f", tap.x, tap.y);
+				//CCLOG("%f , %f", tap.x, tap.y);
 
 				//조이스틱을 조이패드 밖으로 나가지 못하게 한다.
 				if (tap.x > joystickPad->getPosition().x)
@@ -351,38 +351,54 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 				if (ntap.y < incline * ntap.x + yAxisValueUp)
 					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
 					{
-						CCLOG("Touch Direction : DOWN");
+						//CCLOG("Touch Direction : DOWN, %d", joystickDirectionSet);
+                        if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+                            joystickDirectionSet = false;
+                        
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
+                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW, NULL);
 						}
 					}
 					else
 					{
-						CCLOG("Touch Direction : RIGHT");
+						//CCLOG("Touch Direction : RIGHT, %d", joystickDirectionSet);
+                        if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+                            joystickDirectionSet = false;
+                        
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
+                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW, NULL);
 						}
 					}
 				else
 					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
 					{
-						CCLOG("Touch Direction : LEFT");
+						//CCLOG("Touch Direction : LEFT, %d", joystickDirectionSet);
+                        if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+                            joystickDirectionSet = false;
+                        
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
+                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW, NULL);
 						}
 					}
 					else
 					{
-						CCLOG("Touch Direction : UP");
+						//CCLOG("Touch Direction : UP, %d", joystickDirectionSet);
+                        if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+                            joystickDirectionSet = false;
+                        
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
+                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW, NULL);
 						}
 					}
