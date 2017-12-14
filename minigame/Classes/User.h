@@ -26,6 +26,9 @@ public:
 	bool isRunning;															//드래곤이 이동중인지
 	bool isKeepKeyPressed;													//키를 누르고 있는지
 	cocos2d::EventKeyboard::KeyCode seeDirection;							//드래곤이 어딜 보고있는지
+	cocos2d::LabelTTF * balloonContent;										//말풍선 내용
+	Sprite * balloon;														//말풍선
+	int balloonTime = 0;													//말풍선 떠있는 시간.
 };
 
 #endif

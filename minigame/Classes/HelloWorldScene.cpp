@@ -162,20 +162,6 @@ void HelloWorld::start()
 	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
 	tableView->reloadData();
 
-	//캐릭터 위에 말풍선으로 문자열 출력.
-	balloon = Sprite::create("Images/balloon.png");
-	balloon->setAnchorPoint(Point(1, 0));
-	balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
-	balloon->setVisible(false);
-	this->addChild(balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
-
-	balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
-	balloonContent->setColor(Color3B::BLACK);
-	balloonContent->setAnchorPoint(Point(1, 0));
-	balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
-	balloonContent->setVisible(false);
-	this->addChild(balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
-
 	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("Images/title.png");
 	title->setAnchorPoint(Point(0.5, 1));
@@ -227,6 +213,20 @@ void HelloWorld::createSprite()
 	this->mainUser->isKeepKeyPressed = false;
 	this->mainUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 	this->addChild(this->mainUser->sprite, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
+
+	//캐릭터 위에 말풍선으로 문자열 출력.
+	this->mainUser->balloon = Sprite::create("Images/balloon.png");
+	this->mainUser->balloon->setAnchorPoint(Point(1, 0));
+	this->mainUser->balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
+	this->mainUser->balloon->setVisible(false);
+	this->addChild(this->mainUser->balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
+
+	this->mainUser->balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
+	this->mainUser->balloonContent->setColor(Color3B::BLACK);
+	this->mainUser->balloonContent->setAnchorPoint(Point(1, 0));
+	this->mainUser->balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
+	this->mainUser->balloonContent->setVisible(false);
+	this->addChild(this->mainUser->balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
 }
 
 void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Event *event)
@@ -482,8 +482,8 @@ void HelloWorld::setViewpointCenter(Point position)
 	tableView->setPosition(Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2 + 25));
 
 	//말풍선은 항상 캐릭터를 따라다녀야함
-	balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
-	balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
+	this->mainUser->balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
+	this->mainUser->balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -694,9 +694,6 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		}
 		return;
 	}
-
-	CCLOG("KeyPress..(%d)", key);
-	this->mainUser->isKeepKeyPressed = true;
 
 	Point playerPos = this->mainUser->sprite->getPosition();
 
@@ -923,6 +920,20 @@ void HelloWorld::update(float fDelta)
 			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
 			user->sprite->setPosition(user->position);
 			this->addChild(user->sprite, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
+
+			//캐릭터 위에 말풍선으로 문자열 출력.
+			user->balloon = Sprite::create("Images/balloon.png");
+			user->balloon->setAnchorPoint(Point(1, 0));
+			user->balloon->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2, user->position.y + user->sprite->getContentSize().height));
+			user->balloon->setVisible(false);
+			this->addChild(user->balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
+
+			user->balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
+			user->balloonContent->setColor(Color3B::BLACK);
+			user->balloonContent->setAnchorPoint(Point(1, 0));
+			user->balloonContent->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2 - 50, user->position.y + user->sprite->getContentSize().height + 50));
+			user->balloonContent->setVisible(false);
+			this->addChild(user->balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
 		}
 		else
 		{
@@ -1017,13 +1028,28 @@ void HelloWorld::update(float fDelta)
 	}
 
 	//말풍선이 떠있으면 일정시간후 없앤다.
-	if (balloon->isVisible() == true)
-		balloonTime++;
-	if (balloonTime % 120 == 119)
+	if (this->mainUser->balloon->isVisible() == true)
+		this->mainUser->balloonTime++;
+	if (this->mainUser->balloonTime % 120 == 119)
 	{
-		balloon->setVisible(false);
-		balloonContent->setVisible(false);
-		balloonTime = 0;
+		this->mainUser->balloon->setVisible(false);
+		this->mainUser->balloonContent->setVisible(false);
+		this->mainUser->balloonTime = 0;
+	}
+
+	//다른 사람들의 말풍선이 떠있으면 일정시간후 없앤다.
+	for (int i = 0; i < com->usersInfo->size(); i++)
+	{
+		User * othersUser = com->usersInfo->at(i);
+
+		if (othersUser->balloon->isVisible() == true)
+			othersUser->balloonTime++;
+		if (othersUser->balloonTime % 120 == 119)
+		{
+			othersUser->balloon->setVisible(false);
+			othersUser->balloonContent->setVisible(false);
+			othersUser->balloonTime = 0;
+		}
 	}
 
 	//채팅창을 업데이트. 다른 사람의 채팅내용을 띄운다.
@@ -1068,10 +1094,10 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	com->chatting(com->mainUser->name, message->getCString());
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
-	balloon->setVisible(true);
-	balloonContent->setString(message->getCString());
-	balloonContent->setVisible(true);
-	balloonTime = 0;
+	this->mainUser->balloon->setVisible(true);
+	this->mainUser->balloonContent->setString(message->getCString());
+	this->mainUser->balloonContent->setVisible(true);
+	this->mainUser->balloonTime = 0;
 }
 
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)

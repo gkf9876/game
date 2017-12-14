@@ -47,6 +47,24 @@ void * RecvMsg(void * arg)
 		case CHATTING_PROCESS:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
 			com->chattingInfo.pushBack(String::createWithFormat("%s : %s", buf[0], buf[1]));
+
+			//다른 사람들이 채팅하면 그 사람의 말풍선에 대화내용을 넣어준다.
+			for (int i = 0; i < com->usersInfo->size(); i++)
+			{
+				User * othersUser = com->usersInfo->at(i);
+
+				if (!strcmp(othersUser->name, buf[0]))
+				{
+					//캐릭터 위에 말풍선으로 문자열 출력.
+
+					String * message = String::createWithFormat("%s", buf[1]);
+
+					othersUser->balloon->setVisible(true);
+					othersUser->balloonContent->setString(message->getCString());
+					othersUser->balloonContent->setVisible(true);
+					othersUser->balloonTime = 0;
+				}
+			}
 			break;
 		case REQUEST_LOGIN:
 
@@ -80,6 +98,8 @@ void * RecvMsg(void * arg)
 				{
 					User * othersUser = com->usersInfo->at(i);
 					othersUser->sprite->setVisible(false);
+					othersUser->balloon->setVisible(false);
+					othersUser->balloonContent->setVisible(false);
 
 					if (!strcmp(othersUser->name, user->name))
 					{
@@ -141,6 +161,10 @@ void * RecvMsg(void * arg)
 						othersUser->ypos = user->ypos;
 						othersUser->position = Point(user->xpos * 32 + 32/2, user->ypos * 32);
 						othersUser->sprite->setPosition(othersUser->position);
+
+						//말풍선은 항상 캐릭터를 따라다녀야함
+						othersUser->balloon->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2, othersUser->position.y + othersUser->sprite->getContentSize().height));
+						othersUser->balloonContent->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2 - 50, othersUser->position.y + othersUser->sprite->getContentSize().height + 50));
 
 						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;

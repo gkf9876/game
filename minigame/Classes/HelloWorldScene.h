@@ -104,10 +104,6 @@ public:
 	TableView* tableView;													//채팅 띄우는 창
 	LabelTTF* showLabel;													//채팅창에 띄울 문장
 	Vector<String*> element;												//채팅창 채팅목록
-	cocos2d::LabelTTF * balloonContent;										//말풍선 내용
-	Sprite * balloon;														//말풍선
-
-	int balloonTime = 0;													//말풍선 떠있는 시간.
 
 	CustomNetworkCommunication * com;										//서버와 통신하는 객체
 
@@ -115,7 +111,7 @@ public:
 	String content;															//서버로부터 받아올 데이터 Content
 
 	float updateTime;														//update 함수가 호출되는 시간을 기록. 60초가 될시 0으로 초기화
-	int readyCount;																//유저의 행동 카운트
+	int readyCount;															//유저의 행동 카운트
 
 	void start();
 
