@@ -139,9 +139,18 @@ void * RecvMsg(void * arg)
 
 					if (!strcmp(othersUser->name, user->name))
 					{
-						//제자리일시 움직이는 모션을 생략한다.
 						if (othersUser->xpos != user->xpos || othersUser->ypos != user->ypos)
+						{
+							//이동
 							othersUser->isAction = true;
+							othersUser->isRunning = true;
+						}
+						else
+						{
+							//제자리 방향회전
+							othersUser->isAction = true;
+							othersUser->isRunning = false;
+						}
 
 						othersUser->seeDirection = user->seeDirection;
 						othersUser->xpos = user->xpos;

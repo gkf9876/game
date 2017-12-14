@@ -812,9 +812,6 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	animation->setDelayPerUnit(0.2);
 	Point position = this->mainUser->sprite->getPosition() / TILE_SIZE;
 
-	//이전에 실행중이던 액션을 중지하고 새로 액션을 실행.
-	//sprite->stopAction(animate);
-
 	this->mainUser->isAction = true;
 	CCLOG("action started!");
 	CCLOG("Motion Run");
@@ -976,7 +973,6 @@ void HelloWorld::update(float fDelta)
 			user->isAction = false;
 			user->isRunning = false;
 			user->isKeepKeyPressed = false;
-			//user->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
 			user->sprite->setPosition(user->position);
 			this->addChild(user->sprite, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
@@ -1002,12 +998,44 @@ void HelloWorld::update(float fDelta)
 				this->removeChild(user->sprite);
 				user->sprite = NULL;
 			}
-		}
+			else
+			{
+				if (user->isAction == true && user->isRunning == true)
+				{
+					this->setOtherUsersAnimation(user, user->seeDirection);
 
-		if (user->isAction == true)
-		{
-			this->setOtherUsersAnimation(user, user->seeDirection);
-			user->isAction = false;
+					//액션을 취하고 가만히 있을때
+					user->isAction = false;
+					user->isRunning = false;
+				}
+
+				if(user->isAction == true && user->isRunning == false)
+				{
+					CCLOG("제자리 방향 전환");
+					switch (user->seeDirection)
+					{
+					case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+						user->sprite->setSpriteFrame("man_13.png");
+						break;
+					case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+						user->sprite->setSpriteFrame("man_01.png");
+						break;
+					case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+						user->sprite->setSpriteFrame("man_09.png");
+						break;
+					case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+						user->sprite->setSpriteFrame("man_05.png");
+						break;
+					default:
+						user->sprite->setSpriteFrame("man_01.png");
+						break;
+					}
+
+					//액션을 취하고 가만히 있을때
+					user->isAction = false;
+					user->isRunning = false;
+				}
+			}
 		}
 	}
 
