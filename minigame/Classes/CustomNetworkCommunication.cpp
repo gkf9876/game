@@ -42,6 +42,7 @@ void * RecvMsg(void * arg)
 			com->mainUser->xpos = atoi(buf[1]);
 			com->mainUser->ypos = atoi(buf[2]);
 			strcpy(com->mainUser->field, buf[3]);
+			com->mainUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
 			com->isGetUserInfo = true;
 			break;
 		case CHATTING_PROCESS:
@@ -116,6 +117,7 @@ void * RecvMsg(void * arg)
 				strcpy(user->name, buf[1]);
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
+				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
 				user->sprite = NULL;
 
 				com->usersInfo->push_back(user); 
@@ -129,6 +131,7 @@ void * RecvMsg(void * arg)
 				strcpy(user->name, buf[1]);
 				user->xpos = atoi(buf[2]);
 				user->ypos = atoi(buf[3]);
+				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
 
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
@@ -136,27 +139,11 @@ void * RecvMsg(void * arg)
 
 					if (!strcmp(othersUser->name, user->name))
 					{
-						if (othersUser->xpos < user->xpos)
-						{
-							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW;
+						//제자리일시 움직이는 모션을 생략한다.
+						if (othersUser->xpos != user->xpos || othersUser->ypos != user->ypos)
 							othersUser->isAction = true;
-						}
-						else if (othersUser->xpos > user->xpos)
-						{
-							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW;
-							othersUser->isAction = true;
-						}
-						else if(othersUser->ypos < user->ypos)
-						{
-							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW;
-							othersUser->isAction = true;
-						}
-						else
-						{
-							othersUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
-							othersUser->isAction = true;
-						}
 
+						othersUser->seeDirection = user->seeDirection;
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
 						othersUser->position = Point(user->xpos * 32 + 32/2, user->ypos * 32);
@@ -352,9 +339,9 @@ void CustomNetworkCommunication::requestLogin(char * userName)
 	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
 }
 
-void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to)
+void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection)
 {
-	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
+	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s\n%d", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to, seeDirection);
 	CCLOG("%s %d %d %s %d %d %s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
 
 	//맵 이동시 현재 유저목록 초기화

@@ -205,13 +205,31 @@ void HelloWorld::createSprite()
 {
 	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
 
-	this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+	switch (this->mainUser->seeDirection)
+	{
+	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+		this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_13.png");
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+		this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+		this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_09.png");
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+		this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_05.png");
+		break;
+	default:
+		this->mainUser->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+		break;
+	}
+
 	this->mainUser->sprite->setAnchorPoint(Point(0.5, 0));
 	this->mainUser->sprite->setPosition(this->mainUser->position);
 	this->mainUser->isAction = false;
 	this->mainUser->isRunning = false;
 	this->mainUser->isKeepKeyPressed = false;
-	this->mainUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
+	//this->mainUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 	this->addChild(this->mainUser->sprite, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
@@ -652,7 +670,7 @@ void HelloWorld::setPlayerPosition(Point position)
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
 				com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
-					cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName);
+					cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
 				strcpy(this->mainUser->field, sendMapName);
 
 				return;
@@ -670,7 +688,7 @@ void HelloWorld::setPlayerPosition(Point position)
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
 	com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
-		cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName);
+		cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
 	strcpy(this->mainUser->field, sendMapName);
 
 	//플레이어가 화면 가운데로 오게 조절
@@ -702,7 +720,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
 		//제자리에서 방향키눌러 방향전환할때
 		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+		{
 			this->mainUser->sprite->setSpriteFrame("man_13.png");
+
+			//방향전환을 서버에 알려준다.
+			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+		}
 		else
 			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
@@ -711,7 +735,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
 		//제자리에서 방향키눌러 방향전환할때
 		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+		{
 			this->mainUser->sprite->setSpriteFrame("man_01.png");
+
+			//방향전환을 서버에 알려준다.
+			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+		}
 		else
 			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
@@ -720,7 +750,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
 		//제자리에서 방향키눌러 방향전환할때
 		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+		{
 			this->mainUser->sprite->setSpriteFrame("man_09.png");
+
+			//방향전환을 서버에 알려준다.
+			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+		}
 		else
 			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
@@ -729,7 +765,13 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
 		//제자리에서 방향키눌러 방향전환할때
 		if (this->mainUser->seeDirection != key && this->mainUser->isRunning != true)
+		{
 			this->mainUser->sprite->setSpriteFrame("man_05.png");
+
+			//방향전환을 서버에 알려준다.
+			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+		}
 		else
 			this->mainUser->isRunning = true;
 		this->mainUser->isKeepKeyPressed = true;
@@ -911,12 +953,30 @@ void HelloWorld::update(float fDelta)
 			//다른 유저의 모습을 출력한다.
 			SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
 
-			user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+			switch (user->seeDirection)
+			{
+			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_13.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_09.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_05.png");
+				break;
+			default:
+				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+				break;
+			}
+
 			user->sprite->setAnchorPoint(Point(0.5, 0));
 			user->isAction = false;
 			user->isRunning = false;
 			user->isKeepKeyPressed = false;
-			user->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
+			//user->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
 			user->sprite->setPosition(user->position);
 			this->addChild(user->sprite, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
@@ -969,6 +1029,7 @@ void HelloWorld::update(float fDelta)
 			strcpy(this->mainUser->field, com->mainUser->field);
 			this->mainUser->xpos = com->mainUser->xpos;
 			this->mainUser->ypos = com->mainUser->ypos;
+			this->mainUser->seeDirection = com->mainUser->seeDirection;
 
 			start();
 		}

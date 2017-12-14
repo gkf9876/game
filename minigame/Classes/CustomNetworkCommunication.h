@@ -88,7 +88,7 @@ public :
 	void requestLogin(char * userName);
 
 	//유저 좌표이동 함수
-	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to);
+	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
