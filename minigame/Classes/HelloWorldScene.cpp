@@ -90,7 +90,7 @@ bool HelloWorld::init()
 	//암호변경 버튼
 	passwordModiButton = Button::create("passwordModiButton.jpg", "passwordModiButton.jpg");
 	passwordModiButton->setAnchorPoint(Point(0.5, 0.5));
-	passwordModiButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 596 / 720));
+	passwordModiButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 551 / 720));
 	passwordModiButton->setScaleX(0.381);
 	passwordModiButton->setScaleY(0.500);
 	passwordModiButton->setVisible(true);
