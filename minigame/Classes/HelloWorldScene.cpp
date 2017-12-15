@@ -37,13 +37,34 @@ bool HelloWorld::init()
 	updateTime = 0;
 	readyCount = 0;
 
+
 	//로그인 화면
 	loginBackground = Sprite::create("login.jpg");
 	loginBackground->setAnchorPoint(Point::ZERO);
 	loginBackground->setPosition(Point(0, 0));
 	loginBackground->setContentSize(winSize);
 	loginBackground->setVisible(true);
-	this->addChild(loginBackground);
+	this->addChild(loginBackground, LOGIN_WINDOW_Z_ORDER, LOGIN_WINDOW);
+
+	//회원가입 버튼
+	joinButton = Button::create("joinButton.jpg", "joinButton.jpg");
+	joinButton->setAnchorPoint(Point(0.5, 0.5));
+	joinButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 460 / 720));
+	joinButton->setScaleX(0.375);
+	joinButton->setScaleY(0.444);
+	joinButton->setVisible(true);
+	this->addChild(joinButton, JOIN_BUTTON_Z_ORDER, JOIN_BUTTON);
+	joinButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinButtonTouchEvent, this));
+
+	//로그인 버튼
+	loginButton = Button::create("loginButton.jpg", "loginButton.jpg");
+	loginButton->setAnchorPoint(Point(0.5, 0.5));
+	loginButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 506 / 720));
+	loginButton->setScaleX(0.380);
+	loginButton->setScaleY(0.470);
+	loginButton->setVisible(true);
+	this->addChild(loginButton, LOGIN_BUTTON_Z_ORDER, LOGIN_BUTTON);
+	loginButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::loginButtonTouchEvent, this));
 
 	//로그인 아이디 입력창
 	loginID = EditBox::create(Size(100, 30), Scale9Sprite::create());
@@ -56,15 +77,55 @@ bool HelloWorld::init()
 	loginID->setMaxLength(20);
 	loginID->setDelegate(this);
 	loginID->setPosition(Vec2(origin.x + winSize.width / 2 - loginID->getSize().width/2, origin.y + winSize.height / 2));
-	this->addChild(loginID, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_INPUT);
-
+	this->addChild(loginID, LOGIN_TEXT_INPUT_Z_ORDER, LOGIN_TEXT_INPUT);
+	
 	//로그인 실패시 띄우는 창
-	loginFail = Sprite::create("loginfail.jpg");
-	loginFail->setAnchorPoint(Point(0.5,0.5));
-	loginFail->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
-	loginFail->setContentSize(Size(288, 105));
-	loginFail->setVisible(false);
-	this->addChild(loginFail, MAP_NAME_PRIORITY_Z_ORDER + 1, CHATTING_INPUT + 1);
+	loginFailWindow = Sprite::create("loginfail.jpg");
+	loginFailWindow->setAnchorPoint(Point(0.5,0.5));
+	loginFailWindow->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
+	loginFailWindow->setContentSize(Size(288, 105));
+	loginFailWindow->setVisible(false);
+	this->addChild(loginFailWindow, LOGINFAIL_WINDOW_Z_ORDER, LOGINFAIL_WINDOW);
+
+	//암호변경 버튼
+	passwordModiButton = Button::create("passwordModiButton.jpg", "passwordModiButton.jpg");
+	passwordModiButton->setAnchorPoint(Point(0.5, 0.5));
+	passwordModiButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 596 / 720));
+	passwordModiButton->setScaleX(0.381);
+	passwordModiButton->setScaleY(0.500);
+	passwordModiButton->setVisible(true);
+	this->addChild(passwordModiButton, PASSWORDMODI_BUTTON_Z_ORDER, PASSWORDMODI_BUTTON);
+	passwordModiButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::passwordModiButtonTouchEvent, this));
+
+	//배경이야기 버튼
+	backGroundStoryButton = Button::create("backGroundStoryButton.jpg", "backGroundStoryButton.jpg");
+	backGroundStoryButton->setAnchorPoint(Point(0.5, 0.5));
+	backGroundStoryButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 596 / 720));
+	backGroundStoryButton->setScaleX(0.380);
+	backGroundStoryButton->setScaleY(0.500);
+	backGroundStoryButton->setVisible(true);
+	this->addChild(backGroundStoryButton, BACKGROUNDSTORY_BUTTON_Z_ORDER, BACKGROUNDSTORY_BUTTON);
+	backGroundStoryButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::backGroundStoryButtonTouchEvent, this));
+
+	//만든사람들 버튼
+	makePeoplesButton = Button::create("makePeoplesButton.jpg", "makePeoplesButton.jpg");
+	makePeoplesButton->setAnchorPoint(Point(0.5, 0.5));
+	makePeoplesButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 641 / 720));
+	makePeoplesButton->setScaleX(0.380);
+	makePeoplesButton->setScaleY(0.484);
+	makePeoplesButton->setVisible(true);
+	this->addChild(makePeoplesButton, MAKEPEOPLE_BUTTON_Z_ORDER, MAKEPEOPLE_BUTTON);
+	makePeoplesButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::makePeoplesButtonTouchEvent, this));
+
+	//종료 버튼
+	exitButton = Button::create("exitButton.jpg", "exitButton.jpg");
+	exitButton->setAnchorPoint(Point(0.5, 0.5));
+	exitButton->setPosition(Point(winSize.width * 1094 / 1280, winSize.height - winSize.height * 686 / 720));
+	exitButton->setScaleX(0.378);
+	exitButton->setScaleY(0.457);
+	exitButton->setVisible(true);
+	this->addChild(exitButton, EXIT_BUTTON_Z_ORDER, EXIT_BUTTON);
+	exitButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::exitButtonTouchEvent, this));
 
 	//서버와 통신 설정
 	com = new CustomNetworkCommunication();
@@ -1047,6 +1108,12 @@ void HelloWorld::update(float fDelta)
 			this->mainUser->isLogin = true;
 			loginBackground->setVisible(false);
 			loginID->setVisible(false);
+			joinButton->setVisible(false);
+			loginButton->setVisible(false);
+			passwordModiButton->setVisible(false);
+			backGroundStoryButton->setVisible(false);
+			makePeoplesButton->setVisible(false);
+			exitButton->setVisible(false);
 
 			// 유저 정보 불러오기
 			com->getUserInfo();
@@ -1063,9 +1130,9 @@ void HelloWorld::update(float fDelta)
 		}
 
 		if(com->popupLoginFail == true)
-			loginFail->setVisible(true);
+			loginFailWindow->setVisible(true);
 		else
-			loginFail->setVisible(false);
+			loginFailWindow->setVisible(false);
 
 		return;
 	}
@@ -1270,4 +1337,100 @@ ssize_t HelloWorld::numberOfCellsInTableView(TableView *table)
 	//CCLOG("---- numberOfCellsInTableView ----");
 	int count = element.size();
 	return count;
+}
+
+void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("JOIN BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("JOIN BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("JOIN BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("LOGIN BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("LOGIN BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("LOGIN BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::passwordModiButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("PasswordModi BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("PasswordModi BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("PasswordModi BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::backGroundStoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("BackGroundStory BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("BackGroundStory BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("BackGroundStory BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("MakePeople BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("MakePeople BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("MakePeople BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("EXIT BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("EXIT BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("EXIT BUTTON TOUCH ENDED");
+		break;
+	}
 }

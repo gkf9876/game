@@ -9,6 +9,7 @@
 
 USING_NS_CC;
 USING_NS_CC_EXT;
+using namespace ui;
 
 #define TILE_SIZE	32														//타일 사이즈
 
@@ -26,6 +27,15 @@ USING_NS_CC_EXT;
 #define CHATTING_BALLOON 9
 #define CHATTING_BALLOON_CONTENT 10
 #define OTHERS_USERS						500
+#define LOGIN_WINDOW	11
+#define JOIN_BUTTON		12
+#define LOGIN_BUTTON	13
+#define LOGIN_TEXT_INPUT	14
+#define LOGINFAIL_WINDOW		15
+#define PASSWORDMODI_BUTTON	16
+#define BACKGROUNDSTORY_BUTTON	17
+#define MAKEPEOPLE_BUTTON	18
+#define EXIT_BUTTON	19
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -44,6 +54,15 @@ USING_NS_CC_EXT;
 #define TITLE_PRIORITY_Z_ORDER			7										//맵 이름 간판 우선순위
 #define MAP_NAME_PRIORITY_Z_ORDER		8										//맵 이름 우선순위
 #define OTHERS_USERS_Z_ORDER			2										//다른 유저 모습 우선순위
+#define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
+#define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼
+#define LOGIN_BUTTON_Z_ORDER			2										//로그인 버튼
+#define PASSWORDMODI_BUTTON_Z_ORDER		2										//암호변경 버튼
+#define BACKGROUNDSTORY_BUTTON_Z_ORDER	2										//배경이야기 버튼
+#define MAKEPEOPLE_BUTTON_Z_ORDER		2										//만든사람들 버튼
+#define EXIT_BUTTON_Z_ORDER				2										//종료 버튼
+#define LOGIN_TEXT_INPUT_Z_ORDER		3										//아이디 입력창 우선순위
+#define LOGINFAIL_WINDOW_Z_ORDER		4										//로그인 실패 메시지창
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -63,7 +82,13 @@ public:
 
 	Sprite * loginBackground;
 	EditBox * loginID;
-	Sprite * loginFail;
+	Sprite * loginFailWindow;
+	Button * loginButton;
+	Button * joinButton;
+	Button * passwordModiButton;
+	Button * backGroundStoryButton;
+	Button * makePeoplesButton;
+	Button * exitButton;
 
 	User * mainUser;
 
@@ -158,6 +183,13 @@ public:
 
 	void actionStarted();
 	void actionFinished();
+
+	void loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void passwordModiButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void backGroundStoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 
 	//매 프레임마다 호출되는 함수.
 	void update(float fDelta);			
