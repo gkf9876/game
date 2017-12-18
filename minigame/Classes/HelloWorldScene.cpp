@@ -56,6 +56,30 @@ bool HelloWorld::init()
 	this->addChild(joinButton, JOIN_BUTTON_Z_ORDER, JOIN_BUTTON);
 	joinButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinButtonTouchEvent, this));
 
+	//회원가입 창
+	joinPopUp = Sprite::create("joinPopUp.png");
+	joinPopUp->setAnchorPoint(Point(0.5, 0.5));
+	joinPopUp->setContentSize(winSize);
+	joinPopUp->setPosition(winSize / 2);
+	joinPopUp->setVisible(false);
+	this->addChild(joinPopUp, JOIN_POPUP_Z_ORDER, JOIN_POPUP);
+
+	//회원가입 확인버튼
+	joinOK = Button::create("joinOK.png", "joinOK.png");
+	joinOK->setAnchorPoint(Point(0, 0));
+	joinOK->setPosition(Point(185, 0));
+	joinOK->setVisible(false);
+	this->addChild(joinOK, JOIN_OK_BUTTON_Z_ORDER, JOIN_OK_BUTTON);
+	joinOK->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinOkButtonTouchEvent, this));
+
+	//회원가입 취소버튼
+	joinCancel = Button::create("joinCancel.png", "joinCancel.png");
+	joinCancel->setAnchorPoint(Point(0, 0));
+	joinCancel->setPosition(Point(244, 0));
+	joinCancel->setVisible(false);
+	this->addChild(joinCancel, JOIN_CANCEL_BUTTON_Z_ORDER, JOIN_CANCEL_BUTTON);
+	joinCancel->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinCancelButtonTouchEvent, this));
+
 	//로그인 버튼
 	loginButton = Button::create("loginButton.jpg", "loginButton.jpg");
 	loginButton->setAnchorPoint(Point(0.5, 0.5));
@@ -66,9 +90,16 @@ bool HelloWorld::init()
 	this->addChild(loginButton, LOGIN_BUTTON_Z_ORDER, LOGIN_BUTTON);
 	loginButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::loginButtonTouchEvent, this));
 
+	//로그인 창
+	loginPopUp = Sprite::create("loginPopUp.png");
+	loginPopUp->setAnchorPoint(Point(0.5, 0.5));
+	loginPopUp->setPosition(Point(winSize.width / 2, winSize.height / 2));
+	loginPopUp->setVisible(false);
+	this->addChild(loginPopUp, LOGIN_POPUP_Z_ORDER, LOGIN_POPUP);
+
 	//로그인 아이디 입력창
 	loginID = EditBox::create(Size(100, 30), Scale9Sprite::create());
-	loginID->setAnchorPoint(Point(0, 0.5));
+	loginID->setAnchorPoint(Point(0, 0));
 	loginID->setFont("Arial", 20);
 	loginID->setInputMode(EditBox::InputMode::SINGLE_LINE);
 	loginID->setFontColor(Color3B::GREEN);
@@ -76,7 +107,8 @@ bool HelloWorld::init()
 	loginID->setPlaceHolder("Insert ID");
 	loginID->setMaxLength(20);
 	loginID->setDelegate(this);
-	loginID->setPosition(Vec2(origin.x + winSize.width / 2 - loginID->getSize().width/2, origin.y + winSize.height / 2));
+	loginID->setPosition(Point(200, winSize.height - 140));
+	loginID->setVisible(false);
 	this->addChild(loginID, LOGIN_TEXT_INPUT_Z_ORDER, LOGIN_TEXT_INPUT);
 	
 	//로그인 실패시 띄우는 창
@@ -759,6 +791,8 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	CCLOG("-- onKeyPressed --");
+
 	//로그인화면에서는 키동작을 잠근다.
 	if (this->mainUser->isLogin != true)
 	{
@@ -768,7 +802,8 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			if (com->popupLoginFail == true)
 				com->popupLoginFail = false;
 			else
-				loginID->touchDownAction(loginID, cocos2d::ui::Widget::TouchEventType::ENDED);
+				if(loginPopUp->isVisible() == true)
+					loginID->touchDownAction(loginID, cocos2d::ui::Widget::TouchEventType::ENDED);
 			break;
 		}
 		return;
@@ -1107,9 +1142,10 @@ void HelloWorld::update(float fDelta)
 		{
 			this->mainUser->isLogin = true;
 			loginBackground->setVisible(false);
-			loginID->setVisible(false);
 			joinButton->setVisible(false);
 			loginButton->setVisible(false);
+			loginPopUp->setVisible(false);
+			loginID->setVisible(false);
 			passwordModiButton->setVisible(false);
 			backGroundStoryButton->setVisible(false);
 			makePeoplesButton->setVisible(false);
@@ -1223,8 +1259,6 @@ void HelloWorld::update(float fDelta)
 
 void HelloWorld::editBoxReturn(EditBox * editBox)
 {
-	CCLOG("--- editBoxReturn ---");
-
 	if (this->mainUser->isLogin != true)
 	{
 		char userName[50];
@@ -1235,6 +1269,8 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 
 		return;
 	}
+
+	CCLOG("--- editBoxReturn ---");
 
 	//채팅입력하고 엔터키 누르면 채팅창에 입력한 문자열이 등록.
 	const char * buf = chattingInput->getText();
@@ -1345,6 +1381,20 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 	{
 	case Widget::TouchEventType::BEGAN:
 		CCLOG("JOIN BUTTON TOUCH BEGAN");
+		if (joinPopUp->isVisible() == false)
+		{
+			loginBackground->setVisible(false);
+			joinButton->setVisible(false);
+			loginButton->setVisible(false);
+			passwordModiButton->setVisible(false);
+			backGroundStoryButton->setVisible(false);
+			makePeoplesButton->setVisible(false);
+			exitButton->setVisible(false);
+
+			joinPopUp->setVisible(true);
+			joinOK->setVisible(true);
+			joinCancel->setVisible(true);
+		}
 		break;
 	case Widget::TouchEventType::MOVED:
 		CCLOG("JOIN BUTTON TOUCH MOVED");
@@ -1355,12 +1405,68 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 	}
 }
 
+void HelloWorld::joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("JOIN OK BUTTON TOUCH BEGAN");
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("JOIN OK BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("JOIN OK BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("JOIN CANCEL BUTTON TOUCH BEGAN");
+		if (joinPopUp->isVisible() == true)
+		{
+			loginBackground->setVisible(true);
+			joinButton->setVisible(true);
+			loginButton->setVisible(true);
+			passwordModiButton->setVisible(true);
+			backGroundStoryButton->setVisible(true);
+			makePeoplesButton->setVisible(true);
+			exitButton->setVisible(true);
+
+			joinPopUp->setVisible(false);
+			joinOK->setVisible(false);
+			joinCancel->setVisible(false);
+		}
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("JOIN CANCEL BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("JOIN CANCEL BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
 void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 {
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
 		CCLOG("LOGIN BUTTON TOUCH BEGAN");
+		if (loginPopUp->isVisible() == false)
+		{
+			loginPopUp->setVisible(true);
+			loginID->setVisible(true);
+		}
+		else
+		{
+			loginPopUp->setVisible(false);
+			loginID->setVisible(false);
+		}
 		break;
 	case Widget::TouchEventType::MOVED:
 		CCLOG("LOGIN BUTTON TOUCH MOVED");
