@@ -40,6 +40,7 @@ using namespace ui;
 #define JOIN_POPUP	21
 #define JOIN_OK_BUTTON	22
 #define JOIN_CANCEL_BUTTON	23
+#define JOIN_TEXT_INPUT	24
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -61,6 +62,7 @@ using namespace ui;
 #define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
 #define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼
 #define JOIN_POPUP_Z_ORDER				3										//회원가입 창
+#define JOIN_TEXT_INPUT_Z_ORDER			4										//회원가입 아이디 입력창 우선순위
 #define JOIN_OK_BUTTON_Z_ORDER			4										//회원가입 확인버튼
 #define JOIN_CANCEL_BUTTON_Z_ORDER		4										//회원가입 취소버튼
 #define LOGIN_BUTTON_Z_ORDER			2										//로그인 버튼
@@ -90,6 +92,7 @@ public:
 
 	Button * joinButton;													//회원가입 버튼
 	Sprite * joinPopUp;														//회원가입 창
+	EditBox * joinID;														//회원가입 ID 입력칸
 	Button * joinOK;														//회원가입 확인
 	Button * joinCancel;													//회원가입 취소
 	Sprite * loginBackground;												//로그인 화면

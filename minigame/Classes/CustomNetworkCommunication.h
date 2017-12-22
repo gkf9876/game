@@ -28,6 +28,7 @@ USING_NS_CC;
 #define CHATTING_PROCESS				3
 #define USER_MOVE_UPDATE				4
 #define OTHER_USER_MAP_MOVE				5
+#define REQUEST_JOIN					6
 
 class CustomNetworkCommunication
 {
@@ -60,6 +61,9 @@ public :
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
+
+	//0 : 대기, 1 : 승인, -1 : 불허
+	int permissionJoin = 0;
 	char sendBuf[BUF_SIZE];
 	char recvBuf[BUF_SIZE];
 	Vector<String*> chattingInfo;
@@ -89,6 +93,9 @@ public :
 
 	//유저 좌표이동 함수
 	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection);
+
+	//유저 회원가입 요청 함수
+	int requestJoin(char * userName);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

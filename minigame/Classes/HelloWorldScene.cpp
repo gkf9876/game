@@ -64,6 +64,20 @@ bool HelloWorld::init()
 	joinPopUp->setVisible(false);
 	this->addChild(joinPopUp, JOIN_POPUP_Z_ORDER, JOIN_POPUP);
 
+	//회원가입 아이디 입력창
+	joinID = EditBox::create(Size(100, 30), Scale9Sprite::create());
+	joinID->setAnchorPoint(Point(0, 0));
+	joinID->setFont("Arial", 20);
+	joinID->setInputMode(EditBox::InputMode::SINGLE_LINE);
+	joinID->setFontColor(Color3B::GREEN);
+	joinID->setPlaceholderFontColor(Color3B::GREEN);
+	joinID->setPlaceHolder("Insert ID");
+	joinID->setMaxLength(20);
+	joinID->setDelegate(this);
+	joinID->setPosition(Point(92, winSize.height - 98));
+	joinID->setVisible(false);
+	this->addChild(joinID, JOIN_TEXT_INPUT_Z_ORDER, JOIN_TEXT_INPUT);
+
 	//회원가입 확인버튼
 	joinOK = Button::create("joinOK.png", "joinOK.png");
 	joinOK->setAnchorPoint(Point(0, 0));
@@ -1142,6 +1156,7 @@ void HelloWorld::update(float fDelta)
 		{
 			this->mainUser->isLogin = true;
 			loginBackground->setVisible(false);
+			joinID->setVisible(false);
 			joinButton->setVisible(false);
 			loginButton->setVisible(false);
 			loginPopUp->setVisible(false);
@@ -1261,11 +1276,14 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 {
 	if (this->mainUser->isLogin != true)
 	{
-		char userName[50];
-		strcpy(userName, loginID->getText());
-		com->requestLogin(userName);
+		if (loginPopUp->isVisible() == true)
+		{
+			char userName[50];
+			strcpy(userName, loginID->getText());
+			com->requestLogin(userName);
 
-		CCLOG("isLogin : %d", com->isLogin);
+			CCLOG("isLogin : %d", com->isLogin);
+		}
 
 		return;
 	}
@@ -1392,6 +1410,7 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 			exitButton->setVisible(false);
 
 			joinPopUp->setVisible(true);
+			joinID->setVisible(true);
 			joinOK->setVisible(true);
 			joinCancel->setVisible(true);
 		}
@@ -1411,6 +1430,12 @@ void HelloWorld::joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType typ
 	{
 	case Widget::TouchEventType::BEGAN:
 		CCLOG("JOIN OK BUTTON TOUCH BEGAN");
+		char userID[50];
+		strcpy(userID, joinID->getText());
+
+		//해당 아이디로 가입요청
+		com->requestJoin(userID);
+		CCLOG("Request Join : (ID : %s)", userID);
 		break;
 	case Widget::TouchEventType::MOVED:
 		CCLOG("JOIN OK BUTTON TOUCH MOVED");
@@ -1438,6 +1463,7 @@ void HelloWorld::joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType
 			exitButton->setVisible(true);
 
 			joinPopUp->setVisible(false);
+			joinID->setVisible(false);
 			joinOK->setVisible(false);
 			joinCancel->setVisible(false);
 		}

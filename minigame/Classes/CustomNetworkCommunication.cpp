@@ -168,6 +168,18 @@ void * RecvMsg(void * arg)
 				}
 			}
 			break;
+		case REQUEST_JOIN:
+			if (!strcmp(com->recvBuf, "join okey"))
+			{
+				com->permissionJoin = 1;
+				CCLOG("Join Okey!!");
+			}
+			else
+			{
+				com->permissionJoin = -1;
+				CCLOG("Join Disapprove!!");
+			}
+			break;
 		default:
 			break;
 		}
@@ -360,6 +372,16 @@ void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint
 	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
 }
 
+int CustomNetworkCommunication::requestJoin(char * userName)
+{
+	String * message = String::createWithFormat("%s", userName);
+
+	strcpy(this->sendBuf, message->getCString());
+
+	str_len = sendCommand(REQUEST_JOIN, this->sendBuf);
+
+	return str_len;
+}
 int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag)
 {
 	char imsi[BUF_SIZE];
