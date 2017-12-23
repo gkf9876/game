@@ -94,6 +94,22 @@ bool HelloWorld::init()
 	this->addChild(joinCancel, JOIN_CANCEL_BUTTON_Z_ORDER, JOIN_CANCEL_BUTTON);
 	joinCancel->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinCancelButtonTouchEvent, this));
 
+	//회원가입 실패시 띄우는 창
+	joinFailPopUp = Sprite::create("joinFailPopUp.jpg");
+	joinFailPopUp->setAnchorPoint(Point(0.5, 0.5));
+	joinFailPopUp->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
+	joinFailPopUp->setContentSize(Size(288, 105));
+	joinFailPopUp->setVisible(false);
+	this->addChild(joinFailPopUp, JOIN_FAIL_POPUP_Z_ORDER, JOIN_FAIL_POPUP);
+
+	//회원가입 실패 창 확인버튼
+	joinFailPopUpOk = Button::create("joinFailPopUpOk.png", "joinFailPopUpOk.png");
+	joinFailPopUpOk->setAnchorPoint(Point(0, 0));
+	joinFailPopUpOk->setPosition(Point(287, winSize.height - 187));
+	joinFailPopUpOk->setVisible(false);
+	this->addChild(joinFailPopUpOk, JOIN_FAIL_POPUP_OK_Z_ORDER, JOIN_FAIL_POPUP_OK);
+	joinFailPopUpOk->addTouchEventListener(CC_CALLBACK_2(HelloWorld::joinFailPopUpOkButtonTouchEvent, this));
+
 	//로그인 버튼
 	loginButton = Button::create("loginButton.jpg", "loginButton.jpg");
 	loginButton->setAnchorPoint(Point(0.5, 0.5));
@@ -126,12 +142,20 @@ bool HelloWorld::init()
 	this->addChild(loginID, LOGIN_TEXT_INPUT_Z_ORDER, LOGIN_TEXT_INPUT);
 	
 	//로그인 실패시 띄우는 창
-	loginFailWindow = Sprite::create("loginfail.jpg");
-	loginFailWindow->setAnchorPoint(Point(0.5,0.5));
-	loginFailWindow->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
-	loginFailWindow->setContentSize(Size(288, 105));
-	loginFailWindow->setVisible(false);
-	this->addChild(loginFailWindow, LOGINFAIL_WINDOW_Z_ORDER, LOGINFAIL_WINDOW);
+	loginFailPopUp = Sprite::create("loginfail.jpg");
+	loginFailPopUp->setAnchorPoint(Point(0.5,0.5));
+	loginFailPopUp->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
+	loginFailPopUp->setContentSize(Size(288, 105));
+	loginFailPopUp->setVisible(false);
+	this->addChild(loginFailPopUp, LOGIN_FAIL_POPUP_Z_ORDER, LOGIN_FAIL_POPUP);
+
+	//로그인 실패 창 확인버튼
+	loginFailPopUpOk = Button::create("loginFailPopUpOk.png", "loginFailPopUpOk.png");
+	loginFailPopUpOk->setAnchorPoint(Point(0, 0));
+	loginFailPopUpOk->setPosition(Point(287, winSize.height - 187));
+	loginFailPopUpOk->setVisible(false);
+	this->addChild(loginFailPopUpOk, LOGIN_FAIL_POPUP_OK_Z_ORDER, LOGIN_FAIL_POPUP_OK);
+	loginFailPopUpOk->addTouchEventListener(CC_CALLBACK_2(HelloWorld::loginFailPopUpOkButtonTouchEvent, this));
 
 	//암호변경 버튼
 	passwordModiButton = Button::create("passwordModiButton.jpg", "passwordModiButton.jpg");
@@ -1180,10 +1204,41 @@ void HelloWorld::update(float fDelta)
 			start();
 		}
 
-		if(com->popupLoginFail == true)
-			loginFailWindow->setVisible(true);
+		if (com->popupLoginFail == true)
+		{
+			loginFailPopUp->setVisible(true);
+			loginFailPopUpOk->setVisible(true);
+		}
 		else
-			loginFailWindow->setVisible(false);
+		{
+			loginFailPopUp->setVisible(false);
+			loginFailPopUpOk->setVisible(false);
+		}
+
+		if (com->permissionJoin == 1)
+		{
+			//회원가입창 닫기
+			joinPopUp->setVisible(false);
+			joinID->setVisible(false);
+			joinOK->setVisible(false);
+			joinCancel->setVisible(false);
+			com->permissionJoin = 0;
+
+			//로그인화면 띄우기
+			loginBackground->setVisible(true);
+			joinButton->setVisible(true);
+			loginButton->setVisible(true);
+			passwordModiButton->setVisible(true);
+			backGroundStoryButton->setVisible(true);
+			makePeoplesButton->setVisible(true);
+			exitButton->setVisible(true);
+		}
+		else if (com->permissionJoin == -1)
+		{
+			joinFailPopUp->setVisible(true);
+			joinFailPopUpOk->setVisible(true);
+			com->permissionJoin = 0;
+		}
 
 		return;
 	}
@@ -1404,6 +1459,9 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 			loginBackground->setVisible(false);
 			joinButton->setVisible(false);
 			loginButton->setVisible(false);
+			loginPopUp->setVisible(false);
+			loginID->setVisible(false);
+			loginFailPopUp->setVisible(false);
 			passwordModiButton->setVisible(false);
 			backGroundStoryButton->setVisible(false);
 			makePeoplesButton->setVisible(false);
@@ -1477,6 +1535,27 @@ void HelloWorld::joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType
 	}
 }
 
+void HelloWorld::joinFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("JOIN FAIL OK BUTTON TOUCH BEGAN");
+		if (joinFailPopUp->isVisible() == true)
+		{
+			joinFailPopUp->setVisible(false);
+			joinFailPopUpOk->setVisible(false);
+		}
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("JOIN FAIL OK BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("JOIN FAIL OK BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
 void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 {
 	switch (type)
@@ -1499,6 +1578,28 @@ void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type
 		break;
 	case Widget::TouchEventType::ENDED:
 		CCLOG("LOGIN BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::loginFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("LOGIN FAIL OK BUTTON TOUCH BEGAN");
+		if (loginFailPopUp->isVisible() == true)
+		{
+			loginFailPopUp->setVisible(false);
+			loginFailPopUpOk->setVisible(false);
+			com->popupLoginFail = false;
+		}
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("LOGIN FAIL OK BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("LOGIN FAIL OK BUTTON TOUCH ENDED");
 		break;
 	}
 }

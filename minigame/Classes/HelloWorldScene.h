@@ -31,7 +31,7 @@ using namespace ui;
 #define JOIN_BUTTON		12
 #define LOGIN_BUTTON	13
 #define LOGIN_TEXT_INPUT	14
-#define LOGINFAIL_WINDOW		15
+#define LOGIN_FAIL_POPUP		15
 #define PASSWORDMODI_BUTTON	16
 #define BACKGROUNDSTORY_BUTTON	17
 #define MAKEPEOPLE_BUTTON	18
@@ -41,6 +41,9 @@ using namespace ui;
 #define JOIN_OK_BUTTON	22
 #define JOIN_CANCEL_BUTTON	23
 #define JOIN_TEXT_INPUT	24
+#define LOGIN_FAIL_POPUP_OK 25
+#define JOIN_FAIL_POPUP 26
+#define JOIN_FAIL_POPUP_OK 27
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -65,10 +68,13 @@ using namespace ui;
 #define JOIN_TEXT_INPUT_Z_ORDER			4										//회원가입 아이디 입력창 우선순위
 #define JOIN_OK_BUTTON_Z_ORDER			4										//회원가입 확인버튼
 #define JOIN_CANCEL_BUTTON_Z_ORDER		4										//회원가입 취소버튼
+#define JOIN_FAIL_POPUP_Z_ORDER			4										//회원가입 실패 메시지창
+#define JOIN_FAIL_POPUP_OK_Z_ORDER		5										//회원가입 실패창 확인버튼
 #define LOGIN_BUTTON_Z_ORDER			2										//로그인 버튼
 #define LOGIN_POPUP_Z_ORDER				3										//로그인 창
 #define LOGIN_TEXT_INPUT_Z_ORDER		4										//아이디 입력창 우선순위
-#define LOGINFAIL_WINDOW_Z_ORDER		4										//로그인 실패 메시지창
+#define LOGIN_FAIL_POPUP_Z_ORDER		4										//로그인 실패 메시지창
+#define LOGIN_FAIL_POPUP_OK_Z_ORDER		5										//로그인 실패창 확인버튼
 #define PASSWORDMODI_BUTTON_Z_ORDER		2										//암호변경 버튼
 #define BACKGROUNDSTORY_BUTTON_Z_ORDER	2										//배경이야기 버튼
 #define MAKEPEOPLE_BUTTON_Z_ORDER		2										//만든사람들 버튼
@@ -90,16 +96,19 @@ public:
 	// implement the "static create()" method manually
 	CREATE_FUNC(HelloWorld);
 
+	Sprite * loginBackground;												//로그인 화면
 	Button * joinButton;													//회원가입 버튼
 	Sprite * joinPopUp;														//회원가입 창
 	EditBox * joinID;														//회원가입 ID 입력칸
 	Button * joinOK;														//회원가입 확인
 	Button * joinCancel;													//회원가입 취소
-	Sprite * loginBackground;												//로그인 화면
+	Sprite * joinFailPopUp;													//회원가입 실패창
+	Button * joinFailPopUpOk;												//회원가입 실패창 버튼
 	Button * loginButton;													//로그인 버튼
 	Sprite * loginPopUp;													//로그인 창
 	EditBox * loginID;														//로그인 ID 입력칸
-	Sprite * loginFailWindow;												//로그인 실패 화면
+	Sprite * loginFailPopUp;												//로그인 실패창
+	Button * loginFailPopUpOk;												//로그인 실패창 버튼
 	Button * passwordModiButton;											//암호변경 버튼
 	Button * backGroundStoryButton;											//배경이야기 버튼
 	Button * makePeoplesButton;												//만든사람들 버튼
@@ -202,7 +211,9 @@ public:
 	void joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void joinFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void loginFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void passwordModiButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void backGroundStoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
