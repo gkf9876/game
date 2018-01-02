@@ -98,13 +98,12 @@ void * RecvMsg(void * arg)
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
 					User * othersUser = com->usersInfo->at(i);
-					othersUser->sprite->setVisible(false);
-					othersUser->balloon->setVisible(false);
-					othersUser->balloonContent->setVisible(false);
 
 					if (!strcmp(othersUser->name, user->name))
 					{
-						com->usersInfo->erase(com->usersInfo->begin() + i);
+						othersUser->sprite->setVisible(false);
+						othersUser->balloon->setVisible(false);
+						othersUser->balloonContent->setVisible(false);
 						CCLOG("User : %s OUT! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}

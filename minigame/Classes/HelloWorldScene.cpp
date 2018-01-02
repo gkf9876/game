@@ -1124,13 +1124,31 @@ void HelloWorld::update(float fDelta)
 			user->balloonContent->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2 - 50, user->position.y + user->sprite->getContentSize().height + 50));
 			user->balloonContent->setVisible(false);
 			this->addChild(user->balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
+
+			//채팅창에 다른유저의 접속을 알림
+			element.pushBack(String::createWithFormat("%s is Login !!", user->name));
+			com->chattingInfo.pushBack(String::createWithFormat("%s is Login !!", user->name));
+			CCLOG(String::createWithFormat("%s is Login !!", user->name)->getCString());
+
+			tableView->reloadData();
+			tableView->setContentOffset(Vec2(0, 0), false);
 		}
 		else
 		{
 			if (user->sprite->isVisible() == false)
 			{
+				//채팅창에 다른유저의 접속종료를 알림
+				element.pushBack(String::createWithFormat("%s is Logout !!", user->name));
+				com->chattingInfo.pushBack(String::createWithFormat("%s is Logout !!", user->name));
+				CCLOG(String::createWithFormat("%s is Logout !!", user->name)->getCString());
+
+				tableView->reloadData();
+				tableView->setContentOffset(Vec2(0, 0), false);
+
 				this->removeChild(user->sprite);
 				user->sprite = NULL;
+				com->usersInfo->erase(com->usersInfo->begin() + i);
+				i--;
 			}
 			else
 			{
