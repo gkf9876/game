@@ -29,6 +29,7 @@ USING_NS_CC;
 #define USER_MOVE_UPDATE				4
 #define OTHER_USER_MAP_MOVE				5
 #define REQUEST_JOIN					6
+#define UPDATE_LOGIN_TIME				7
 
 class CustomNetworkCommunication
 {
@@ -61,6 +62,7 @@ public :
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
+	bool comm = false;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
@@ -83,19 +85,22 @@ public :
 	int readCommand(int * code, char * buf);
 
 	//채팅함수
-	void chatting(const char * name, const char * content);
+	int chatting(const char * name, const char * content);
 
 	//메인 유저 정보 얻는함수
-	void getUserInfo();
+	int getUserInfo();
 
 	//로그인 승낙함수
-	void requestLogin(char * userName);
+	int requestLogin(char * userName);
 
 	//유저 좌표이동 함수
-	void userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection);
+	int userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection);
 
 	//유저 회원가입 요청 함수
 	int requestJoin(char * userName);
+
+	//접속시간 업데이트 함수
+	int updateLoginTime(char * userName);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

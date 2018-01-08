@@ -197,6 +197,22 @@ bool HelloWorld::init()
 	this->addChild(exitButton, EXIT_BUTTON_Z_ORDER, EXIT_BUTTON);
 	exitButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::exitButtonTouchEvent, this));
 
+	//통신 실패시 띄우는 창
+	commErrorPopUp = Sprite::create("commErrorPopUp.jpg");
+	commErrorPopUp->setAnchorPoint(Point(0.5, 0.5));
+	commErrorPopUp->setPosition(Point(origin.x + winSize.width / 2, origin.y + winSize.height / 2));
+	commErrorPopUp->setContentSize(Size(288, 105));
+	commErrorPopUp->setVisible(false);
+	this->addChild(commErrorPopUp, COMM_ERROR_POPUP_Z_ORDER, COMM_ERROR_POPUP);
+
+	//통신 실패 창 확인버튼
+	commErrorPopUpOk = Button::create("commErrorPopUpOk.png", "commErrorPopUpOk.png");
+	commErrorPopUpOk->setAnchorPoint(Point(0, 0));
+	commErrorPopUpOk->setPosition(Point(287, winSize.height - 187));
+	commErrorPopUpOk->setVisible(false);
+	this->addChild(commErrorPopUpOk, COMM_ERROR_POPUP_OK_Z_ORDER, COMM_ERROR_POPUP_OK);
+	commErrorPopUpOk->addTouchEventListener(CC_CALLBACK_2(HelloWorld::commErrorPopUpOkButtonTouchEvent, this));
+
 	//서버와 통신 설정
 	com = new CustomNetworkCommunication();
 	com->init();
@@ -648,6 +664,10 @@ void HelloWorld::setViewpointCenter(Point position)
 		joystick->setPosition(joystick->getPosition() + joystickMoveRange);
 #endif
 
+	//통신 실패시 띄우는 창
+	commErrorPopUp->setPosition(Point(actualPosition.x, actualPosition.y));
+	commErrorPopUpOk->setPosition(Point(actualPosition.x - winSize.width / 2 + 287, actualPosition.y - winSize.height / 2 + (winSize.height - 187)));
+
 	this->setPosition(viewPoint);
 }
 
@@ -800,8 +820,12 @@ void HelloWorld::setPlayerPosition(Point position)
 				//이동한 내용을 DB에 반영
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
-				com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
+				writeSize = com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
 					cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
+				if (writeSize == -1)
+				{
+					com->comm = false;
+				}
 				strcpy(this->mainUser->field, sendMapName);
 
 				return;
@@ -818,8 +842,12 @@ void HelloWorld::setPlayerPosition(Point position)
 	Value properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
-	com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
+	writeSize = com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
 		cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
+	if (writeSize == -1)
+	{
+		com->comm = false;
+	}
 	strcpy(this->mainUser->field, sendMapName);
 
 	//플레이어가 화면 가운데로 오게 조절
@@ -858,8 +886,12 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			this->mainUser->sprite->setSpriteFrame("man_13.png");
 
 			//방향전환을 서버에 알려준다.
-			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
 				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			if (writeSize == -1)
+			{
+				com->comm = false;
+			}
 		}
 		else
 			this->mainUser->isRunning = true;
@@ -873,8 +905,12 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			this->mainUser->sprite->setSpriteFrame("man_01.png");
 
 			//방향전환을 서버에 알려준다.
-			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
 				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			if (writeSize == -1)
+			{
+				com->comm = false;
+			}
 		}
 		else
 			this->mainUser->isRunning = true;
@@ -888,8 +924,12 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			this->mainUser->sprite->setSpriteFrame("man_09.png");
 
 			//방향전환을 서버에 알려준다.
-			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
 				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			if (writeSize == -1)
+			{
+				com->comm = false;
+			}
 		}
 		else
 			this->mainUser->isRunning = true;
@@ -903,8 +943,12 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			this->mainUser->sprite->setSpriteFrame("man_05.png");
 
 			//방향전환을 서버에 알려준다.
-			com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
+			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
 				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			if (writeSize == -1)
+			{
+				com->comm = false;
+			}
 		}
 		else
 			this->mainUser->isRunning = true;
@@ -1209,7 +1253,10 @@ void HelloWorld::update(float fDelta)
 			exitButton->setVisible(false);
 
 			// 유저 정보 불러오기
-			com->getUserInfo();
+			if (com->getUserInfo() == -1)
+			{
+				com->comm = false;
+			}
 
 			//유저 정보 불러올때까지 대기.
 			while (com->isGetUserInfo != true);
@@ -1343,6 +1390,21 @@ void HelloWorld::update(float fDelta)
 	}
 	tableView->reloadData();
 	tableView->setContentOffset(Vec2(0, 0), false);
+
+	//서버와 통신 두절시 종료한다.
+	if (com->comm == false)
+	{
+		CCLOG("Comm Error!!");
+		commErrorPopUp->setVisible(true);
+		commErrorPopUpOk->setVisible(true);
+	}
+
+	//일정 주기로 접속시간 업데이트
+	if (com->updateLoginTime(this->mainUser->name) == -1)
+	{
+		CCLOG("Comm Error!!");
+		com->comm = false;
+	}
 }
 
 void HelloWorld::editBoxReturn(EditBox * editBox)
@@ -1353,7 +1415,10 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 		{
 			char userName[50];
 			strcpy(userName, loginID->getText());
-			com->requestLogin(userName);
+			if (com->requestLogin(userName) == -1)
+			{
+				com->comm = false;
+			}
 
 			CCLOG("isLogin : %d", com->isLogin);
 		}
@@ -1510,7 +1575,10 @@ void HelloWorld::joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType typ
 		strcpy(userID, joinID->getText());
 
 		//해당 아이디로 가입요청
-		com->requestJoin(userID);
+		if (com->requestJoin(userID) == -1)
+		{
+			com->comm = false;
+		}
 		CCLOG("Request Join : (ID : %s)", userID);
 		break;
 	case Widget::TouchEventType::MOVED:
@@ -1682,6 +1750,28 @@ void HelloWorld::exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 		break;
 	case Widget::TouchEventType::ENDED:
 		CCLOG("EXIT BUTTON TOUCH ENDED");
+		break;
+	}
+}
+
+void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+	switch (type)
+	{
+	case Widget::TouchEventType::BEGAN:
+		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH BEGAN");
+		if (commErrorPopUp->isVisible() == true)
+		{
+			commErrorPopUp->setVisible(false);
+			commErrorPopUpOk->setVisible(false);
+			CCDirector::sharedDirector()->end();
+		}
+		break;
+	case Widget::TouchEventType::MOVED:
+		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH MOVED");
+		break;
+	case Widget::TouchEventType::ENDED:
+		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH ENDED");
 		break;
 	}
 }

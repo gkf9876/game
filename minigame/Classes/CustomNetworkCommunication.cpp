@@ -32,7 +32,10 @@ void * RecvMsg(void * arg)
 		str_len = com->readCommand(&code, com->recvBuf);
 
 		if (str_len == -1)
+		{
+			com->comm = false;
 			return NULL;
+		}
 
 		switch (code)
 		{
@@ -219,9 +222,15 @@ void CustomNetworkCommunication::init()
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == SOCKET_ERROR)
+	{
 		error_handling("connect() error!");
+		comm = false;
+	}
 	else
+	{
 		puts("Connected...............");
+		comm = true;
+	}
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == -1)
         error_handling("connect() error!");
@@ -332,34 +341,40 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	return len;
 }
 
-void CustomNetworkCommunication::chatting(const char * name, const char * content)
+int CustomNetworkCommunication::chatting(const char * name, const char * content)
 {
 	String * message = String::createWithFormat("%s\n%s\n", name, content);
 
 	strcpy(this->sendBuf, message->getCString());
 
 	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf);
+
+	return str_len;
 }
 
-void CustomNetworkCommunication::getUserInfo()
+int CustomNetworkCommunication::getUserInfo()
 {
 	String * message = String::createWithFormat("%d", sock);
 
 	strcpy(this->sendBuf, message->getCString());
 
 	str_len = sendCommand(REQUEST_USER_INFO, "request user information");
+
+	return str_len;
 }
 
-void CustomNetworkCommunication::requestLogin(char * userName)
+int CustomNetworkCommunication::requestLogin(char * userName)
 {
 	String * message = String::createWithFormat("%s", userName);
 
 	strcpy(this->sendBuf, message->getCString());
 
 	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
+
+	return str_len;
 }
 
-void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection)
+int CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection)
 {
 	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s\n%d", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to, seeDirection);
 	CCLOG("%s %d %d %s %d %d %s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
@@ -369,6 +384,8 @@ void CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint
 		usersInfo->clear();
 
 	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
+
+	return str_len;
 }
 
 int CustomNetworkCommunication::requestJoin(char * userName)
@@ -381,6 +398,18 @@ int CustomNetworkCommunication::requestJoin(char * userName)
 
 	return str_len;
 }
+
+int CustomNetworkCommunication::updateLoginTime(char * userName)
+{
+	String * message = String::createWithFormat("%s", userName);
+
+	strcpy(this->sendBuf, message->getCString());
+
+	str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf);
+
+	return str_len;
+}
+
 int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag)
 {
 	char imsi[BUF_SIZE];

@@ -44,6 +44,8 @@ using namespace ui;
 #define LOGIN_FAIL_POPUP_OK 25
 #define JOIN_FAIL_POPUP 26
 #define JOIN_FAIL_POPUP_OK 27
+#define COMM_ERROR_POPUP 28
+#define COMM_ERROR_POPUP_OK 29
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -79,6 +81,8 @@ using namespace ui;
 #define BACKGROUNDSTORY_BUTTON_Z_ORDER	2										//배경이야기 버튼
 #define MAKEPEOPLE_BUTTON_Z_ORDER		2										//만든사람들 버튼
 #define EXIT_BUTTON_Z_ORDER				2										//종료 버튼
+#define COMM_ERROR_POPUP_Z_ORDER		8										//통신두절시 종료창
+#define COMM_ERROR_POPUP_OK_Z_ORDER		9										//통신두절시 종료창
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -113,6 +117,8 @@ public:
 	Button * backGroundStoryButton;											//배경이야기 버튼
 	Button * makePeoplesButton;												//만든사람들 버튼
 	Button * exitButton;													//종료 버튼
+	Sprite * commErrorPopUp;												//통신두절시 종료창
+	Button * commErrorPopUpOk;												//통신실패창 확인버튼
 
 	User * mainUser;
 
@@ -161,6 +167,8 @@ public:
 
 	float updateTime;														//update 함수가 호출되는 시간을 기록. 60초가 될시 0으로 초기화
 	int readyCount;															//유저의 행동 카운트
+
+	int writeSize;															//서버에 보내는 버퍼 크기
 
 	void start();
 
@@ -218,6 +226,7 @@ public:
 	void backGroundStoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+	void commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 
 	//매 프레임마다 호출되는 함수.
 	void update(float fDelta);			
