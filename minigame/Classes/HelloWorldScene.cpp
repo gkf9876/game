@@ -225,12 +225,26 @@ bool HelloWorld::init()
 
 void HelloWorld::start()
 {
-	//맵 세팅
+	//맵 세팅. 서버로부터 타일맵 데이터를 받아서 구현한다.
 	address = "TileMaps/KonyangUniv.Daejeon/JukhunDigitalFacilitie/floor_08/";
 	std::string map = address;
 	map.append("floor.tmx");
 
-	tmap = TMXTiledMap::create(com->mainUser->field);
+	com->getTiledMap = false;
+	if (fieldInfo != NULL)
+	{
+		free(fieldInfo);
+		fieldInfo = NULL;
+	}
+	fieldInfo = (char*)malloc(strlen(this->mainUser->field) + strlen("Resources/") + 1);
+	strcpy(fieldInfo, "Resources/");
+	strcat(fieldInfo, this->mainUser->field);
+	com->sendCommand(REQUEST_TILED_MAP, fieldInfo, strlen(fieldInfo));
+	free(fieldInfo);
+	fieldInfo = NULL;
+	while (com->getTiledMap != true);
+
+	tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
 	currentFlag = com->mainUser->field;
 	background = tmap->getLayer("Background");
 	items = tmap->getLayer("Items");
@@ -342,6 +356,9 @@ void HelloWorld::onEnter()
 
 void HelloWorld::onExit()
 {
+	if (fieldInfo != NULL)
+		free(fieldInfo);
+
 	_eventDispatcher->removeEventListenersForType(EventListener::Type::TOUCH_ONE_BY_ONE);
 	com->sockClose();
 
@@ -776,6 +793,7 @@ void HelloWorld::setPlayerPosition(Point position)
 				if (stair == "YES" || frontdoor == "YES")
 				{
 					address = properties.asValueMap()["Address"].asString();
+					CCLOG("Hello World : %s", address.data());
 				}
 
 				std::string destination = address;
@@ -784,11 +802,28 @@ void HelloWorld::setPlayerPosition(Point position)
 				destination.append(".tmx");
 
 				std::string code = properties.asValueMap()["Code"].asString();
-
 				std::string place = objects->getProperty("Place").asString();
 
+				//기존 타일맵 소스 삭제
 				this->removeChildByTag(MAP_TAG);
-				tmap = TMXTiledMap::create(destination);
+
+				//새 타일맵 서버에 요청
+				com->getTiledMap = false;
+				if (fieldInfo != NULL)
+				{
+					free(fieldInfo);
+					fieldInfo = NULL;
+				}
+				fieldInfo = (char*)malloc(strlen(destination.data()) + strlen("Resources/") + 1);
+				strcpy(fieldInfo, "Resources/");
+				strcat(fieldInfo, destination.data());
+				com->sendCommand(REQUEST_TILED_MAP, fieldInfo, strlen(fieldInfo));
+				free(fieldInfo);
+				fieldInfo = NULL;
+				while (com->getTiledMap != true);
+
+				//서버에서 받은 타일맵 소스를 표시
+				tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
 				currentFlag = destination;
 				background = tmap->getLayer("Background");
 				items = tmap->getLayer("Items");

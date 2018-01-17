@@ -30,6 +30,8 @@ USING_NS_CC;
 #define OTHER_USER_MAP_MOVE				5
 #define REQUEST_JOIN					6
 #define UPDATE_LOGIN_TIME				7
+#define REQUEST_TILED_MAP				8
+#define REQUEST_IMAGE					9
 
 class CustomNetworkCommunication
 {
@@ -59,15 +61,18 @@ public :
 	User * mainUser;
 	std::vector<User*> * usersInfo;
 
+	std::vector<byte> *tiledMapBuf = NULL;
+
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
 	bool comm = false;
+	bool getTiledMap = false;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
 	char sendBuf[BUF_SIZE];
-	char recvBuf[BUF_SIZE];
+	char recvBuf[100000];
 	Vector<String*> chattingInfo;
 
 	void init();
@@ -81,7 +86,7 @@ public :
 
 	//서버와의 패킷통신 함수
 	void error_handling(char * message);
-	int sendCommand(int code, char * message);
+	int sendCommand(int code, char * message, int size);
 	int readCommand(int * code, char * buf);
 
 	//채팅함수

@@ -170,6 +170,8 @@ public:
 
 	int writeSize;															//서버에 보내는 버퍼 크기
 
+	char * fieldInfo = NULL;												//서버에 요청할 타일맵 경로
+
 	void start();
 
 	//게임 시작/종료시 함수

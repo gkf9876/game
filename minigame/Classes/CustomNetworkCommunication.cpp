@@ -182,6 +182,16 @@ void * RecvMsg(void * arg)
 				CCLOG("Join Disapprove!!");
 			}
 			break;
+		case REQUEST_TILED_MAP:
+			com->tiledMapBuf = new std::vector<byte>();
+			for (int i = 0; i < str_len; i++)
+			{
+				com->tiledMapBuf->push_back((byte)com->recvBuf[i]);
+			}
+			com->getTiledMap = true;
+			break;
+		case REQUEST_IMAGE:
+			break;
 		default:
 			break;
 		}
@@ -262,6 +272,8 @@ void CustomNetworkCommunication::init()
 void CustomNetworkCommunication::sockClose()
 {
 	usersInfo->clear();
+	if(tiledMapBuf != NULL)
+		delete tiledMapBuf;
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	shutdown(sock, SD_SEND);
@@ -289,56 +301,62 @@ void CustomNetworkCommunication::error_handling(char * message)
 	exit(1);
 }
 
-int CustomNetworkCommunication::sendCommand(int code, char * message)
+int CustomNetworkCommunication::sendCommand(int code, char * message, int size)
 {
+	char * buf;
+	int writeLen;
+
 	if (message == NULL)
 		return -1;
 
-	char buf[BUF_SIZE];
-	int len = strlen(message);
-
-	IntToChar(len, &buf[0]);
+	buf = new char[size + 9];
+	IntToChar(size, &buf[0]);
 	IntToChar(code, &buf[4]);
-
 	strcpy(&buf[8], message);
 
-	int writeLen = send(this->sock, buf, len + 8, 0);
+	writeLen = send(this->sock, buf, size + 8, 0);
+
+	delete[] buf;
 
 	if (writeLen == -1)
 		return -1;
 	else
-		return len;
-
-	CCLOG("Code : %d, Content : %s", code, message);
+		return writeLen;
 }
 
 int CustomNetworkCommunication::readCommand(int * code, char * buf)
 {
 	int len;
+	int readLen;
+	int size = 0;
 
 	if (buf == NULL)
 		return -1;
 
-	int readLen = recv(this->sock, buf, 4, 0);
-
-	if (readLen == -1)
+	if (recv(this->sock, buf, 4, 0) == -1)
 		return -1;
-	else if (readLen == 0)
-		return 0;
 
 	CharToInt(&buf[0], &len);
 
-	readLen = recv(this->sock, buf, 4, 0);
-
-	if (readLen == -1)
+	if (recv(this->sock, buf, 4, 0) == -1)
 		return -1;
 
 	CharToInt(&buf[0], code);
 
-	recv(this->sock, buf, len, 0);
-	buf[len] = 0;
+	//버퍼가 완전히 비워질때까지 받는다.
+	while (1)
+	{
+		readLen = recv(this->sock, &buf[size], len, 0);
 
-	return len;
+		if (readLen == -1)
+			return -1;
+		size += readLen;
+		if (size >= len || readLen == 0)
+			break;
+	}
+	buf[size] = 0;
+
+	return size + 1;
 }
 
 int CustomNetworkCommunication::chatting(const char * name, const char * content)
@@ -347,7 +365,7 @@ int CustomNetworkCommunication::chatting(const char * name, const char * content
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf);
+	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
@@ -358,7 +376,7 @@ int CustomNetworkCommunication::getUserInfo()
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(REQUEST_USER_INFO, "request user information");
+	str_len = sendCommand(REQUEST_USER_INFO, "request user information", strlen("request user information"));
 
 	return str_len;
 }
@@ -369,7 +387,7 @@ int CustomNetworkCommunication::requestLogin(char * userName)
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf);
+	str_len = sendCommand(REQUEST_LOGIN, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
@@ -383,7 +401,7 @@ int CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint,
 	if(strcmp(from, to))
 		usersInfo->clear();
 
-	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf);
+	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
@@ -394,7 +412,7 @@ int CustomNetworkCommunication::requestJoin(char * userName)
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(REQUEST_JOIN, this->sendBuf);
+	str_len = sendCommand(REQUEST_JOIN, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
@@ -405,7 +423,7 @@ int CustomNetworkCommunication::updateLoginTime(char * userName)
 
 	strcpy(this->sendBuf, message->getCString());
 
-	str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf);
+	str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
