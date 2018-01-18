@@ -793,7 +793,6 @@ void HelloWorld::setPlayerPosition(Point position)
 				if (stair == "YES" || frontdoor == "YES")
 				{
 					address = properties.asValueMap()["Address"].asString();
-					CCLOG("Hello World : %s", address.data());
 				}
 
 				std::string destination = address;
@@ -805,6 +804,7 @@ void HelloWorld::setPlayerPosition(Point position)
 				std::string place = objects->getProperty("Place").asString();
 
 				//기존 타일맵 소스 삭제
+				tmap->setVisible(false);
 				this->removeChildByTag(MAP_TAG);
 
 				//새 타일맵 서버에 요청
@@ -824,6 +824,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 				//서버에서 받은 타일맵 소스를 표시
 				tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
+				tmap->setVisible(true);
 				currentFlag = destination;
 				background = tmap->getLayer("Background");
 				items = tmap->getLayer("Items");
