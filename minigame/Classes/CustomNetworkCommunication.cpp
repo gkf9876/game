@@ -359,9 +359,9 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	return size + 1;
 }
 
-int CustomNetworkCommunication::chatting(const char * name, const char * content)
+int CustomNetworkCommunication::chatting(const char * name, const char * content, const char * field)
 {
-	String * message = String::createWithFormat("%s\n%s\n", name, content);
+	String * message = String::createWithFormat("%s\n%s\n%s\n", name, content, field);
 
 	strcpy(this->sendBuf, message->getCString());
 

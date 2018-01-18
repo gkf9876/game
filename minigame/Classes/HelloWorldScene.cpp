@@ -1475,7 +1475,7 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	editBox->setText("");
 
 	char name[50];
-	com->chatting(com->mainUser->name, message->getCString());
+	com->chatting(com->mainUser->name, message->getCString(),this->mainUser->field);
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	this->mainUser->balloon->setVisible(true);

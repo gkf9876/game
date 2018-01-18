@@ -90,7 +90,7 @@ public :
 	int readCommand(int * code, char * buf);
 
 	//채팅함수
-	int chatting(const char * name, const char * content);
+	int chatting(const char * name, const char * content, const char * field);
 
 	//메인 유저 정보 얻는함수
 	int getUserInfo();
