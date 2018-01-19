@@ -754,6 +754,12 @@ void HelloWorld::setPlayerPosition(Point position)
 					this->metainfo->removeTileAt(tileCoord);
 					items->removeTileAt(tileCoord);
 
+					//아이템 획득 사실을 서버에 알림
+					if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
+					{
+						CCLOG("Item recv Error!!");
+					}
+
 					CCLOG("get item!! : (%d, %d)", (int)items_coodinate.x, (int)items_coodinate.y);
 				}
 				else
@@ -1440,6 +1446,20 @@ void HelloWorld::update(float fDelta)
 	{
 		CCLOG("Comm Error!!");
 		com->comm = false;
+	}
+
+	//현재 필드의 오브젝트 변동사항 업데이트
+	if (com->changeTiledMapObject == true)
+	{
+		CCLOG("Change Tiled Map Object!!");
+
+		//다른유저가 필드의 아이템을 먹을시 업데이트
+		Point itemPos = Point(com->itemXpos, com->itemYpos);
+		this->metainfo->removeTileAt(itemPos);
+		items->removeTileAt(itemPos);
+		CCLOG("remove item!! : (%d, %d)", (int)itemPos.x, (int)itemPos.y);
+
+		com->changeTiledMapObject = false;
 	}
 }
 

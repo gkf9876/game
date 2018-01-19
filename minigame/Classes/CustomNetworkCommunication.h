@@ -32,6 +32,7 @@ USING_NS_CC;
 #define UPDATE_LOGIN_TIME				7
 #define REQUEST_TILED_MAP				8
 #define REQUEST_IMAGE					9
+#define DELETE_FIELD_ITEM				10
 
 class CustomNetworkCommunication
 {
@@ -63,11 +64,20 @@ public :
 
 	std::vector<byte> *tiledMapBuf = NULL;
 
+	//서버 알람 이력
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
 	bool comm = false;
 	bool getTiledMap = false;
+	bool changeTiledMapObject = false;					//현재 필드의 오브젝트 변동사항
+
+	//현재필드의 아이템 변동사항이 존재할시 변동내용
+	char itemUser[BUF_SIZE];
+	char itemName[BUF_SIZE];
+	int itemXpos;
+	int itemYpos;
+	int itemOrder;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
@@ -106,6 +116,9 @@ public :
 
 	//접속시간 업데이트 함수
 	int updateLoginTime(char * userName);
+
+	//유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
+	int eatFieldItem(char * itemName, int xpos, int ypos, int order);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

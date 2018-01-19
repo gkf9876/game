@@ -191,6 +191,31 @@ void * RecvMsg(void * arg)
 			com->getTiledMap = true;
 			break;
 		case REQUEST_IMAGE:
+			com->tiledMapBuf = new std::vector<byte>();
+			for (int i = 0; i < str_len; i++)
+			{
+				com->tiledMapBuf->push_back((byte)com->recvBuf[i]);
+			}
+			com->getTiledMap = true;
+			break;
+		case DELETE_FIELD_ITEM:
+			char itemPos[5][BUF_SIZE];
+			com->SeparateString(com->recvBuf, itemPos, 50, '\n');
+
+			//먹은 유저 이름
+			strcpy(com->itemUser, itemPos[0]);
+			//아이템 이름
+			strcpy(com->itemName, itemPos[1]);
+			//아이템 위치
+			com->itemXpos = atoi(itemPos[2]);
+			com->itemYpos = atoi(itemPos[3]);
+			//아이템 순서(숫자가 클수록 맨 위에 위치)
+			com->itemOrder = atoi(itemPos[4]);
+
+			//현재 필드의 오브젝트 변동사항 알림
+			com->changeTiledMapObject = true;
+
+			CCLOG("EAT OTHER USER ITEM!!");
 			break;
 		default:
 			break;
@@ -424,6 +449,18 @@ int CustomNetworkCommunication::updateLoginTime(char * userName)
 	strcpy(this->sendBuf, message->getCString());
 
 	str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf, strlen(this->sendBuf));
+
+	return str_len;
+}
+
+//유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
+int CustomNetworkCommunication::eatFieldItem(char * itemName, int xpos, int ypos, int order)
+{
+	String * message = String::createWithFormat("%s\n%s\n%d\n%d\n%d", this->mainUser->name, itemName, xpos, ypos, order);
+
+	strcpy(this->sendBuf, message->getCString());
+
+	str_len = sendCommand(DELETE_FIELD_ITEM, this->sendBuf, strlen(this->sendBuf));
 
 	return str_len;
 }
