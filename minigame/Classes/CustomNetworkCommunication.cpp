@@ -1,4 +1,5 @@
 #include "CustomNetworkCommunication.h"
+#include <Windows.h>
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI SendMsg(void * arg)   // send thread main
@@ -26,6 +27,7 @@ void * RecvMsg(void * arg)
 	int str_len;
 	char buf[50][BUF_SIZE];
 	User * user;
+	char message[100];
 
 	while (1)
 	{
@@ -122,7 +124,7 @@ void * RecvMsg(void * arg)
 				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
 				user->sprite = NULL;
 
-				com->usersInfo->push_back(user); 
+				com->usersInfo->push_back(user);
 				//알 수 없는 오류
 				//CCLOG("User : %s IN! (%d, %d)", user->name, user->xpos, user->ypos);
 			}
@@ -157,7 +159,7 @@ void * RecvMsg(void * arg)
 						othersUser->seeDirection = user->seeDirection;
 						othersUser->xpos = user->xpos;
 						othersUser->ypos = user->ypos;
-						othersUser->position = Point(user->xpos * 32 + 32/2, user->ypos * 32);
+						othersUser->position = Point(user->xpos * 32 + 32 / 2, user->ypos * 32);
 						othersUser->sprite->setPosition(othersUser->position);
 
 						//말풍선은 항상 캐릭터를 따라다녀야함
@@ -183,6 +185,7 @@ void * RecvMsg(void * arg)
 			}
 			break;
 		case REQUEST_TILED_MAP:
+			//맵 정보를 가져온다.
 			com->tiledMapBuf = new std::vector<byte>();
 			for (int i = 0; i < str_len; i++)
 			{
@@ -191,12 +194,13 @@ void * RecvMsg(void * arg)
 			com->getTiledMap = true;
 			break;
 		case REQUEST_IMAGE:
-			com->tiledMapBuf = new std::vector<byte>();
+			//이미지 정보를 가져온다.
+			com->imageBuf = new std::vector<byte>();
 			for (int i = 0; i < str_len; i++)
 			{
-				com->tiledMapBuf->push_back((byte)com->recvBuf[i]);
+				com->imageBuf->push_back((byte)com->recvBuf[i]);
 			}
-			com->getTiledMap = true;
+			com->getImage = true;
 			break;
 		case DELETE_FIELD_ITEM:
 			char itemPos[5][BUF_SIZE];
@@ -217,6 +221,18 @@ void * RecvMsg(void * arg)
 
 			CCLOG("EAT OTHER USER ITEM!!");
 			break;
+		case REQUEST_FIELD_INFO:
+			int count;
+			memcpy(&count, &com->recvBuf[0], 4);
+			for (int i = 0; i < count; i++)
+			{
+				StructCustomObject imsiStructCustomObject;
+				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
+				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+				com->objectInfo->push_back(customObject);
+			}
+			com->isObjectBufferFill = true;
+			break;
 		default:
 			break;
 		}
@@ -229,6 +245,7 @@ void CustomNetworkCommunication::init()
 {
 	this->mainUser = new User();
 	this->usersInfo = new std::vector<User*>();
+	this->objectInfo = new std::vector<CustomObject*>();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -246,6 +263,7 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
+	//host = gethostbyname("192.168.56.102");
 	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
@@ -367,6 +385,9 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 		return -1;
 
 	CharToInt(&buf[0], code);
+
+	if (len > (100000 - 8))
+		return 8;
 
 	//버퍼가 완전히 비워질때까지 받는다.
 	while (1)
@@ -518,9 +539,26 @@ void CustomNetworkCommunication::CharToInt(char * value, int * result)
 	*result += (unsigned char)value[3];
 }
 
+void CustomNetworkCommunication::MyPrintDebug(char * message)
+{
+	wchar_t pszCharacterString[100000];
+
+	int nLen = (int)strlen(message) + 1;
+	mbstowcs(pszCharacterString, message, nLen);
+
+	OutputDebugString(pszCharacterString);
+}
 
 CustomNetworkCommunication::~CustomNetworkCommunication()
 {
 	if(mainUser != NULL)
 		delete mainUser;
+	if (usersInfo != NULL)
+		delete usersInfo;
+	if (objectInfo != NULL)
+		delete objectInfo;
+	if(tiledMapBuf != NULL)
+		delete tiledMapBuf;
+	if(imageBuf != NULL)
+		delete imageBuf;
 }

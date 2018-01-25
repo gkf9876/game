@@ -29,6 +29,9 @@ public:
 	cocos2d::LabelTTF * balloonContent;										//말풍선 내용
 	Sprite * balloon;														//말풍선
 	int balloonTime = 0;													//말풍선 떠있는 시간.
+
+	User();
+	~User();
 };
 
 #endif

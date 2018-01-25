@@ -18,6 +18,7 @@
 
 #include "cocos2d.h"
 #include "User.h"
+#include "CustomObject.h"
 
 USING_NS_CC;
 
@@ -33,6 +34,7 @@ USING_NS_CC;
 #define REQUEST_TILED_MAP				8
 #define REQUEST_IMAGE					9
 #define DELETE_FIELD_ITEM				10
+#define REQUEST_FIELD_INFO				11
 
 class CustomNetworkCommunication
 {
@@ -59,17 +61,20 @@ private :
 	char content[100];
 
 public :
-	User * mainUser;
-	std::vector<User*> * usersInfo;
+	User * mainUser = NULL;
+	std::vector<User*> * usersInfo = NULL;								//현재 맵의 다른 유저들
+	std::vector<CustomObject*> * objectInfo = NULL;						//현재 맵의 오브젝트
 
 	std::vector<byte> *tiledMapBuf = NULL;
+	std::vector<byte> *imageBuf = NULL;
 
 	//서버 알람 이력
 	bool isLogin = false;
 	bool isGetUserInfo = false;
 	bool popupLoginFail = false;
-	bool comm = false;
+	bool comm = true;
 	bool getTiledMap = false;
+	bool getImage = false;
 	bool changeTiledMapObject = false;					//현재 필드의 오브젝트 변동사항
 
 	//현재필드의 아이템 변동사항이 존재할시 변동내용
@@ -78,6 +83,17 @@ public :
 	int itemXpos;
 	int itemYpos;
 	int itemOrder;
+
+	//현재필드에 존재하는 오브젝트를 실제 화면에 반영하기위해 임시로 저장해놓은 곳
+	int objectIdx;
+	char objectName[50];
+	char objectType[50];
+	int objectXpos;
+	int objectYpos;
+	int objectOrder;
+	char objectFileDir[100];
+	int objectCount;
+	bool isObjectBufferFill = false;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
@@ -124,6 +140,7 @@ public :
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);
 	void IntToChar(int value, char * result);
 	void CharToInt(char * value, int * result);
+	void MyPrintDebug(char * message);
 	~CustomNetworkCommunication();
 };
 
