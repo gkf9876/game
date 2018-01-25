@@ -156,7 +156,7 @@ public:
 
 	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
 
-	TableView* tableView;													//채팅 띄우는 창
+	TableView* tableView = NULL;											//채팅 띄우는 창
 	LabelTTF* showLabel;													//채팅창에 띄울 문장
 	Vector<String*> element;												//채팅창 채팅목록
 

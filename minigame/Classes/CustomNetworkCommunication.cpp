@@ -1,5 +1,7 @@
 #include "CustomNetworkCommunication.h"
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <Windows.h>
+#endif
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI SendMsg(void * arg)   // send thread main
@@ -7,11 +9,26 @@ unsigned WINAPI SendMsg(void * arg)   // send thread main
 void * SendMsg(void * arg)
 #endif
 {
-	//while (1)
-	//{
-		//CCLOG("SendMsg");
-		//Sleep(1000);
-	//}
+	CustomNetworkCommunication * com = ((CustomNetworkCommunication*)arg);
+
+	while (1)
+	{
+		if (com->isLogin == true)
+		{
+			//일정 주기로 접속시간 업데이트
+			if (com->updateLoginTime(com->mainUser->name) <= 0)
+			{
+				com->comm = false;
+			}
+			com->MyPrintDebug("Hello World\n");
+		}
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+		Sleep(5000);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+		sleep(5000);
+#endif
+	}
 
 	return 0;
 }
@@ -77,17 +94,14 @@ void * RecvMsg(void * arg)
 			if (!strcmp(com->recvBuf, "login okey"))
 			{
 				com->isLogin = true;
-				CCLOG("Login Okey!!");
 			}
 			else
 			{
 				com->isLogin = false;
-				CCLOG("Login Fail!!");
 				com->popupLoginFail = true;
 			}
 			break;
 		case USER_MOVE_UPDATE:
-			CCLOG("user move!!");
 			break;
 		case OTHER_USER_MAP_MOVE:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
@@ -109,7 +123,6 @@ void * RecvMsg(void * arg)
 						othersUser->sprite->setVisible(false);
 						othersUser->balloon->setVisible(false);
 						othersUser->balloonContent->setVisible(false);
-						CCLOG("User : %s OUT! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
 				}
@@ -125,8 +138,6 @@ void * RecvMsg(void * arg)
 				user->sprite = NULL;
 
 				com->usersInfo->push_back(user);
-				//알 수 없는 오류
-				//CCLOG("User : %s IN! (%d, %d)", user->name, user->xpos, user->ypos);
 			}
 			else if (!strcmp(buf[0], "move"))
 			{
@@ -165,8 +176,6 @@ void * RecvMsg(void * arg)
 						//말풍선은 항상 캐릭터를 따라다녀야함
 						othersUser->balloon->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2, othersUser->position.y + othersUser->sprite->getContentSize().height));
 						othersUser->balloonContent->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2 - 50, othersUser->position.y + othersUser->sprite->getContentSize().height + 50));
-
-						CCLOG("User : %s MOVE! (%d, %d)", user->name, user->xpos, user->ypos);
 						break;
 					}
 				}
@@ -176,12 +185,10 @@ void * RecvMsg(void * arg)
 			if (!strcmp(com->recvBuf, "join okey"))
 			{
 				com->permissionJoin = 1;
-				CCLOG("Join Okey!!");
 			}
 			else
 			{
 				com->permissionJoin = -1;
-				CCLOG("Join Disapprove!!");
 			}
 			break;
 		case REQUEST_TILED_MAP:
@@ -218,8 +225,6 @@ void * RecvMsg(void * arg)
 
 			//현재 필드의 오브젝트 변동사항 알림
 			com->changeTiledMapObject = true;
-
-			CCLOG("EAT OTHER USER ITEM!!");
 			break;
 		case REQUEST_FIELD_INFO:
 			int count;
@@ -441,7 +446,6 @@ int CustomNetworkCommunication::requestLogin(char * userName)
 int CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection)
 {
 	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s\n%d", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to, seeDirection);
-	CCLOG("%s %d %d %s %d %d %s", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to);
 
 	//맵 이동시 현재 유저목록 초기화
 	if(strcmp(from, to))

@@ -218,7 +218,7 @@ bool HelloWorld::init()
 	com->init();
 
 	//매 프레임마다 update() 함수를 호출
-	this->schedule(schedule_selector(HelloWorld::update), 0.15);
+	this->schedule(schedule_selector(HelloWorld::update), 0.5);
 
 	return true;
 }
@@ -355,9 +355,6 @@ void HelloWorld::start()
 	tableView->setDelegate(this);
 	this->addChild(tableView, MAP_NAME_PRIORITY_Z_ORDER, CHATTING_VIEW);
 
-	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
-	tableView->reloadData();
-
 	//맵이름을 중앙 상단에 띄움
 	title = Sprite::create("Images/title.png");
 	title->setAnchorPoint(Point(0.5, 1));
@@ -445,7 +442,6 @@ void HelloWorld::createSprite()
 
 void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-	CCLOG("-- onTouchesBegan --");
 	std::vector<Touch *>::const_iterator it = touches.begin();
 	Touch* touch;
 	Point tap;
@@ -484,7 +480,6 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 			//조이스틱을 터치했을 경우
 			if (joystick->getBoundingBox().containsPoint(tap) && joystickTouched == false)
 			{
-				CCLOG("Catch!!");
 				joystick->setPosition(tap);
 				joystickTouched = true;
 			}
@@ -497,7 +492,6 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 
 void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-	CCLOG("-- onTouchesMoved --");
 	std::vector<Touch *>::const_iterator it = touches.begin();
 	Touch* touch;
 	Point tap;
@@ -535,7 +529,6 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 			if (touch)
 			{
 				tap = touch->getLocation() + plag;
-				//CCLOG("%f , %f", tap.x, tap.y);
 
 				//조이스틱을 조이패드 밖으로 나가지 못하게 한다.
 				if (tap.x > joystickPad->getPosition().x)
@@ -565,54 +558,46 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 				if (ntap.y < incline * ntap.x + yAxisValueUp)
 					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
 					{
-						//CCLOG("Touch Direction : DOWN, %d", joystickDirectionSet);
                         if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
                             joystickDirectionSet = false;
                         
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
-                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW, NULL);
 						}
 					}
 					else
 					{
-						//CCLOG("Touch Direction : RIGHT, %d", joystickDirectionSet);
                         if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
                             joystickDirectionSet = false;
                         
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
-                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW, NULL);
 						}
 					}
 				else
 					if (ntap.y < -1 * incline * ntap.x + yAxisValueDown)
 					{
-						//CCLOG("Touch Direction : LEFT, %d", joystickDirectionSet);
                         if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
                             joystickDirectionSet = false;
                         
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
-                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW, NULL);
 						}
 					}
 					else
 					{
-						//CCLOG("Touch Direction : UP, %d", joystickDirectionSet);
                         if(this->mainUser->seeDirection != cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
                             joystickDirectionSet = false;
                         
 						if (joystickDirectionSet == false)
 						{
 							joystickDirectionSet = true;
-                            CCLOG("onKeyPressed...");
 							onKeyPressed(cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW, NULL);
 						}
 					}
@@ -629,8 +614,6 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 
 void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-	CCLOG("-- onTouchesEnded --");
-
     if (this->mainUser->isLogin != true)
     {
         return;
@@ -657,7 +640,6 @@ void HelloWorld::onTouchesCancelled(const std::vector<Touch *> &touches, cocos2d
         return;
     }
     
-	CCLOG("-- onTouchesCancelled --");
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
@@ -750,7 +732,6 @@ void HelloWorld::setPlayerPosition(Point position)
 
 		if (user->position == position)
 		{
-			CCLOG("other user...");
 			return;
 		}
 	}
@@ -765,7 +746,6 @@ void HelloWorld::setPlayerPosition(Point position)
 
 			if (wall == "YES")
 			{
-				CCLOG("Wall...");
 				return;
 			}
 
@@ -789,15 +769,11 @@ void HelloWorld::setPlayerPosition(Point position)
 					//아이템 획득 사실을 서버에 알림
 					if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
 					{
-						CCLOG("Item recv Error!!");
 					}
-
-					CCLOG("get item!! : (%d, %d)", (int)items_coodinate.x, (int)items_coodinate.y);
 				}
 				else
 				{
 					//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
-					CCLOG("full inventory!!");
 				}
 				
 
@@ -824,7 +800,6 @@ void HelloWorld::setPlayerPosition(Point position)
 				
 			if (exit == "YES")
 			{
-				CCLOG("Move other map..");
 				std::string stair = properties.asValueMap()["Stair"].asString();
 				std::string frontdoor = properties.asValueMap()["Frontdoor"].asString();
 
@@ -867,9 +842,7 @@ void HelloWorld::setPlayerPosition(Point position)
 					CustomObject * imsiObjectInfo = com->objectInfo->at(i);
 					this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
 					this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
-					CCLOG("Delete : %d, size : %d", MAP_TAG + i + 1, com->objectInfo->size());
 				}
-				CCLOG("Clear after size : %d", com->objectInfo->size());
 				//
 				com->objectInfo->clear();
 
@@ -877,8 +850,6 @@ void HelloWorld::setPlayerPosition(Point position)
 
 				//맵의 아이템 구현하기
 				while (com->isObjectBufferFill != true);
-
-				CCLOG("Buffer Size : %d", com->objectInfo->size());
 
 				for (int i = 0; i < com->objectInfo->size(); i++)
 				{
@@ -959,8 +930,6 @@ void HelloWorld::setPlayerPosition(Point position)
 	this->mainUser->position = position;
 	this->mainUser->sprite->setPosition(this->mainUser->position);
 
-	CCLOG("xpos : %d, ypos : %d", (int)position.x, (int)position.y);
-
 	//이동한 내용을 DB에 반영
 	Value properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
@@ -981,8 +950,6 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
-	CCLOG("-- onKeyPressed --");
-
 	//로그인화면에서는 키동작을 잠근다.
 	if (this->mainUser->isLogin != true)
 	{
@@ -1096,8 +1063,6 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Eve
 	if (this->mainUser->isLogin != true)
 		return;
 
-	CCLOG("KeyRelease..(%d) %d", key, this->mainUser->seeDirection);
-
 	//여러개의 방향키가 눌렸을 경우 가장 마지막으로 키를 땠을때 이동을 중지한다.
 	if (this->mainUser->seeDirection == key)
 	{
@@ -1115,8 +1080,6 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 	Point position = this->mainUser->sprite->getPosition() / TILE_SIZE;
 
 	this->mainUser->isAction = true;
-	CCLOG("action started!");
-	CCLOG("Motion Run");
 
 	switch (key)
 	{
@@ -1232,8 +1195,6 @@ void HelloWorld::actionFinished()
 {
 	// do something on complete
 	this->mainUser->isAction = false;
-	CCLOG("action finished!");
-
 }
 
 void HelloWorld::update(float fDelta)
@@ -1296,10 +1257,6 @@ void HelloWorld::update(float fDelta)
 			//채팅창에 다른유저의 접속을 알림
 			element.pushBack(String::createWithFormat("%s is Login !!", user->name));
 			com->chattingInfo.pushBack(String::createWithFormat("%s is Login !!", user->name));
-			CCLOG(String::createWithFormat("%s is Login !!", user->name)->getCString());
-
-			tableView->reloadData();
-			tableView->setContentOffset(Vec2(0, 0), false);
 		}
 		else
 		{
@@ -1308,10 +1265,6 @@ void HelloWorld::update(float fDelta)
 				//채팅창에 다른유저의 접속종료를 알림
 				element.pushBack(String::createWithFormat("%s is Logout !!", user->name));
 				com->chattingInfo.pushBack(String::createWithFormat("%s is Logout !!", user->name));
-				CCLOG(String::createWithFormat("%s is Logout !!", user->name)->getCString());
-
-				tableView->reloadData();
-				tableView->setContentOffset(Vec2(0, 0), false);
 
 				this->removeChild(user->sprite);
 				user->sprite = NULL;
@@ -1331,7 +1284,6 @@ void HelloWorld::update(float fDelta)
 
 				if(user->isAction == true && user->isRunning == false)
 				{
-					CCLOG("제자리 방향 전환");
 					switch (user->seeDirection)
 					{
 					case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
@@ -1432,11 +1384,12 @@ void HelloWorld::update(float fDelta)
 		return;
 	}
 
+	//방향키를 몇초동안 누르고 있느냐에 따라 정지와 이동을 결정
 	if (this->mainUser->isKeepKeyPressed == true)
 	{
 		readyCount++;
 
-		if (readyCount == 3)
+		if (readyCount == 2)
 		{
 			this->mainUser->isRunning = true;
 			readyCount = 0;
@@ -1446,8 +1399,6 @@ void HelloWorld::update(float fDelta)
 	//메인유저가 방향키를 눌러 이동시 실행
 	if (this->mainUser->isRunning == true && this->mainUser->isAction == false)
 	{
-		CCLOG("Keep Running..");
-
 		Point playerPos = this->mainUser->sprite->getPosition();
 
 		switch (this->mainUser->seeDirection)
@@ -1509,37 +1460,30 @@ void HelloWorld::update(float fDelta)
 		if (element.size() <= i)
 		{
 			element.pushBack(com->chattingInfo.at(i));
-			CCLOG("%s", com->chattingInfo.at(i));
 		}
 	}
-	tableView->reloadData();
-	tableView->setContentOffset(Vec2(0, 0), false);
+
+	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
+	if (tableView != NULL)
+	{
+		tableView->reloadData();
+		tableView->setContentOffset(Vec2(0, 0), false);
+	}
 
 	//서버와 통신 두절시 종료한다.
 	if (com->comm == false)
 	{
-		CCLOG("Comm Error!!");
 		commErrorPopUp->setVisible(true);
 		commErrorPopUpOk->setVisible(true);
-	}
-
-	//일정 주기로 접속시간 업데이트
-	if (com->updateLoginTime(this->mainUser->name) <= 0)
-	{
-		CCLOG("Comm Error!!~!!");
-		com->comm = false;
 	}
 
 	//현재 필드의 오브젝트 변동사항 업데이트
 	if (com->changeTiledMapObject == true)
 	{
-		CCLOG("Change Tiled Map Object!!");
-
 		//다른유저가 필드의 아이템을 먹을시 업데이트
 		Point itemPos = Point(com->itemXpos, com->itemYpos);
 		this->metainfo->removeTileAt(itemPos);
 		items->removeTileAt(itemPos);
-		CCLOG("remove item!! : (%d, %d)", (int)itemPos.x, (int)itemPos.y);
 
 		com->changeTiledMapObject = false;
 	}
@@ -1557,14 +1501,10 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 			{
 				com->comm = false;
 			}
-
-			CCLOG("isLogin : %d", com->isLogin);
 		}
 
 		return;
 	}
-
-	CCLOG("--- editBoxReturn ---");
 
 	//채팅입력하고 엔터키 누르면 채팅창에 입력한 문자열이 등록.
 	const char * buf = chattingInput->getText();
@@ -1588,52 +1528,43 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 
 void HelloWorld::editBoxEditingDidBegin(EditBox * editBox)
 {
-	//CCLOG("--- editBoxEditingDidBegin ---");
 	if (this->mainUser->isLogin != true)
 		return;
 }
 
 void HelloWorld::editBoxEditingDidEnd(EditBox * editBox)
 {
-	//CCLOG("--- editBoxEditingDidEnd ---");
 	if (this->mainUser->isLogin != true)
 		return;
 }
 
 void HelloWorld::editBoxTextChanged(EditBox * editBox, const std::string& text)
 {
-	//CCLOG("--- editBoxTextChanged ---");
 	if (this->mainUser->isLogin != true)
 		return;
 }
 
 void HelloWorld::scrollViewDidScroll(ScrollView* view)
 {
-	//CCLOG("---- scrollViewDidScroll ----");
 }
 
 void HelloWorld::scrollViewDidZoom(ScrollView* view)
 {
-	//CCLOG("---- scrollViewDidZoom ----");
 }
 
 //셀을 터치하면 콜백
 void HelloWorld::tableCellTouched(TableView* table, TableViewCell* cell)
 {
-	//CCLOG("---- tableCellTouched ----");
 }
 
 Size HelloWorld::tableCellSizeForIndex(TableView *table, ssize_t idx)
 {
-	//CCLOG("---- tableCellSizeForIndex ----");
-
 	return Size(60, 10);
 }
 
 //reload가 호출되거나, 스크롤이 움직여 안보이는 셀이 보여질 때 호출
 TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 {
-	//CCLOG("---- tableCellAtIndex ----");
 	int count = element.size();
     String * string = element.at(count - (idx + 1));
 
@@ -1664,7 +1595,6 @@ TableViewCell* HelloWorld::tableCellAtIndex(TableView *table, ssize_t idx)
 //테이블이 셀 갯수에 대한 정보를 가져가는 곳
 ssize_t HelloWorld::numberOfCellsInTableView(TableView *table)
 {
-	//CCLOG("---- numberOfCellsInTableView ----");
 	int count = element.size();
 	return count;
 }
@@ -1674,7 +1604,6 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("JOIN BUTTON TOUCH BEGAN");
 		if (joinPopUp->isVisible() == false)
 		{
 			loginBackground->setVisible(false);
@@ -1695,10 +1624,8 @@ void HelloWorld::joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("JOIN BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("JOIN BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1708,7 +1635,6 @@ void HelloWorld::joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType typ
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("JOIN OK BUTTON TOUCH BEGAN");
 		char userID[50];
 		strcpy(userID, joinID->getText());
 
@@ -1717,13 +1643,10 @@ void HelloWorld::joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType typ
 		{
 			com->comm = false;
 		}
-		CCLOG("Request Join : (ID : %s)", userID);
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("JOIN OK BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("JOIN OK BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1733,7 +1656,6 @@ void HelloWorld::joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("JOIN CANCEL BUTTON TOUCH BEGAN");
 		if (joinPopUp->isVisible() == true)
 		{
 			loginBackground->setVisible(true);
@@ -1751,10 +1673,8 @@ void HelloWorld::joinCancelButtonTouchEvent(Ref * sender, Widget::TouchEventType
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("JOIN CANCEL BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("JOIN CANCEL BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1764,7 +1684,6 @@ void HelloWorld::joinFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEven
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("JOIN FAIL OK BUTTON TOUCH BEGAN");
 		if (joinFailPopUp->isVisible() == true)
 		{
 			joinFailPopUp->setVisible(false);
@@ -1772,10 +1691,8 @@ void HelloWorld::joinFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEven
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("JOIN FAIL OK BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("JOIN FAIL OK BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1785,7 +1702,6 @@ void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("LOGIN BUTTON TOUCH BEGAN");
 		if (loginPopUp->isVisible() == false)
 		{
 			loginPopUp->setVisible(true);
@@ -1798,10 +1714,8 @@ void HelloWorld::loginButtonTouchEvent(Ref * sender, Widget::TouchEventType type
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("LOGIN BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("LOGIN BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1811,7 +1725,6 @@ void HelloWorld::loginFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("LOGIN FAIL OK BUTTON TOUCH BEGAN");
 		if (loginFailPopUp->isVisible() == true)
 		{
 			loginFailPopUp->setVisible(false);
@@ -1820,10 +1733,8 @@ void HelloWorld::loginFailPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("LOGIN FAIL OK BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("LOGIN FAIL OK BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1833,13 +1744,10 @@ void HelloWorld::passwordModiButtonTouchEvent(Ref * sender, Widget::TouchEventTy
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("PasswordModi BUTTON TOUCH BEGAN");
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("PasswordModi BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("PasswordModi BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1849,13 +1757,10 @@ void HelloWorld::backGroundStoryButtonTouchEvent(Ref * sender, Widget::TouchEven
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("BackGroundStory BUTTON TOUCH BEGAN");
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("BackGroundStory BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("BackGroundStory BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1865,13 +1770,10 @@ void HelloWorld::makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventTyp
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("MakePeople BUTTON TOUCH BEGAN");
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("MakePeople BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("MakePeople BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1881,13 +1783,10 @@ void HelloWorld::exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("EXIT BUTTON TOUCH BEGAN");
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("EXIT BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("EXIT BUTTON TOUCH ENDED");
 		break;
 	}
 }
@@ -1897,7 +1796,6 @@ void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 	switch (type)
 	{
 	case Widget::TouchEventType::BEGAN:
-		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH BEGAN");
 		if (commErrorPopUp->isVisible() == true)
 		{
 			commErrorPopUp->setVisible(false);
@@ -1906,10 +1804,8 @@ void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 		}
 		break;
 	case Widget::TouchEventType::MOVED:
-		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH MOVED");
 		break;
 	case Widget::TouchEventType::ENDED:
-		CCLOG("COMM ERROR POPUP OK BUTTON TOUCH ENDED");
 		break;
 	}
 }
