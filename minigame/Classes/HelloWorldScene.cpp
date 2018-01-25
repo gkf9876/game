@@ -282,7 +282,7 @@ void HelloWorld::start()
 		auto sprite = Sprite::createWithTexture(texture);
 		sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0, 0));
-		this->addChild(sprite, MAP_PRIORITY_Z_ORDER + order, MAP_TAG + idx);
+		this->addChild(sprite, MAP_PRIORITY_Z_ORDER + order, MAP_OBJECT + idx);
 	}
 
 	com->isObjectBufferFill = false;
@@ -749,47 +749,47 @@ void HelloWorld::setPlayerPosition(Point position)
 				return;
 			}
 
-			std::string item = properties.asValueMap()["Items"].asString();
-			if (item == "YES")
-			{
-				//아이템 창이 꽉 차있나 확인.
-				if (items_coodinate.y >= 0)
-				{
-					//아이템을 주워서 아이템창에 추가하는 과정.
-					Sprite * a = Sprite::create();
-					a->setSpriteFrame(this->items->getTileAt(tileCoord)->getDisplayFrame());
-					a->setAnchorPoint(Point(0, 0));
-					a->setPosition(items_coodinate);
-					inventory->addChild(a);
+			//std::string item = properties.asValueMap()["Items"].asString();
+			//if (item == "YES")
+			//{
+			//	//아이템 창이 꽉 차있나 확인.
+			//	if (items_coodinate.y >= 0)
+			//	{
+			//		//아이템을 주워서 아이템창에 추가하는 과정.
+			//		Sprite * a = Sprite::create();
+			//		a->setSpriteFrame(this->items->getTileAt(tileCoord)->getDisplayFrame());
+			//		a->setAnchorPoint(Point(0, 0));
+			//		a->setPosition(items_coodinate);
+			//		inventory->addChild(a);
 
-					//기존에 땅에 떨어진 아이템을 지우는 과정.
-					this->metainfo->removeTileAt(tileCoord);
-					items->removeTileAt(tileCoord);
+			//		//기존에 땅에 떨어진 아이템을 지우는 과정.
+			//		this->metainfo->removeTileAt(tileCoord);
+			//		items->removeTileAt(tileCoord);
 
-					//아이템 획득 사실을 서버에 알림
-					if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
-					{
-					}
-				}
-				else
-				{
-					//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
-				}
-				
+			//		//아이템 획득 사실을 서버에 알림
+			//		if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
+			//		{
+			//		}
+			//	}
+			//	else
+			//	{
+			//		//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
+			//	}
+			//	
 
-				//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
-				if (items_coodinate.x >= (TILE_SIZE * 4))
-				{
-					items_coodinate.x = 0;
+			//	//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
+			//	if (items_coodinate.x >= (TILE_SIZE * 4))
+			//	{
+			//		items_coodinate.x = 0;
 
-					items_coodinate.y -= TILE_SIZE;
-				}
-				else
-				{
-					//아이템을 추가하고 옆으로 커서를 이동.
-					items_coodinate.x += TILE_SIZE;
-				}
-			}
+			//		items_coodinate.y -= TILE_SIZE;
+			//	}
+			//	else
+			//	{
+			//		//아이템을 추가하고 옆으로 커서를 이동.
+			//		items_coodinate.x += TILE_SIZE;
+			//	}
+			//}
 
 
 			//맵 이동과정.
@@ -919,6 +919,8 @@ void HelloWorld::setPlayerPosition(Point position)
 				{
 					com->comm = false;
 				}
+				this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
+				this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 				strcpy(this->mainUser->field, sendMapName);
 				strcpy(com->mainUser->field, sendMapName);
 
@@ -940,6 +942,8 @@ void HelloWorld::setPlayerPosition(Point position)
 	{
 		com->comm = false;
 	}
+	this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
+	this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 	strcpy(this->mainUser->field, sendMapName);
 	strcpy(com->mainUser->field, sendMapName);
 
@@ -967,6 +971,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	}
 
 	Point playerPos = this->mainUser->sprite->getPosition();
+	int order = 0;
+
+	//획득한 아이템
+	CustomObject * customObject;
 
 	switch (key)
 	{
@@ -1054,6 +1062,36 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_ENTER:
 		chattingInput->touchDownAction(chattingInput, cocos2d::ui::Widget::TouchEventType::ENDED);
+		break;
+	case cocos2d::EventKeyboard::KeyCode::KEY_COMMA:
+		CCLOG("Hello World11 : (%d, %d)", this->mainUser->xpos, this->mainUser->ypos);
+
+		for (int i = 0; i < com->objectInfo->size(); i++)
+		{
+			CustomObject * imsiCustomObject = com->objectInfo->at(i);
+			if (imsiCustomObject->xpos == this->mainUser->xpos && imsiCustomObject->ypos == this->mainUser->ypos)
+			{
+				if (order < imsiCustomObject->order)
+				{
+					customObject = com->objectInfo->at(i);
+				}
+			}
+		}
+
+		CCLOG("object idx : %d, name : %s, order : %d", customObject->idx, customObject->name, customObject->order);
+
+		//아이템 창이 꽉 차있나 확인.
+		if (items_coodinate.y >= 0)
+		{
+			//아이템 획득 사실을 서버에 알림
+			//if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
+			//{
+			//}
+		}
+		else
+		{
+			//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
+		}
 		break;
 	}
 }
@@ -1432,7 +1470,7 @@ void HelloWorld::update(float fDelta)
 	//말풍선이 떠있으면 일정시간후 없앤다.
 	if (this->mainUser->balloon->isVisible() == true)
 		this->mainUser->balloonTime++;
-	if (this->mainUser->balloonTime % 120 == 119)
+	if (this->mainUser->balloonTime % 10 == 9)
 	{
 		this->mainUser->balloon->setVisible(false);
 		this->mainUser->balloonContent->setVisible(false);
@@ -1446,7 +1484,7 @@ void HelloWorld::update(float fDelta)
 
 		if (othersUser->balloon->isVisible() == true)
 			othersUser->balloonTime++;
-		if (othersUser->balloonTime % 120 == 119)
+		if (othersUser->balloonTime % 10 == 9)
 		{
 			othersUser->balloon->setVisible(false);
 			othersUser->balloonContent->setVisible(false);
@@ -1455,12 +1493,9 @@ void HelloWorld::update(float fDelta)
 	}
 
 	//채팅창을 업데이트. 다른 사람의 채팅내용을 띄운다.
-	for (int i = 0; i < com->chattingInfo.size(); i++)
+	if (element.size() < com->chattingInfo.size())
 	{
-		if (element.size() <= i)
-		{
-			element.pushBack(com->chattingInfo.at(i));
-		}
+		element.pushBack(com->chattingInfo.at(com->chattingInfo.size() - 1));
 	}
 
 	//tableCellAtIndex 등등 데이터 소스를 다시 한번 부른다. 테이블 뷰를 다시 그리므로 처음으로 포커스가 맞춰진다.
@@ -1517,7 +1552,9 @@ void HelloWorld::editBoxReturn(EditBox * editBox)
 	editBox->setText("");
 
 	char name[50];
-	com->chatting(com->mainUser->name, message->getCString(),this->mainUser->field);
+	com->chatting(com->mainUser->name, message->getCString(), this->mainUser->field);
+	element.pushBack(String::createWithFormat("%s : %s", this->mainUser->name, message->getCString()));
+	com->chattingInfo.pushBack(String::createWithFormat("%s : %s", this->mainUser->name, message->getCString()));
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
 	this->mainUser->balloon->setVisible(true);

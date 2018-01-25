@@ -46,6 +46,7 @@ using namespace ui;
 #define JOIN_FAIL_POPUP_OK 27
 #define COMM_ERROR_POPUP 28
 #define COMM_ERROR_POPUP_OK 29
+#define MAP_OBJECT 1000
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -56,14 +57,15 @@ using namespace ui;
 
 //수치가 높을수록 그림이 맨 위에 위치.
 #define MAP_PRIORITY_Z_ORDER			1										//맵 우선순위	
-#define DRAGON_PRIORITY_Z_ORDER			2										//드래곤 우선순위
-#define OTHERS_PRIORITY_Z_ORDER			3										//기타 객체 우선순위
-#define BALLON_PRIORITY_Z_ORDER			4										//말풍선 우선순위
-#define BALLON_CONTENT_PRIORITY_Z_ORDER	5										//말풍선 내용 우선순위
-#define INVENTORY_PRIORITY_Z_ORDER		6										//아이템창 우선순위
-#define TITLE_PRIORITY_Z_ORDER			7										//맵 이름 간판 우선순위
-#define MAP_NAME_PRIORITY_Z_ORDER		8										//맵 이름 우선순위
-#define OTHERS_USERS_Z_ORDER			2										//다른 유저 모습 우선순위
+#define DRAGON_PRIORITY_Z_ORDER			200										//드래곤 우선순위
+#define OTHERS_PRIORITY_Z_ORDER			2										//기타 객체 우선순위
+#define BALLON_PRIORITY_Z_ORDER			201										//말풍선 우선순위
+#define BALLON_CONTENT_PRIORITY_Z_ORDER	202										//말풍선 내용 우선순위
+#define INVENTORY_PRIORITY_Z_ORDER		203										//아이템창 우선순위
+#define TITLE_PRIORITY_Z_ORDER			204										//맵 이름 간판 우선순위
+#define MAP_NAME_PRIORITY_Z_ORDER		205										//맵 이름 우선순위
+#define OTHERS_USERS_Z_ORDER			200										//다른 유저 모습 우선순위
+
 #define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
 #define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼
 #define JOIN_POPUP_Z_ORDER				3										//회원가입 창
@@ -81,8 +83,8 @@ using namespace ui;
 #define BACKGROUNDSTORY_BUTTON_Z_ORDER	2										//배경이야기 버튼
 #define MAKEPEOPLE_BUTTON_Z_ORDER		2										//만든사람들 버튼
 #define EXIT_BUTTON_Z_ORDER				2										//종료 버튼
-#define COMM_ERROR_POPUP_Z_ORDER		8										//통신두절시 종료창
-#define COMM_ERROR_POPUP_OK_Z_ORDER		9										//통신두절시 종료창
+#define COMM_ERROR_POPUP_Z_ORDER		206										//통신두절시 종료창
+#define COMM_ERROR_POPUP_OK_Z_ORDER		207										//통신두절시 확인버튼
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
