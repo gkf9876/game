@@ -75,24 +75,13 @@ public :
 	bool comm = true;
 	bool getTiledMap = false;
 	bool getImage = false;
-	bool changeTiledMapObject = false;					//현재 필드의 오브젝트 변동사항
 
-	//현재필드의 아이템 변동사항이 존재할시 변동내용
-	char itemUser[BUF_SIZE];
-	char itemName[BUF_SIZE];
-	int itemXpos;
-	int itemYpos;
-	int itemOrder;
+	//현재 필드의 오브젝트가 지워졌는지
+	bool isDeleteMapObject = false;
+	//지워진 오브젝트 정보를 저장.
+	StructCustomObject deleteCustomObject;
 
-	//현재필드에 존재하는 오브젝트를 실제 화면에 반영하기위해 임시로 저장해놓은 곳
-	int objectIdx;
-	char objectName[50];
-	char objectType[50];
-	int objectXpos;
-	int objectYpos;
-	int objectOrder;
-	char objectFileDir[100];
-	int objectCount;
+	//현재 맵의 오브젝트 정보를 보유하고 있는지 여부
 	bool isObjectBufferFill = false;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
@@ -134,7 +123,7 @@ public :
 	int updateLoginTime(char * userName);
 
 	//유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
-	int eatFieldItem(char * itemName, int xpos, int ypos, int order);
+	int CustomNetworkCommunication::eatFieldItem(StructCustomObject structCustomObject);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

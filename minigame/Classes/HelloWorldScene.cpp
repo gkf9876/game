@@ -282,7 +282,7 @@ void HelloWorld::start()
 		auto sprite = Sprite::createWithTexture(texture);
 		sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0, 0));
-		this->addChild(sprite, MAP_PRIORITY_Z_ORDER + order, MAP_OBJECT + idx);
+		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + idx);
 	}
 
 	com->isObjectBufferFill = false;
@@ -975,6 +975,7 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 
 	//획득한 아이템
 	CustomObject * customObject;
+	int customObjectIndex;
 
 	switch (key)
 	{
@@ -1064,7 +1065,9 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		chattingInput->touchDownAction(chattingInput, cocos2d::ui::Widget::TouchEventType::ENDED);
 		break;
 	case cocos2d::EventKeyboard::KeyCode::KEY_COMMA:
-		CCLOG("Hello World11 : (%d, %d)", this->mainUser->xpos, this->mainUser->ypos);
+
+		//해당 위치에 아이템이 있는지 확인한다.
+		customObject = NULL;
 
 		for (int i = 0; i < com->objectInfo->size(); i++)
 		{
@@ -1073,24 +1076,61 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			{
 				if (order < imsiCustomObject->order)
 				{
-					customObject = com->objectInfo->at(i);
+					customObject = imsiCustomObject;
+					customObjectIndex = i;
 				}
 			}
 		}
 
-		CCLOG("object idx : %d, name : %s, order : %d", customObject->idx, customObject->name, customObject->order);
+		//캐릭터가 위치한 곳에 아이템이 있을시 아이템을 맵에서 지우고 인벤토리창에 추가한다.
+		if (customObject != NULL)
+		{
+			//아이템 창이 꽉 차있나 확인.
+			if (items_coodinate.y >= 0)
+			{
+				//아이템을 주워서 아이템창에 추가하는 과정.
+				Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
+				Sprite * inventoryItem = Sprite::createWithTexture(imsiGetItem->getTexture());
+				inventoryItem->setAnchorPoint(Point(0, 0));
+				inventoryItem->setPosition(items_coodinate);
 
-		//아이템 창이 꽉 차있나 확인.
-		if (items_coodinate.y >= 0)
-		{
-			//아이템 획득 사실을 서버에 알림
-			//if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
-			//{
-			//}
-		}
-		else
-		{
-			//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
+				StructCustomObject imsiStructCustomObject;
+				imsiStructCustomObject.idx = customObject->idx;
+				strcpy(imsiStructCustomObject.name, customObject->name);
+				strcpy(imsiStructCustomObject.type, customObject->type);
+				imsiStructCustomObject.xpos = customObject->xpos;
+				imsiStructCustomObject.ypos = customObject->ypos;
+				imsiStructCustomObject.order = customObject->order;
+				strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
+				imsiStructCustomObject.count = customObject->count;
+
+				//아이템 획득 사실을 서버에 알림
+				if (com->eatFieldItem(imsiStructCustomObject) <= 0)
+				{
+				}
+
+				//인벤토리창에 아이템을 넣고 맵상의 아이템은 지운다.
+				this->removeChild(imsiGetItem);
+				inventory->addChild(inventoryItem, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + customObject->idx);
+				com->objectInfo->erase(com->objectInfo->begin() + customObjectIndex);
+			}
+			else
+			{
+				//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
+			}
+
+			//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
+			if (items_coodinate.x >= (TILE_SIZE * 4))
+			{
+				items_coodinate.x = 0;
+
+				items_coodinate.y -= TILE_SIZE;
+			}
+			else
+			{
+				//아이템을 추가하고 옆으로 커서를 이동.
+				items_coodinate.x += TILE_SIZE;
+			}
 		}
 		break;
 	}
@@ -1512,15 +1552,27 @@ void HelloWorld::update(float fDelta)
 		commErrorPopUpOk->setVisible(true);
 	}
 
-	//현재 필드의 오브젝트 변동사항 업데이트
-	if (com->changeTiledMapObject == true)
+	//현재 필드의 지워진 오브젝트 변동사항 업데이트
+	if (com->isDeleteMapObject == true)
 	{
-		//다른유저가 필드의 아이템을 먹을시 업데이트
-		Point itemPos = Point(com->itemXpos, com->itemYpos);
-		this->metainfo->removeTileAt(itemPos);
-		items->removeTileAt(itemPos);
+		CustomObject * deleteCustomObject = new CustomObject(com->deleteCustomObject);
+		CustomObject * customObject = NULL;
 
-		com->changeTiledMapObject = false;
+
+		for (int i = 0; i < com->objectInfo->size(); i++)
+		{
+			customObject = com->objectInfo->at(i);
+
+			if (customObject->idx == deleteCustomObject->idx)
+			{
+				com->objectInfo->erase(com->objectInfo->begin() + i);
+				this->removeChildByTag(OTHERS_TAG + com->deleteCustomObject.idx);
+				break;
+			}
+		}
+		delete deleteCustomObject;
+
+		com->isDeleteMapObject = false;
 	}
 }
 

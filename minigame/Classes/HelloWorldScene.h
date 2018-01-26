@@ -16,7 +16,7 @@ using namespace ui;
 #define DRAGON_TAG 10														//화면에서 그리는 개체 태그.
 #define MAP_TAG 11
 #define HOME_TAG 1
-#define OTHERS_TAG 2
+#define OTHERS_TAG 1000
 #define TESTDESERT_TAG 2
 #define MAP_NAME		3
 #define TITLE			4
@@ -46,7 +46,6 @@ using namespace ui;
 #define JOIN_FAIL_POPUP_OK 27
 #define COMM_ERROR_POPUP 28
 #define COMM_ERROR_POPUP_OK 29
-#define MAP_OBJECT 1000
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 

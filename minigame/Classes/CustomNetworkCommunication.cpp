@@ -1,4 +1,4 @@
-#include "CustomNetworkCommunication.h"
+﻿#include "CustomNetworkCommunication.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <Windows.h>
 #endif
@@ -13,7 +13,7 @@ void * SendMsg(void * arg)
 
 	while (1)
 	{
-		if (com->isLogin == true)
+		if (com->isLogin == true && com->isGetUserInfo == true)
 		{
 			//일정 주기로 접속시간 업데이트
 			if (com->updateLoginTime(com->mainUser->name) <= 0)
@@ -89,7 +89,6 @@ void * RecvMsg(void * arg)
 			}
 			break;
 		case REQUEST_LOGIN:
-
 			if (!strcmp(com->recvBuf, "login okey"))
 			{
 				com->isLogin = true;
@@ -209,21 +208,11 @@ void * RecvMsg(void * arg)
 			com->getImage = true;
 			break;
 		case DELETE_FIELD_ITEM:
-			char itemPos[5][BUF_SIZE];
-			com->SeparateString(com->recvBuf, itemPos, 50, '\n');
-
-			//먹은 유저 이름
-			strcpy(com->itemUser, itemPos[0]);
-			//아이템 이름
-			strcpy(com->itemName, itemPos[1]);
-			//아이템 위치
-			com->itemXpos = atoi(itemPos[2]);
-			com->itemYpos = atoi(itemPos[3]);
-			//아이템 순서(숫자가 클수록 맨 위에 위치)
-			com->itemOrder = atoi(itemPos[4]);
+			//지워진 오브젝트 정보를 저장.
+			memcpy(&com->deleteCustomObject, com->recvBuf, sizeof(StructCustomObject));
 
 			//현재 필드의 오브젝트 변동사항 알림
-			com->changeTiledMapObject = true;
+			com->isDeleteMapObject = true;
 			break;
 		case REQUEST_FIELD_INFO:
 			int count;
@@ -267,7 +256,7 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	//host = gethostbyname("192.168.56.101");
+	//host = gethostbyname("192.168.56.102");
 	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
@@ -356,16 +345,16 @@ int CustomNetworkCommunication::sendCommand(int code, char * message, int size)
 	if (message == NULL)
 		return -1;
 
-	buf = new char[size + 9];
+	buf = new char[8];
 	IntToChar(size, &buf[0]);
 	IntToChar(code, &buf[4]);
-	strcpy(&buf[8], message);
 
-	writeLen = send(this->sock, buf, size + 8, 0);
+	writeLen = send(this->sock, buf, 8, 0);
+	writeLen += send(this->sock, message, size, 0);
 
 	delete[] buf;
 
-	if (writeLen == -1)
+	if (writeLen < 0)
 		return -1;
 	else
 		return writeLen;
@@ -478,13 +467,14 @@ int CustomNetworkCommunication::updateLoginTime(char * userName)
 }
 
 //유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
-int CustomNetworkCommunication::eatFieldItem(char * itemName, int xpos, int ypos, int order)
+int CustomNetworkCommunication::eatFieldItem(StructCustomObject structCustomObject)
 {
-	String * message = String::createWithFormat("%s\n%s\n%d\n%d\n%d", this->mainUser->name, itemName, xpos, ypos, order);
+	char * message = new char[sizeof(StructCustomObject) + 1];
+	memcpy(message, &structCustomObject, sizeof(StructCustomObject));
 
-	strcpy(this->sendBuf, message->getCString());
+	str_len = sendCommand(DELETE_FIELD_ITEM, message, sizeof(StructCustomObject));
 
-	str_len = sendCommand(DELETE_FIELD_ITEM, this->sendBuf, strlen(this->sendBuf));
+	delete message;
 
 	return str_len;
 }
