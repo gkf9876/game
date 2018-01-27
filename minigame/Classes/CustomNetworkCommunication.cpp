@@ -226,6 +226,22 @@ void * RecvMsg(void * arg)
 			}
 			com->isObjectBufferFill = true;
 			break;
+		case REQUEST_INVENTORY_ITEM_INFO:
+			int itemCount;
+			memcpy(&itemCount, &com->recvBuf[0], 4);
+			for (int i = 0; i < itemCount; i++)
+			{
+				StructCustomObject imsiStructCustomObject;
+				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
+				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+				com->inventory_items_Info[3 - (customObject->ypos + 1)][customObject->xpos] = customObject;
+
+				char arr[1024];
+				sprintf(arr, "name : %s, pos(%d, %d), count : %d\n", customObject->name, (int)customObject->xpos, (int)customObject->ypos, itemCount);
+				com->MyPrintDebug(arr);
+			}
+			com->isInventoryFill = true;
+			break;
 		default:
 			break;
 		}
@@ -256,15 +272,15 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	//host = gethostbyname("192.168.56.102");
-	host = gethostbyname("sourcecake.iptime.org");
+	host = gethostbyname("192.168.56.101");
+	//host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
 
 	memset(&serv_adr, 0, sizeof(serv_adr));
 	serv_adr.sin_family = AF_INET;
 	serv_adr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)host->h_addr_list[0]));
-	serv_adr.sin_port = htons(atoi("9190"));
+	serv_adr.sin_port = htons(atoi("9191"));
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == SOCKET_ERROR)
@@ -554,4 +570,13 @@ CustomNetworkCommunication::~CustomNetworkCommunication()
 		delete tiledMapBuf;
 	if(imageBuf != NULL)
 		delete imageBuf;
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			if (inventory_items_Info[i][j] != NULL)
+				delete inventory_items_Info;
+		}
+	}
 }

@@ -315,14 +315,63 @@ void HelloWorld::start()
 
 	//아이템창 만들기
 	inventory = TMXTiledMap::create("Images/inventory.tmx");
-	inventory_background = inventory->getLayer("Background");
-	inventory_items = inventory->getLayer("Items");
-	inventory_metainfo = inventory->getLayer("MetaInfo");
 	inventory->setVisible(false);
 	inventory->setAnchorPoint(Point(0.5, 0.5));
 	this->addChild(inventory, INVENTORY_PRIORITY_Z_ORDER, INVENTORY);
 
 	items_coodinate = Point(0, 64);
+	//
+
+	//플레이어의 인벤토리창 정보를 요청한다.
+	com->sendCommand(REQUEST_INVENTORY_ITEM_INFO, com->mainUser->name, strlen(com->mainUser->name));
+
+	//아이템창 정보를 받아서 구현
+	while (com->isInventoryFill != true);
+
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			if (com->inventory_items_Info[i][j] != NULL)
+			{
+				CustomObject * customObject = com->inventory_items_Info[i][j];
+				int idx = customObject->idx;
+				char name[50];
+				strcpy(name, customObject->name);
+				char type[50];
+				strcpy(type, customObject->type);
+				int xpos = customObject->xpos;
+				int ypos = customObject->ypos;
+				int order = customObject->order;
+
+				com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
+
+				//요청한 오브젝트 이미지가 수신되길 기다린다.
+				while (com->getImage != true);
+
+				//수신된 버퍼데이터로 이미지를 만든다.
+				std::vector<byte> * imageBuf = com->imageBuf;
+				int count = customObject->count;
+
+				Image* image = new Image();
+				image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+				com->getImage = false;
+				delete imageBuf;
+
+				//스프라이트를 만들어 맵에 구현한다.
+				Texture2D* texture = new Texture2D();
+				texture->initWithImage(image);
+				auto sprite = Sprite::createWithTexture(texture);
+				sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
+				sprite->setAnchorPoint(Point(0, 0));
+
+				inventory->addChild(sprite, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
+				CCLOG("xpos(%d), ypos(%d)", (int)(xpos * TILE_SIZE), (int)(ypos * TILE_SIZE));
+			}
+		}
+	}
+
+	com->isInventoryFill = false;
 	//
 
 	//화면에 맵이름 띄우기
@@ -749,49 +798,6 @@ void HelloWorld::setPlayerPosition(Point position)
 				return;
 			}
 
-			//std::string item = properties.asValueMap()["Items"].asString();
-			//if (item == "YES")
-			//{
-			//	//아이템 창이 꽉 차있나 확인.
-			//	if (items_coodinate.y >= 0)
-			//	{
-			//		//아이템을 주워서 아이템창에 추가하는 과정.
-			//		Sprite * a = Sprite::create();
-			//		a->setSpriteFrame(this->items->getTileAt(tileCoord)->getDisplayFrame());
-			//		a->setAnchorPoint(Point(0, 0));
-			//		a->setPosition(items_coodinate);
-			//		inventory->addChild(a);
-
-			//		//기존에 땅에 떨어진 아이템을 지우는 과정.
-			//		this->metainfo->removeTileAt(tileCoord);
-			//		items->removeTileAt(tileCoord);
-
-			//		//아이템 획득 사실을 서버에 알림
-			//		if (com->eatFieldItem("Item1", (int)tileCoord.x, (int)tileCoord.y, 0) <= 0)
-			//		{
-			//		}
-			//	}
-			//	else
-			//	{
-			//		//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
-			//	}
-			//	
-
-			//	//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
-			//	if (items_coodinate.x >= (TILE_SIZE * 4))
-			//	{
-			//		items_coodinate.x = 0;
-
-			//		items_coodinate.y -= TILE_SIZE;
-			//	}
-			//	else
-			//	{
-			//		//아이템을 추가하고 옆으로 커서를 이동.
-			//		items_coodinate.x += TILE_SIZE;
-			//	}
-			//}
-
-
 			//맵 이동과정.
 			//현재 위치의 맵의 정보, 목적지 정보를 타일에 담고
 			//목적지 위치의 맵의 정보. 목적지 정보를 이동할 맵의 타일에 담는다.
@@ -1073,64 +1079,18 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			CustomObject * imsiCustomObject = com->objectInfo->at(i);
 			if (imsiCustomObject->xpos == this->mainUser->xpos && imsiCustomObject->ypos == this->mainUser->ypos)
-			{
 				if (order < imsiCustomObject->order)
 				{
 					customObject = imsiCustomObject;
 					customObjectIndex = i;
 				}
-			}
 		}
 
 		//캐릭터가 위치한 곳에 아이템이 있을시 아이템을 맵에서 지우고 인벤토리창에 추가한다.
 		if (customObject != NULL)
 		{
-			//아이템 창이 꽉 차있나 확인.
-			if (items_coodinate.y >= 0)
-			{
-				//아이템을 주워서 아이템창에 추가하는 과정.
-				Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
-				Sprite * inventoryItem = Sprite::createWithTexture(imsiGetItem->getTexture());
-				inventoryItem->setAnchorPoint(Point(0, 0));
-				inventoryItem->setPosition(items_coodinate);
-
-				StructCustomObject imsiStructCustomObject;
-				imsiStructCustomObject.idx = customObject->idx;
-				strcpy(imsiStructCustomObject.name, customObject->name);
-				strcpy(imsiStructCustomObject.type, customObject->type);
-				imsiStructCustomObject.xpos = customObject->xpos;
-				imsiStructCustomObject.ypos = customObject->ypos;
-				imsiStructCustomObject.order = customObject->order;
-				strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
-				imsiStructCustomObject.count = customObject->count;
-
-				//아이템 획득 사실을 서버에 알림
-				if (com->eatFieldItem(imsiStructCustomObject) <= 0)
-				{
-				}
-
-				//인벤토리창에 아이템을 넣고 맵상의 아이템은 지운다.
-				this->removeChild(imsiGetItem);
-				inventory->addChild(inventoryItem, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + customObject->idx);
+			if(addInventoryItem(customObject) == 1)
 				com->objectInfo->erase(com->objectInfo->begin() + customObjectIndex);
-			}
-			else
-			{
-				//아이템 창이 꽉찬 경우이므로 아이템을 줍지 않는다.
-			}
-
-			//가로로 아이템이 꽉 차면 아래부분으로 커서를 이동.
-			if (items_coodinate.x >= (TILE_SIZE * 4))
-			{
-				items_coodinate.x = 0;
-
-				items_coodinate.y -= TILE_SIZE;
-			}
-			else
-			{
-				//아이템을 추가하고 옆으로 커서를 이동.
-				items_coodinate.x += TILE_SIZE;
-			}
 		}
 		break;
 	}
@@ -1467,7 +1427,7 @@ void HelloWorld::update(float fDelta)
 	{
 		readyCount++;
 
-		if (readyCount == 2)
+		if (readyCount == 1)
 		{
 			this->mainUser->isRunning = true;
 			readyCount = 0;
@@ -1897,4 +1857,78 @@ void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 	case Widget::TouchEventType::ENDED:
 		break;
 	}
+}
+
+int HelloWorld::addInventoryItem(CustomObject * customObject)
+{
+	int result;
+
+	//아이템 창이 꽉 차있나 확인.
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			if (com->inventory_items_Info[i][j] == NULL)
+			{
+				//아이템을 주워서 아이템창에 추가하는 과정.
+				Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
+				Sprite * inventoryItem = Sprite::createWithTexture(imsiGetItem->getTexture());
+				inventoryItem->setAnchorPoint(Point(0, 0));
+				inventoryItem->setPosition(Point(j * TILE_SIZE, (3 - (i + 1)) * TILE_SIZE));
+
+				StructCustomObject imsiStructCustomObject;
+				imsiStructCustomObject.idx = customObject->idx;
+				strcpy(imsiStructCustomObject.name, customObject->name);
+				strcpy(imsiStructCustomObject.type, customObject->type);
+				imsiStructCustomObject.xpos = j;
+				imsiStructCustomObject.ypos = (3 - (i + 1));
+				imsiStructCustomObject.order = customObject->order;
+				strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
+				imsiStructCustomObject.count = customObject->count;
+
+				//아이템 획득 사실을 서버에 알림
+				if (com->eatFieldItem(imsiStructCustomObject) <= 0)
+				{
+				}
+
+				//인벤토리창에 아이템을 넣고
+				this->removeChild(imsiGetItem);
+				inventory->addChild(inventoryItem, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
+				CCLOG("xpos(%d), ypos(%d)", (int)(inventoryItem->getPosition().x), (int)(inventoryItem->getPosition().y));
+
+				//인벤토리 아이템 목록에 추가한다.
+				com->inventory_items_Info[i][j] = customObject;
+				return 1;
+			}
+			else
+			{
+				//이미 아이템창이 동일종류의 아이템이 있으면 수량만 증가시킨다.
+				if (com->inventory_items_Info[i][j]->idx == customObject->idx)
+				{
+					StructCustomObject imsiStructCustomObject;
+					imsiStructCustomObject.idx = customObject->idx;
+					strcpy(imsiStructCustomObject.name, customObject->name);
+					strcpy(imsiStructCustomObject.type, customObject->type);
+					imsiStructCustomObject.xpos = j;
+					imsiStructCustomObject.ypos = (3 - (i + 1));
+					imsiStructCustomObject.order = customObject->order;
+					strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
+					imsiStructCustomObject.count = customObject->count;
+
+					//아이템 획득 사실을 서버에 알림
+					if (com->eatFieldItem(imsiStructCustomObject) <= 0)
+					{
+					}
+
+					Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
+					this->removeChild(imsiGetItem);
+
+					com->inventory_items_Info[i][j]->count += customObject->count;
+					return 1;
+				}
+			}
+		}
+	}
+
+	return 0;
 }

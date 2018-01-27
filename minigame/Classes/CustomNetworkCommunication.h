@@ -35,6 +35,7 @@ USING_NS_CC;
 #define REQUEST_IMAGE					9
 #define DELETE_FIELD_ITEM				10
 #define REQUEST_FIELD_INFO				11
+#define REQUEST_INVENTORY_ITEM_INFO		12
 
 class CustomNetworkCommunication
 {
@@ -64,6 +65,7 @@ public :
 	User * mainUser = NULL;
 	std::vector<User*> * usersInfo = NULL;								//현재 맵의 다른 유저들
 	std::vector<CustomObject*> * objectInfo = NULL;						//현재 맵의 오브젝트
+	CustomObject * inventory_items_Info[3][5] = { NULL, };			//아이템창에 있는 아이템 목록
 
 	std::vector<byte> *tiledMapBuf = NULL;
 	std::vector<byte> *imageBuf = NULL;
@@ -83,6 +85,9 @@ public :
 
 	//현재 맵의 오브젝트 정보를 보유하고 있는지 여부
 	bool isObjectBufferFill = false;
+
+	//인벤토리창의 정보를 가져왔는지 여부
+	bool isInventoryFill = false;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
@@ -123,7 +128,7 @@ public :
 	int updateLoginTime(char * userName);
 
 	//유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
-	int CustomNetworkCommunication::eatFieldItem(StructCustomObject structCustomObject);
+	int eatFieldItem(StructCustomObject structCustomObject);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

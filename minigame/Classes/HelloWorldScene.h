@@ -46,6 +46,7 @@ using namespace ui;
 #define JOIN_FAIL_POPUP_OK 27
 #define COMM_ERROR_POPUP 28
 #define COMM_ERROR_POPUP_OK 29
+#define INVENTORY_ITEM		10000
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -127,9 +128,6 @@ public:
 	cocos2d::Vec2 origin;													//화면 좌표
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
-	cocos2d::TMXLayer * inventory_background;								//아이템창의 배경 레이어
-	cocos2d::TMXLayer * inventory_items;									//아이템창의 아이템 레이어
-	cocos2d::TMXLayer * inventory_metainfo;									//아이템창의 지표 레이어
 	cocos2d::Point items_coodinate;											//아이템창에 아이템을 저장할 위치.
 
 	cocos2d::TMXTiledMap * tmap;											//맵
@@ -231,6 +229,8 @@ public:
 
 	//매 프레임마다 호출되는 함수.
 	void update(float fDelta);			
+
+	int addInventoryItem(CustomObject * customObject);
 };
 
 #endif // __HELLOWORLD_SCENE_H__
