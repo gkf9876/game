@@ -280,7 +280,7 @@ void CustomNetworkCommunication::init()
 	memset(&serv_adr, 0, sizeof(serv_adr));
 	serv_adr.sin_family = AF_INET;
 	serv_adr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)host->h_addr_list[0]));
-	serv_adr.sin_port = htons(atoi("9191"));
+	serv_adr.sin_port = htons(atoi("9190"));
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == SOCKET_ERROR)
@@ -489,6 +489,29 @@ int CustomNetworkCommunication::eatFieldItem(StructCustomObject structCustomObje
 	memcpy(message, &structCustomObject, sizeof(StructCustomObject));
 
 	str_len = sendCommand(DELETE_FIELD_ITEM, message, sizeof(StructCustomObject));
+
+	delete message;
+
+	return str_len;
+}
+
+//인벤토리에서 아이템 이동시 서버에 알리는 함수
+int CustomNetworkCommunication::moveInventoryItem(CustomObject * customObject)
+{
+	StructCustomObject structCustomObject;
+	structCustomObject.idx = customObject->idx;
+	strcpy(structCustomObject.name, customObject->name);
+	strcpy(structCustomObject.type, customObject->type);
+	structCustomObject.xpos = customObject->xpos;
+	structCustomObject.ypos = customObject->ypos;
+	structCustomObject.order = customObject->order;
+	strcpy(structCustomObject.fileDir, customObject->fileDir);
+	structCustomObject.count = customObject->count;
+
+	char * message = new char[sizeof(StructCustomObject) + 1];
+	memcpy(message, &structCustomObject, sizeof(StructCustomObject));
+
+	str_len = sendCommand(MOVE_INVENTORY_ITEM, message, sizeof(StructCustomObject));
 
 	delete message;
 

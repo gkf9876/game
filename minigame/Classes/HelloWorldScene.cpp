@@ -319,7 +319,7 @@ void HelloWorld::start()
 	inventory->setAnchorPoint(Point(0.5, 0.5));
 	this->addChild(inventory, INVENTORY_PRIORITY_Z_ORDER, INVENTORY);
 
-	items_coodinate = Point(0, 64);
+	inventoryItemTouched = false;
 	//
 
 	//플레이어의 인벤토리창 정보를 요청한다.
@@ -398,7 +398,7 @@ void HelloWorld::start()
 	showLabel->setPosition(Point(450, 400));
 	this->addChild(showLabel);
 
-	tableView = TableView::create(this, Size(200, 120));
+	tableView = TableView::create(this, Size(200, 60));
 	tableView->setAnchorPoint(Point(0, 0));
 	tableView->setDirection(ScrollView::Direction::VERTICAL);
 	tableView->setDelegate(this);
@@ -495,11 +495,11 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 	Touch* touch;
 	Point tap;
 
-    if (this->mainUser->isLogin != true)
-    {
-        return;
-    }
-    
+	if (this->mainUser->isLogin != true)
+	{
+		return;
+	}
+
 	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
 	Point position = this->mainUser->sprite->getPosition();
 	int x = MAX(position.x, winSize.width / 2);
@@ -514,7 +514,7 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 	Point plag = Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2);
 
 	//여러개의 터치포인트 확인
-	for (int i = 0; i<touches.size(); i++)
+	for (int i = 0; i < touches.size(); i++)
 	{
 		touch = (Touch*)(*it);
 
@@ -533,6 +533,31 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 				joystickTouched = true;
 			}
 #endif
+			//아이템창의 아이템을 터치했을 경우
+			if (inventory->isVisible() == true)
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					for (int j = 0; j < 5; j++)
+					{
+						if (com->inventory_items_Info[i][j] != NULL && inventoryItemTouched == false)
+						{
+							Point itemPoint = Point(com->inventory_items_Info[i][j]->xpos, com->inventory_items_Info[i][j]->ypos);
+							this->touchedItem = (Sprite *)inventory->getChildByTag(INVENTORY_ITEM + com->inventory_items_Info[i][j]->idx);
+							Point inventoryTouchPos = Point(tap.x - (inventory->getPosition().x - inventory->getContentSize().width/2),
+								tap.y - (inventory->getPosition().y - inventory->getContentSize().height/2));
+
+							if (touchedItem->getBoundingBox().containsPoint(inventoryTouchPos))
+							{
+								inventoryTouchPos.x -= touchedItem->getContentSize().width / 2;
+								inventoryTouchPos.y -= touchedItem->getContentSize().height / 2;
+								touchedItem->setPosition(inventoryTouchPos);
+								inventoryItemTouched = true;
+							}
+						}
+					}
+				}
+			}
 		}
 		it++;
 	}
@@ -564,18 +589,16 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 	//화면에 보이는 좌측 최하단
 	Point plag = Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2);
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
-
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-	//조이스틱 터치시
-	if (joystickTouched)
+	for (int i = 0; i<touches.size(); i++)
 	{
-		for (int i = 0; i<touches.size(); i++)
-		{
-			touch = (Touch*)(*it);
+		touch = (Touch*)(*it);
 
-			//터치가 된경우
-			if (touch)
+		//터치가 된경우
+		if (touch)
+		{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+			//조이스틱 터치시
+			if (joystickTouched)
 			{
 				tap = touch->getLocation() + plag;
 
@@ -653,33 +676,123 @@ void HelloWorld::onTouchesMoved(const std::vector<Touch *> &touches, cocos2d::Ev
 
 				joystick->setPosition(ntap);
 			}
+#endif
+			//아이템창의 아이템을 드래그할 경우
+			if (inventoryItemTouched == true)
+			{
+				tap = touch->getLocation() + plag;
+				Point inventoryTouchPos = Point(tap.x - (inventory->getPosition().x - inventory->getContentSize().width / 2) - touchedItem->getContentSize().width / 2,
+					tap.y - (inventory->getPosition().y - inventory->getContentSize().height / 2) - touchedItem->getContentSize().height / 2);
+				touchedItem->setPosition(inventoryTouchPos);
+			}
+
 			it++;
 		}
 	}
-#endif
 
 }
 
 
 void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Event *event)
 {
-    if (this->mainUser->isLogin != true)
-    {
-        return;
-    }
-    
+	std::vector<Touch *>::const_iterator it = touches.begin();
+	Touch* touch;
+	Point tap;
+	Point ntap;
+
+	if (this->mainUser->isLogin != true)
+	{
+		return;
+	}
+
+	//화면 터치포인트 기준값 구하기. 맵의 좌표와 터치 좌표를 맞추기위함
+	Point position = this->mainUser->sprite->getPosition();
+	int x = MAX(position.x, winSize.width / 2);
+	int y = MAX(position.y, winSize.height / 2);
+	x = MIN(x, (tmap->getMapSize().width * tmap->getTileSize().width) - winSize.width / 2);
+	y = MIN(y, (tmap->getMapSize().height * tmap->getTileSize().height) - winSize.height / 2);
+
+	//화면에 보이는 중심 좌표
+	Point actualPosition = Point(x, y);
+
+	//화면에 보이는 좌측 최하단
+	Point plag = Point(actualPosition.x - winSize.width / 2, actualPosition.y - winSize.height / 2);
+
+	for (int i = 0; i<touches.size(); i++)
+	{
+		touch = (Touch*)(*it);
+
+		//터치가 된경우
+		if (touch)
+		{
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-	Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
-		joystickPad->getPosition().y + joystickPad->getContentSize().height / 2);
-	joystick->setPosition(startPoint);
-	joystickTouched = false;
+			//조이스틱 터치시
+			if (joystickTouched)
+			{
+				Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
+					joystickPad->getPosition().y + joystickPad->getContentSize().height / 2);
+				joystick->setPosition(startPoint);
+				joystickTouched = false;
 
-	joystickDirectionSet = false;
-	this->mainUser->isKeepKeyPressed = false;
-	this->mainUser->isRunning = false;
+				joystickDirectionSet = false;
+				this->mainUser->isKeepKeyPressed = false;
+				this->mainUser->isRunning = false;
+			}
 #endif
+			//아이템창의 아이템을 드래그했을때
+			if (inventoryItemTouched == true)
+			{
+				CustomObject * customObject = NULL;
+				int xpos, ypos;
+				
+				//드래그한 아이템의 원래위치 확인
+				for (int i = 0; i < 3; i++)
+				{
+					for (int j = 0; j < 5; j++)
+					{
+						customObject = com->inventory_items_Info[i][j];
+						if (customObject != NULL)
+						{
+							if (customObject->idx == (touchedItem->getTag() - INVENTORY_ITEM))
+							{
+								xpos = customObject->xpos;
+								ypos = customObject->ypos;
+							}
+						}
+					}
+				}
+
+				tap = touch->getLocation() + plag;
+
+				//아이템창 밖으로 드래그했다가 놓을시
+				if (inventory->getBoundingBox().containsPoint(tap) == false)
+				{
+					//원상복귀
+					touchedItem->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
+				}
+				else
+				{
+					//아이템창 안에서 드래그할때 아이템 옮긴위치 반영
+					Point inventoryTouchPos = Point(tap.x - (inventory->getPosition().x - inventory->getContentSize().width / 2),
+						tap.y - (inventory->getPosition().y - inventory->getContentSize().height / 2));
+					int setXpos = (int)(inventoryTouchPos.x / TILE_SIZE);
+					int setYpos = (int)(inventoryTouchPos.y / TILE_SIZE);
+
+					touchedItem->setPosition(Point(setXpos * TILE_SIZE, setYpos * TILE_SIZE));
+
+					com->inventory_items_Info[3 - (setYpos + 1)][setXpos] = com->inventory_items_Info[3 - (ypos + 1)][xpos];
+					com->inventory_items_Info[3 - (setYpos + 1)][setXpos]->xpos = setXpos;
+					com->inventory_items_Info[3 - (setYpos + 1)][setXpos]->ypos = setYpos;
+					com->inventory_items_Info[3 - (ypos + 1)][xpos] = NULL;
+					com->moveInventoryItem(com->inventory_items_Info[3 - (setYpos + 1)][setXpos]);
+				}
+				inventoryItemTouched = false;
+			}
+			it++;
+		}
+	}
 }
 
 void HelloWorld::onTouchesCancelled(const std::vector<Touch *> &touches, cocos2d::Event *event)

@@ -36,6 +36,7 @@ USING_NS_CC;
 #define DELETE_FIELD_ITEM				10
 #define REQUEST_FIELD_INFO				11
 #define REQUEST_INVENTORY_ITEM_INFO		12
+#define MOVE_INVENTORY_ITEM				13
 
 class CustomNetworkCommunication
 {
@@ -129,6 +130,9 @@ public :
 
 	//유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수
 	int eatFieldItem(StructCustomObject structCustomObject);
+
+	//인벤토리에서 아이템 이동시 서버에 알리는 함수
+	int moveInventoryItem(CustomObject * customObject);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

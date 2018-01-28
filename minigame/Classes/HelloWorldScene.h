@@ -128,7 +128,8 @@ public:
 	cocos2d::Vec2 origin;													//화면 좌표
 
 	cocos2d::TMXTiledMap * inventory;										//아이템창
-	cocos2d::Point items_coodinate;											//아이템창에 아이템을 저장할 위치.
+	bool inventoryItemTouched;												//아이템창의 아이템을 드래그할때
+	cocos2d::Sprite * touchedItem;											//아이템창의 드래그한 아이템
 
 	cocos2d::TMXTiledMap * tmap;											//맵
 	cocos2d::TMXLayer * background;											//맵의 배경 레이어
