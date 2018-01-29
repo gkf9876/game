@@ -47,6 +47,8 @@ using namespace ui;
 #define COMM_ERROR_POPUP 28
 #define COMM_ERROR_POPUP_OK 29
 #define INVENTORY_ITEM		10000
+#define INVENTORY_BUTTON  30
+#define ITEM_EAT_BUTTON  31
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -65,6 +67,8 @@ using namespace ui;
 #define TITLE_PRIORITY_Z_ORDER			204										//맵 이름 간판 우선순위
 #define MAP_NAME_PRIORITY_Z_ORDER		205										//맵 이름 우선순위
 #define OTHERS_USERS_Z_ORDER			200										//다른 유저 모습 우선순위
+#define INVENTORY_BUTTON_Z_ORDER        204                                     //아이템창 띄우는 버튼
+#define ITEM_EAT_BUTTON_Z_ORDER         204                                     //아이템 먹는 버튼
 
 #define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
 #define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼
@@ -152,6 +156,9 @@ public:
 	cocos2d::Sprite * joystickPad;											//조이스틱 패드
 	bool joystickTouched;													//조이스틱이 터치됬는지 확인
 	bool joystickDirectionSet;												//조이스틱으로 방향 조절하고 있는지 확인
+    
+    Button * inventoryButton;                                               //누르면 아이템창이 뜨는 버튼
+    Button * itemEatButton;                                                 //아이템 먹는 버튼
 #endif
 
 	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
@@ -227,6 +234,13 @@ public:
 	void makePeoplesButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+    
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+    
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    void inventoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+    void itemEatButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+#endif
 
 	//매 프레임마다 호출되는 함수.
 	void update(float fDelta);			

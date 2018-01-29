@@ -1,4 +1,4 @@
-﻿#ifndef __CUSTOM_OBJECT_H__
+#ifndef __CUSTOM_OBJECT_H__
 #define __CUSTOM_OBJECT_H__
 
 #include "cocos2d.h"
@@ -6,6 +6,9 @@
 USING_NS_CC;
 
 #define TILE_SIZE	32														//타일 사이즈
+
+typedef uint8_t byte;
+
 struct StructCustomObject
 {
 	int idx;

@@ -311,10 +311,22 @@ void HelloWorld::start()
 
 	joystickDirectionSet = false;
 	joystickTouched = false;
+    
+    //아이템창 띄우는 버튼
+    inventoryButton = Button::create("Images/inventoryButton.png", "Images/inventoryButton.png");
+    inventoryButton->setAnchorPoint(Point(0.5, 0.5));
+    this->addChild(inventoryButton, INVENTORY_BUTTON_Z_ORDER, INVENTORY_BUTTON);
+    inventoryButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::inventoryButtonTouchEvent, this));
+    
+    //아이템 먹는 버튼
+    itemEatButton = Button::create("Images/inventoryButton.png", "Images/inventoryButton.png");
+    itemEatButton->setAnchorPoint(Point(0.5, 0.5));
+    this->addChild(itemEatButton, ITEM_EAT_BUTTON_Z_ORDER, ITEM_EAT_BUTTON);
+    itemEatButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::itemEatButtonTouchEvent, this));
 #endif
 
 	//아이템창 만들기
-	inventory = TMXTiledMap::create("Images/inventory.tmx");
+	inventory = TMXTiledMap::create("Images/Inventory.tmx");
 	inventory->setVisible(false);
 	inventory->setAnchorPoint(Point(0.5, 0.5));
 	this->addChild(inventory, INVENTORY_PRIORITY_Z_ORDER, INVENTORY);
@@ -877,6 +889,12 @@ void HelloWorld::setViewpointCenter(Point position)
 			joystickPad->getPosition().y + joystickPad->getContentSize().height / 2));
 	else
 		joystick->setPosition(joystick->getPosition() + joystickMoveRange);
+    
+    //우측 중간부분에 붙임
+    inventoryButton->setPosition(Point(actualPosition.x + winSize.width / 2 - TILE_SIZE,
+                                       actualPosition.y + TILE_SIZE / 2));
+    itemEatButton->setPosition(Point(actualPosition.x + winSize.width / 2 - TILE_SIZE,
+                                     actualPosition.y - TILE_SIZE));
 #endif
 
 	//통신 실패시 띄우는 창
@@ -1993,6 +2011,67 @@ void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 		break;
 	}
 }
+
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+void HelloWorld::inventoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+    
+    switch (type)
+    {
+        case Widget::TouchEventType::BEGAN:
+            if(inventory->isVisible() == true)
+                inventory->setVisible(false);
+            else
+                inventory->setVisible(true);
+            break;
+        case Widget::TouchEventType::MOVED:
+            break;
+        case Widget::TouchEventType::ENDED:
+            break;
+    }
+}
+
+void HelloWorld::itemEatButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+    int order = 0;
+    
+    //획득한 아이템
+    CustomObject * customObject;
+    int customObjectIndex;
+    
+    switch (type)
+    {
+        case Widget::TouchEventType::BEGAN:
+            customObject = NULL;
+            
+            //해당 위치에 아이템이 있는지 확인한다.
+            for (int i = 0; i < com->objectInfo->size(); i++)
+            {
+                CustomObject * imsiCustomObject = com->objectInfo->at(i);
+                if (imsiCustomObject->xpos == this->mainUser->xpos && imsiCustomObject->ypos == this->mainUser->ypos)
+                    if (order < imsiCustomObject->order)
+                    {
+                        customObject = imsiCustomObject;
+                        customObjectIndex = i;
+                    }
+            }
+            
+            //캐릭터가 위치한 곳에 아이템이 있을시 아이템을 맵에서 지우고 인벤토리창에 추가한다.
+            if (customObject != NULL)
+            {
+                if(addInventoryItem(customObject) == 1)
+                    com->objectInfo->erase(com->objectInfo->begin() + customObjectIndex);
+            }
+            break;
+        case Widget::TouchEventType::MOVED:
+            break;
+        case Widget::TouchEventType::ENDED:
+            break;
+    }
+}
+#endif
 
 int HelloWorld::addInventoryItem(CustomObject * customObject)
 {

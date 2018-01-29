@@ -1,4 +1,4 @@
-﻿#include "CustomNetworkCommunication.h"
+#include "CustomNetworkCommunication.h"
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <Windows.h>
 #endif
@@ -25,7 +25,7 @@ void * SendMsg(void * arg)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		Sleep(5000);
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-		sleep(5000);
+		sleep(5);
 #endif
 	}
 
@@ -272,8 +272,8 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	host = gethostbyname("192.168.56.101");
-	//host = gethostbyname("sourcecake.iptime.org");
+	//host = gethostbyname("192.168.56.101");
+	host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
 
@@ -355,20 +355,22 @@ void CustomNetworkCommunication::error_handling(char * message)
 
 int CustomNetworkCommunication::sendCommand(int code, char * message, int size)
 {
-	char * buf;
+	char buf[9];
 	int writeLen;
 
 	if (message == NULL)
 		return -1;
 
-	buf = new char[8];
 	IntToChar(size, &buf[0]);
 	IntToChar(code, &buf[4]);
-
-	writeLen = send(this->sock, buf, 8, 0);
-	writeLen += send(this->sock, message, size, 0);
-
-	delete[] buf;
+    
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    writeLen = send(this->sock, buf, 8, 0);
+    writeLen += send(this->sock, message, size, 0);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    writeLen = write(this->sock, buf, 8);
+    writeLen += write(this->sock, message, size);
+#endif
 
 	if (writeLen < 0)
 		return -1;
@@ -385,13 +387,23 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	if (buf == NULL)
 		return -1;
 
-	if (recv(this->sock, buf, 4, 0) == -1)
-		return -1;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    if (recv(this->sock, buf, 4, 0) == -1)
+        return -1;
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    if (read(this->sock, buf, 4) == -1)
+        return -1;
+#endif
 
 	CharToInt(&buf[0], &len);
 
-	if (recv(this->sock, buf, 4, 0) == -1)
-		return -1;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    if (recv(this->sock, buf, 4, 0) == -1)
+        return -1;
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    if (read(this->sock, buf, 4) == -1)
+        return -1;
+#endif
 
 	CharToInt(&buf[0], code);
 
@@ -401,7 +413,11 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	//버퍼가 완전히 비워질때까지 받는다.
 	while (1)
 	{
-		readLen = recv(this->sock, &buf[size], len, 0);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+        readLen = recv(this->sock, &buf[size], len, 0);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+        readLen = read(this->sock, &buf[size], len);
+#endif
 
 		if (readLen == -1)
 			return -1;
@@ -601,7 +617,11 @@ void CustomNetworkCommunication::MyPrintDebug(char * message)
 	int nLen = (int)strlen(message) + 1;
 	mbstowcs(pszCharacterString, message, nLen);
 
-	OutputDebugString(pszCharacterString);
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+    OutputDebugString(pszCharacterString);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    printf("%s", pszCharacterString);
+#endif
 }
 
 CustomNetworkCommunication::~CustomNetworkCommunication()
@@ -622,7 +642,7 @@ CustomNetworkCommunication::~CustomNetworkCommunication()
 		for (int j = 0; j < 5; j++)
 		{
 			if (inventory_items_Info[i][j] != NULL)
-				delete inventory_items_Info;
+				delete inventory_items_Info[i][j];
 		}
 	}
 }
