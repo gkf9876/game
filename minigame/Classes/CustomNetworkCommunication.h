@@ -37,7 +37,6 @@ USING_NS_CC;
 #define REQUEST_FIELD_INFO				11
 #define REQUEST_INVENTORY_ITEM_INFO		12
 #define MOVE_INVENTORY_ITEM				13
-#define THROW_ITEM						14
 
 class CustomNetworkCommunication
 {
@@ -67,7 +66,7 @@ public :
 	User * mainUser = NULL;
 	std::vector<User*> * usersInfo = NULL;								//현재 맵의 다른 유저들
 	std::vector<CustomObject*> * objectInfo = NULL;						//현재 맵의 오브젝트
-	CustomObject * inventory_items_Info[3][5] = { NULL, };				//아이템창에 있는 아이템 목록
+	CustomObject * inventory_items_Info[3][5] = { NULL, };			//아이템창에 있는 아이템 목록
 
 	std::vector<byte> *tiledMapBuf = NULL;
 	std::vector<byte> *imageBuf = NULL;
@@ -134,9 +133,6 @@ public :
 
 	//인벤토리에서 아이템 이동시 서버에 알리는 함수
 	int moveInventoryItem(CustomObject * customObject);
-
-	//인벤토리에서 아이템을 버릴시 서버에 알리는 함수
-	int throwItem(CustomObject * customObject);
 
 	//문자열 변환함수들
 	int SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag);

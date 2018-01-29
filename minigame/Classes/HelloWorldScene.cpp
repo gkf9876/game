@@ -781,30 +781,8 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 				//아이템창 밖으로 드래그했다가 놓을시
 				if (inventory->getBoundingBox().containsPoint(tap) == false)
 				{
-					//아이템을 내려놓는다.
-					Sprite * inventoryItem = Sprite::createWithTexture(touchedItem->getTexture());
-					int order = 1;
-
-					for (int i = 0; i < com->objectInfo->size(); i++)
-					{
-						CustomObject * targetObject = com->objectInfo->at(i);
-						if (targetObject->xpos == this->mainUser->xpos && targetObject->ypos == this->mainUser->ypos)
-						{
-							if (order < targetObject->idx)
-								order = targetObject->idx;
-						}
-					}
-
-					inventory->removeChild(touchedItem);
-					inventoryItem->setPosition(Point(this->mainUser->xpos * TILE_SIZE + TILE_SIZE / 2, this->mainUser->ypos * TILE_SIZE + TILE_SIZE / 2));
-					this->addChild(inventoryItem, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + com->inventory_items_Info[3 - (ypos + 1)][xpos]->idx);
-
-					com->inventory_items_Info[3 - (ypos + 1)][xpos]->xpos = this->mainUser->xpos;
-					com->inventory_items_Info[3 - (ypos + 1)][xpos]->ypos = this->mainUser->ypos;
-					com->throwItem(com->inventory_items_Info[3 - (ypos + 1)][xpos]);
-					com->objectInfo->push_back(com->inventory_items_Info[3 - (ypos + 1)][xpos]);
-					CCLOG("objectInfo Size : %d, idx : %d, (%d, %d)", com->objectInfo->size(), com->inventory_items_Info[3 - (ypos + 1)][xpos]->idx, com->inventory_items_Info[3 - (ypos + 1)][xpos]->xpos, com->inventory_items_Info[3 - (ypos + 1)][xpos]->ypos);
-					com->inventory_items_Info[3 - (ypos + 1)][xpos] = NULL;
+					//원상복귀
+					touchedItem->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
 				}
 				else
 				{
@@ -2108,9 +2086,7 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 				//인벤토리창에 아이템을 넣고
 				this->removeChild(imsiGetItem);
 				inventory->addChild(inventoryItem, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
-				customObject->xpos = j;
-				customObject->ypos = 2 - i;
-				CCLOG("xpos(%d), ypos(%d)", customObject->xpos, customObject->ypos);
+				CCLOG("xpos(%d), ypos(%d)", (int)(inventoryItem->getPosition().x), (int)(inventoryItem->getPosition().y));
 
 				//인벤토리 아이템 목록에 추가한다.
 				com->inventory_items_Info[i][j] = customObject;

@@ -534,29 +534,6 @@ int CustomNetworkCommunication::moveInventoryItem(CustomObject * customObject)
 	return str_len;
 }
 
-//인벤토리에서 아이템을 버릴시 서버에 알리는 함수
-int CustomNetworkCommunication::throwItem(CustomObject * customObject)
-{
-	StructCustomObject structCustomObject;
-	structCustomObject.idx = customObject->idx;
-	strcpy(structCustomObject.name, customObject->name);
-	strcpy(structCustomObject.type, customObject->type);
-	structCustomObject.xpos = customObject->xpos;
-	structCustomObject.ypos = customObject->ypos;
-	structCustomObject.order = customObject->order;
-	strcpy(structCustomObject.fileDir, customObject->fileDir);
-	structCustomObject.count = customObject->count;
-
-	char * message = new char[sizeof(StructCustomObject) + 1];
-	memcpy(message, &structCustomObject, sizeof(StructCustomObject));
-
-	str_len = sendCommand(THROW_ITEM, message, sizeof(StructCustomObject));
-
-	delete message;
-
-	return str_len;
-}
-
 int CustomNetworkCommunication::SeparateString(char * str, char(*arr)[BUF_SIZE], int arrLen, char flag)
 {
 	char imsi[BUF_SIZE];
