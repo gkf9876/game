@@ -790,8 +790,11 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 						CustomObject * targetObject = com->objectInfo->at(i);
 						if (targetObject->xpos == this->mainUser->xpos && targetObject->ypos == this->mainUser->ypos)
 						{
-							if (order < targetObject->idx)
-								order = targetObject->idx;
+							if (order <= targetObject->order)
+							{
+								order = targetObject->order + 1;
+								CCLOG("TargetObject->idx : %d, order : %d", targetObject->idx, order);
+							}
 						}
 					}
 
@@ -801,9 +804,9 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 
 					com->inventory_items_Info[3 - (ypos + 1)][xpos]->xpos = this->mainUser->xpos;
 					com->inventory_items_Info[3 - (ypos + 1)][xpos]->ypos = this->mainUser->ypos;
+					com->inventory_items_Info[3 - (ypos + 1)][xpos]->order = order;
 					com->throwItem(com->inventory_items_Info[3 - (ypos + 1)][xpos]);
 					com->objectInfo->push_back(com->inventory_items_Info[3 - (ypos + 1)][xpos]);
-					CCLOG("objectInfo Size : %d, idx : %d, (%d, %d)", com->objectInfo->size(), com->inventory_items_Info[3 - (ypos + 1)][xpos]->idx, com->inventory_items_Info[3 - (ypos + 1)][xpos]->xpos, com->inventory_items_Info[3 - (ypos + 1)][xpos]->ypos);
 					com->inventory_items_Info[3 - (ypos + 1)][xpos] = NULL;
 				}
 				else
@@ -923,6 +926,7 @@ void HelloWorld::setPlayerPosition(Point position)
 	Point tileCoord = this->tileCoordForPosition(playerPos);
 
 	int tileGid = this->metainfo->getTileGIDAt(tileCoord);
+	CCLOG("tileGid : %d, pos : (%d, %d)", tileGid, (int)tileCoord.x, (int)tileCoord.y);
 
 	Point regionPoint = this->mainUser->position;
 
@@ -1686,6 +1690,48 @@ void HelloWorld::update(float fDelta)
 		delete deleteCustomObject;
 
 		com->isDeleteMapObject = false;
+	}
+
+	//현재 필드의 추가된 오브젝트 업데이트
+	if (com->isOtherThrowItem == true)
+	{
+		CCLOG("com->previousItemCount : %d", com->previousItemCount);
+		for (int i = com->previousItemCount; i < com->objectInfo->size(); i++)
+		{
+			CustomObject * customObject = (com->objectInfo)->at(i);
+			int idx = customObject->idx;
+			char name[50];
+			strcpy(name, customObject->name);
+			char type[50];
+			strcpy(type, customObject->type);
+			int xpos = customObject->xpos;
+			int ypos = customObject->ypos;
+			int order = customObject->order;
+			CCLOG("Name : %s, pos(%d, %d)", name, xpos, ypos);
+
+			com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
+
+			//요청한 오브젝트 이미지가 수신되길 기다린다.
+			while (com->getImage != true);
+
+			//수신된 버퍼데이터로 이미지를 만든다.
+			std::vector<byte> * imageBuf = com->imageBuf;
+			int count = customObject->count;
+
+			Image* image = new Image();
+			image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+			com->getImage = false;
+			delete imageBuf;
+
+			//스프라이트를 만들어 맵에 구현한다.
+			Texture2D* texture = new Texture2D();
+			texture->initWithImage(image);
+			auto sprite = Sprite::createWithTexture(texture);
+			sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
+			sprite->setAnchorPoint(Point(0, 0));
+			this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + idx);
+		}
+		com->isOtherThrowItem = false;
 	}
 }
 

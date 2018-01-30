@@ -235,12 +235,20 @@ void * RecvMsg(void * arg)
 				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
 				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
 				com->inventory_items_Info[3 - (customObject->ypos + 1)][customObject->xpos] = customObject;
-
-				char arr[1024];
-				sprintf(arr, "name : %s, pos(%d, %d), count : %d\n", customObject->name, (int)customObject->xpos, (int)customObject->ypos, itemCount);
-				com->MyPrintDebug(arr);
 			}
 			com->isInventoryFill = true;
+			break;
+		case THROW_ITEM:
+		{
+			StructCustomObject imsiStructCustomObject;
+			memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
+			char arr[1024];
+			com->MyPrintDebug(arr);
+			CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+			com->previousItemCount = com->objectInfo->size();
+			com->objectInfo->push_back(customObject);
+			com->isOtherThrowItem = true;
+		}
 			break;
 		default:
 			break;
@@ -272,8 +280,8 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	//host = gethostbyname("192.168.56.101");
-	host = gethostbyname("sourcecake.iptime.org");
+	host = gethostbyname("192.168.56.102");
+	//host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
 

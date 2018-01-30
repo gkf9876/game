@@ -91,6 +91,10 @@ public :
 	//인벤토리창의 정보를 가져왔는지 여부
 	bool isInventoryFill = false;
 
+	//다른유저가 아이템을 떨궜는지
+	bool isOtherThrowItem = false;
+	int previousItemCount;
+
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
 	char sendBuf[BUF_SIZE];
