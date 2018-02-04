@@ -67,6 +67,7 @@ public :
 	User * mainUser = NULL;
 	std::vector<User*> * usersInfo = NULL;								//현재 맵의 다른 유저들
 	std::vector<CustomObject*> * objectInfo = NULL;						//현재 맵의 오브젝트
+	std::vector<CustomObject*> * monsterInfo = NULL;					//현재 맵의 몬스터
 	CustomObject * inventory_items_Info[3][5] = { NULL, };				//아이템창에 있는 아이템 목록
 
 	std::vector<byte> *tiledMapBuf = NULL;

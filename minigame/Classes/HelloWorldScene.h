@@ -49,6 +49,7 @@ using namespace ui;
 #define INVENTORY_ITEM		10000
 #define INVENTORY_BUTTON  30
 #define ITEM_EAT_BUTTON  31
+#define MONSTER_TAG  20000
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 
@@ -69,6 +70,7 @@ using namespace ui;
 #define OTHERS_USERS_Z_ORDER			200										//다른 유저 모습 우선순위
 #define INVENTORY_BUTTON_Z_ORDER        204                                     //아이템창 띄우는 버튼
 #define ITEM_EAT_BUTTON_Z_ORDER         204                                     //아이템 먹는 버튼
+#define MONSTER_PRIORITY_Z_ORDER        200                                     //맵의 몬스터 우선순위
 
 #define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
 #define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼

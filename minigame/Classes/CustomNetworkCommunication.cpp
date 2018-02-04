@@ -222,7 +222,10 @@ void * RecvMsg(void * arg)
 				StructCustomObject imsiStructCustomObject;
 				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
 				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
-				com->objectInfo->push_back(customObject);
+				if(!strcmp(customObject->type, "item"))
+					com->objectInfo->push_back(customObject);
+				else if(!strcmp(customObject->type, "monster"))
+					com->monsterInfo->push_back(customObject);
 			}
 			com->isObjectBufferFill = true;
 			break;
@@ -242,8 +245,6 @@ void * RecvMsg(void * arg)
 		{
 			StructCustomObject imsiStructCustomObject;
 			memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
-			char arr[1024];
-			com->MyPrintDebug(arr);
 			CustomObject * customObject = new CustomObject(imsiStructCustomObject);
 			com->previousItemCount = com->objectInfo->size();
 			com->objectInfo->push_back(customObject);
@@ -263,6 +264,7 @@ void CustomNetworkCommunication::init()
 	this->mainUser = new User();
 	this->usersInfo = new std::vector<User*>();
 	this->objectInfo = new std::vector<CustomObject*>();
+	this->monsterInfo = new std::vector<CustomObject*>();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -280,7 +282,7 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	host = gethostbyname("192.168.56.102");
+	host = gethostbyname("192.168.56.101");
 	//host = gethostbyname("sourcecake.iptime.org");
 	if (!host)
 		error_handling("gethost... error");
@@ -644,6 +646,8 @@ CustomNetworkCommunication::~CustomNetworkCommunication()
 		delete tiledMapBuf;
 	if(imageBuf != NULL)
 		delete imageBuf;
+	if (monsterInfo != NULL)
+		delete monsterInfo;
 
 	for (int i = 0; i < 3; i++)
 	{

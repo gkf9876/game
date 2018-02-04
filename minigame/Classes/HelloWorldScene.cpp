@@ -247,9 +247,9 @@ void HelloWorld::start()
 	//맵의 오브젝트 정보를 요청한다.
 	com->sendCommand(REQUEST_FIELD_INFO, com->mainUser->field, strlen(com->mainUser->field));
 
-	//맵의 아이템 구현하기
 	while (com->isObjectBufferFill != true);
 
+	//맵의 아이템 구현하기
 	for (int i = 0; i < com->objectInfo->size(); i++)
 	{
 		CustomObject * customObject = (com->objectInfo)->at(i);
@@ -283,6 +283,55 @@ void HelloWorld::start()
 		sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0, 0));
 		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + idx);
+	}
+
+	//맵의 몬스터 구현하기
+	for (int i = 0; i < com->monsterInfo->size(); i++)
+	{
+		CustomObject * customObject = (com->monsterInfo)->at(i);
+		int idx = customObject->idx;
+		char name[50];
+		strcpy(name, customObject->name);
+		char type[50];
+		strcpy(type, customObject->type);
+		int xpos = customObject->xpos;
+		int ypos = customObject->ypos;
+		int order = customObject->order;
+		char fileDir[100];
+
+		sprintf(fileDir, "%s.png", customObject->fileDir);
+		com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
+
+		//요청한 오브젝트 이미지가 수신되길 기다린다.
+		while (com->getImage != true);
+
+		//수신된 버퍼데이터로 이미지를 만든다.
+		std::vector<byte> * imageBuf = com->imageBuf;
+		int count = customObject->count;
+
+		Image* image = new Image();
+		image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+		com->getImage = false;
+		delete imageBuf;
+
+		//스프라이트를 만들어 맵에 구현한다.
+		Texture2D* texture = new Texture2D();
+		texture->initWithImage(image);
+
+		//.list 를 요청한다.
+		com->getTiledMap = false;
+		sprintf(fileDir, "%s.plist", customObject->fileDir);
+		com->sendCommand(REQUEST_TILED_MAP, fileDir, strlen(fileDir));
+
+		while (com->getTiledMap != true);
+
+		SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent((char*)com->tiledMapBuf->data(), texture);
+
+		sprintf(fileDir, "%s_01.png", customObject->name);
+		auto sprite = Sprite::createWithSpriteFrameName(fileDir);
+		sprite->setPosition(Point(xpos * TILE_SIZE + TILE_SIZE / 2, ypos * TILE_SIZE));
+		sprite->setAnchorPoint(Point(0.5, 0));
+		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + idx);
 	}
 
 	com->isObjectBufferFill = false;
@@ -378,7 +427,6 @@ void HelloWorld::start()
 				sprite->setAnchorPoint(Point(0, 0));
 
 				inventory->addChild(sprite, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
-				CCLOG("xpos(%d), ypos(%d)", (int)(xpos * TILE_SIZE), (int)(ypos * TILE_SIZE));
 			}
 		}
 	}
@@ -483,7 +531,6 @@ void HelloWorld::createSprite()
 	this->mainUser->isAction = false;
 	this->mainUser->isRunning = false;
 	this->mainUser->isKeepKeyPressed = false;
-	//this->mainUser->seeDirection = cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW;
 	this->addChild(this->mainUser->sprite, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 
 	//캐릭터 위에 말풍선으로 문자열 출력.
@@ -793,7 +840,6 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 							if (order <= targetObject->order)
 							{
 								order = targetObject->order + 1;
-								CCLOG("TargetObject->idx : %d, order : %d", targetObject->idx, order);
 							}
 						}
 					}
@@ -926,7 +972,6 @@ void HelloWorld::setPlayerPosition(Point position)
 	Point tileCoord = this->tileCoordForPosition(playerPos);
 
 	int tileGid = this->metainfo->getTileGIDAt(tileCoord);
-	CCLOG("tileGid : %d, pos : (%d, %d)", tileGid, (int)tileCoord.x, (int)tileCoord.y);
 
 	Point regionPoint = this->mainUser->position;
 
@@ -940,6 +985,15 @@ void HelloWorld::setPlayerPosition(Point position)
 		{
 			return;
 		}
+	}
+
+	//이동할 위치에 몬스터가 있을시
+	for (int i = 0; i < com->monsterInfo->size(); i++)
+	{
+		CustomObject * customObject = (com->monsterInfo)->at(i);
+		auto sprite = getChildByTag(MONSTER_TAG + customObject->idx);
+		if (sprite->getPosition() == position)
+			return;
 	}
 
 	if (tileGid)
@@ -1009,6 +1063,16 @@ void HelloWorld::setPlayerPosition(Point position)
 				//
 				com->objectInfo->clear();
 
+				//기존의 맵 몬스터 소스 삭제
+				for (int i = 0; i < com->monsterInfo->size(); i++)
+				{
+					CustomObject * imsiMonsterInfo = com->monsterInfo->at(i);
+					this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
+					this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
+				}
+				//
+				com->monsterInfo->clear();
+
 				com->sendCommand(REQUEST_FIELD_INFO, (char*)destination.c_str(), strlen((char*)destination.c_str()));
 
 				//맵의 아이템 구현하기
@@ -1047,6 +1111,55 @@ void HelloWorld::setPlayerPosition(Point position)
 					sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
 					sprite->setAnchorPoint(Point(0, 0));
 					this->addChild(sprite, MAP_PRIORITY_Z_ORDER + order, MAP_TAG + idx);
+				}
+
+				//맵의 몬스터 구현하기
+				for (int i = 0; i < com->monsterInfo->size(); i++)
+				{
+					CustomObject * customObject = (com->monsterInfo)->at(i);
+					int idx = customObject->idx;
+					char name[50];
+					strcpy(name, customObject->name);
+					char type[50];
+					strcpy(type, customObject->type);
+					int xpos = customObject->xpos;
+					int ypos = customObject->ypos;
+					int order = customObject->order;
+					char fileDir[100];
+
+					sprintf(fileDir, "%s.png", customObject->fileDir);
+					com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
+
+					//요청한 오브젝트 이미지가 수신되길 기다린다.
+					while (com->getImage != true);
+
+					//수신된 버퍼데이터로 이미지를 만든다.
+					std::vector<byte> * imageBuf = com->imageBuf;
+					int count = customObject->count;
+
+					Image* image = new Image();
+					image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+					com->getImage = false;
+					delete imageBuf;
+
+					//스프라이트를 만들어 맵에 구현한다.
+					Texture2D* texture = new Texture2D();
+					texture->initWithImage(image);
+
+					//.list 를 요청한다.
+					com->getTiledMap = false;
+					sprintf(fileDir, "%s.plist", customObject->fileDir);
+					com->sendCommand(REQUEST_TILED_MAP, fileDir, strlen(fileDir));
+
+					while (com->getTiledMap != true);
+
+					SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent((char*)com->tiledMapBuf->data(), texture);
+
+					sprintf(fileDir, "%s_01.png", customObject->name);
+					auto sprite = Sprite::createWithSpriteFrameName(fileDir);
+					sprite->setPosition(Point(xpos * TILE_SIZE + TILE_SIZE / 2, ypos * TILE_SIZE));
+					sprite->setAnchorPoint(Point(0.5, 0));
+					this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + idx);
 				}
 
 				com->isObjectBufferFill = false;
@@ -1139,6 +1252,8 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	//획득한 아이템
 	CustomObject * customObject;
 	int customObjectIndex;
+
+	CCLOG("Hello World : %d", key);
 
 	switch (key)
 	{
@@ -1695,7 +1810,6 @@ void HelloWorld::update(float fDelta)
 	//현재 필드의 추가된 오브젝트 업데이트
 	if (com->isOtherThrowItem == true)
 	{
-		CCLOG("com->previousItemCount : %d", com->previousItemCount);
 		for (int i = com->previousItemCount; i < com->objectInfo->size(); i++)
 		{
 			CustomObject * customObject = (com->objectInfo)->at(i);
@@ -1707,7 +1821,6 @@ void HelloWorld::update(float fDelta)
 			int xpos = customObject->xpos;
 			int ypos = customObject->ypos;
 			int order = customObject->order;
-			CCLOG("Name : %s, pos(%d, %d)", name, xpos, ypos);
 
 			com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
 
@@ -2156,7 +2269,6 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 				inventory->addChild(inventoryItem, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
 				customObject->xpos = j;
 				customObject->ypos = 2 - i;
-				CCLOG("xpos(%d), ypos(%d)", customObject->xpos, customObject->ypos);
 
 				//인벤토리 아이템 목록에 추가한다.
 				com->inventory_items_Info[i][j] = customObject;
