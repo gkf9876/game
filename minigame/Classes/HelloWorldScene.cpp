@@ -988,13 +988,13 @@ void HelloWorld::setPlayerPosition(Point position)
 	}
 
 	//이동할 위치에 몬스터가 있을시
-	for (int i = 0; i < com->monsterInfo->size(); i++)
-	{
-		CustomObject * customObject = (com->monsterInfo)->at(i);
-		auto sprite = getChildByTag(MONSTER_TAG + customObject->idx);
-		if (sprite->getPosition() == position)
-			return;
-	}
+	//for (int i = 0; i < com->monsterInfo->size(); i++)
+	//{
+	//	CustomObject * customObject = (com->monsterInfo)->at(i);
+	//	auto sprite = getChildByTag(MONSTER_TAG + customObject->idx);
+	//	if (sprite->getPosition() == position)
+	//		return;
+	//}
 
 	if (tileGid)
 	{
