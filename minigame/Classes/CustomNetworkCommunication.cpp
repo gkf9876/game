@@ -472,15 +472,15 @@ int CustomNetworkCommunication::requestLogin(char * userName)
 	return str_len;
 }
 
-int CustomNetworkCommunication::userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection)
+int CustomNetworkCommunication::userMoveUpdate(StructCustomUser user)
 {
-	sprintf(this->sendBuf, "%s\n%d\n%d\n%s\n%d\n%d\n%s\n%d", userName, (int)fromPoint.x, (int)fromPoint.y, from, (int)toPoint.x, (int)toPoint.y, to, seeDirection);
+	memcpy(this->sendBuf, &user, sizeof(StructCustomUser));
 
 	//맵 이동시 현재 유저목록 초기화
-	if(strcmp(from, to))
+	if(user.action == ACTION_MAP_POTAL)
 		usersInfo->clear();
 
-	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf, strlen(this->sendBuf));
+	str_len = sendCommand(USER_MOVE_UPDATE, this->sendBuf, sizeof(StructCustomUser));
 
 	return str_len;
 }

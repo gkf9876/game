@@ -126,7 +126,7 @@ public :
 	int requestLogin(char * userName);
 
 	//유저 좌표이동 함수
-	int userMoveUpdate(char * userName, Point fromPoint, char * from, Point toPoint, char * to, cocos2d::EventKeyboard::KeyCode seeDirection);
+	int userMoveUpdate(StructCustomUser user);
 
 	//유저 회원가입 요청 함수
 	int requestJoin(char * userName);

@@ -10,6 +10,7 @@ USING_NS_CC;
 #define ACTION_MAP_IN		0
 #define ACTION_MAP_MOVE		1
 #define ACTION_MAP_OUT		2
+#define ACTION_MAP_POTAL	3
 
 struct StructCustomUser
 {

@@ -1189,8 +1189,17 @@ void HelloWorld::setPlayerPosition(Point position)
 				//이동한 내용을 DB에 반영
 				char sendMapName[100];
 				strcpy(sendMapName, String(currentFlag).getCString());
-				writeSize = com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
-					cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
+
+				StructCustomUser user;
+				strcpy(user.name, com->mainUser->name);
+				user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+				user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+				strcpy(user.field, sendMapName);
+				user.seeDirection = (int)this->mainUser->seeDirection;
+				user.action = ACTION_MAP_POTAL;
+
+				writeSize = com->userMoveUpdate(user);
+
 				if (writeSize == -1)
 				{
 					com->comm = false;
@@ -1212,8 +1221,17 @@ void HelloWorld::setPlayerPosition(Point position)
 	Value properties = tmap->getPropertiesForGID(tileGid);
 	char sendMapName[100];
 	strcpy(sendMapName, String(currentFlag).getCString());
-	writeSize = com->userMoveUpdate(com->mainUser->name, Point(regionPoint.x / TILE_SIZE, regionPoint.y / TILE_SIZE), this->mainUser->field,
-		cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), sendMapName, this->mainUser->seeDirection);
+
+	StructCustomUser user;
+	strcpy(user.name, com->mainUser->name);
+	user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+	user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+	strcpy(user.field, sendMapName);
+	user.seeDirection = (int)this->mainUser->seeDirection;
+	user.action = ACTION_MAP_MOVE;
+
+	writeSize = com->userMoveUpdate(user);
+
 	if (writeSize == -1)
 	{
 		com->comm = false;
@@ -1263,9 +1281,17 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			this->mainUser->sprite->setSpriteFrame("man_13.png");
 
+			StructCustomUser user;
+			strcpy(user.name, com->mainUser->name);
+			user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+			user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+			strcpy(user.field, this->mainUser->field);
+			user.seeDirection = (int)key;
+			user.action = ACTION_MAP_MOVE;
+
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
-				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			writeSize = com->userMoveUpdate(user);
+
 			if (writeSize == -1)
 			{
 				com->comm = false;
@@ -1282,9 +1308,17 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			this->mainUser->sprite->setSpriteFrame("man_01.png");
 
+			StructCustomUser user;
+			strcpy(user.name, com->mainUser->name);
+			user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+			user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+			strcpy(user.field, this->mainUser->field);
+			user.seeDirection = (int)key;
+			user.action = ACTION_MAP_MOVE;
+
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
-				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			writeSize = com->userMoveUpdate(user);
+
 			if (writeSize == -1)
 			{
 				com->comm = false;
@@ -1301,9 +1335,17 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			this->mainUser->sprite->setSpriteFrame("man_09.png");
 
+			StructCustomUser user;
+			strcpy(user.name, com->mainUser->name);
+			user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+			user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+			strcpy(user.field, this->mainUser->field);
+			user.seeDirection = (int)key;
+			user.action = ACTION_MAP_MOVE;
+
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
-				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			writeSize = com->userMoveUpdate(user);
+
 			if (writeSize == -1)
 			{
 				com->comm = false;
@@ -1320,9 +1362,17 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 		{
 			this->mainUser->sprite->setSpriteFrame("man_05.png");
 
+			StructCustomUser user;
+			strcpy(user.name, com->mainUser->name);
+			user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
+			user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
+			strcpy(user.field, this->mainUser->field);
+			user.seeDirection = (int)key;
+			user.action = ACTION_MAP_MOVE;
+
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(com->mainUser->name, cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field,
-				cocos2d::Point(this->mainUser->sprite->getPosition().x / TILE_SIZE, this->mainUser->sprite->getPosition().y / TILE_SIZE), this->mainUser->field, key);
+			writeSize = com->userMoveUpdate(user);
+
 			if (writeSize == -1)
 			{
 				com->comm = false;
