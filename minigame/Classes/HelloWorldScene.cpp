@@ -1846,6 +1846,8 @@ void HelloWorld::update(float fDelta)
 		}
 		com->isOtherThrowItem = false;
 	}
+
+	CCLOG("Hello World : %d", com->usersInfo->size());
 }
 
 void HelloWorld::editBoxReturn(EditBox * editBox)

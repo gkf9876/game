@@ -58,12 +58,9 @@ void * RecvMsg(void * arg)
 		switch (code)
 		{
 		case REQUEST_USER_INFO:
-			com->SeparateString(com->recvBuf, buf, 50, '\n');
-			strcpy(com->mainUser->name, buf[0]);
-			com->mainUser->xpos = atoi(buf[1]);
-			com->mainUser->ypos = atoi(buf[2]);
-			strcpy(com->mainUser->field, buf[3]);
-			com->mainUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
+			StructCustomUser structCustomUser;
+			memcpy(&structCustomUser, com->recvBuf, sizeof(StructCustomUser));
+			com->mainUser->setUser(structCustomUser);
 			com->isGetUserInfo = true;
 			break;
 		case CHATTING_PROCESS:
@@ -103,14 +100,16 @@ void * RecvMsg(void * arg)
 			break;
 		case OTHER_USER_MAP_MOVE:
 			com->SeparateString(com->recvBuf, buf, 50, '\n');
+			StructCustomUser moveUser;
+			memcpy(&moveUser, com->recvBuf, sizeof(StructCustomUser));
 
-			if (!strcmp(buf[0], "out"))
+			if (moveUser.action == ACTION_MAP_OUT)
 			{
 				user = new User();
 
-				strcpy(user->name, buf[1]);
-				user->xpos = atoi(buf[2]);
-				user->ypos = atoi(buf[3]);
+				strcpy(user->name, moveUser.name);
+				user->xpos = moveUser.xpos;
+				user->ypos = moveUser.ypos;
 
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
@@ -125,26 +124,26 @@ void * RecvMsg(void * arg)
 					}
 				}
 			}
-			else if (!strcmp(buf[0], "in"))
+			else if (moveUser.action == ACTION_MAP_IN)
 			{
 				//맵에 진입한 다른 유저를 구현
 				user = new User();
-				strcpy(user->name, buf[1]);
-				user->xpos = atoi(buf[2]);
-				user->ypos = atoi(buf[3]);
-				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
+				strcpy(user->name, moveUser.name);
+				user->xpos = moveUser.xpos;
+				user->ypos = moveUser.ypos;
+				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
 				user->sprite = NULL;
 
 				com->usersInfo->push_back(user);
 			}
-			else if (!strcmp(buf[0], "move"))
+			else if (moveUser.action == ACTION_MAP_MOVE)
 			{
 				user = new User();
 
-				strcpy(user->name, buf[1]);
-				user->xpos = atoi(buf[2]);
-				user->ypos = atoi(buf[3]);
-				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)atoi(buf[4]);
+				strcpy(user->name, moveUser.name);
+				user->xpos = moveUser.xpos;
+				user->ypos = moveUser.ypos;
+				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
 
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{

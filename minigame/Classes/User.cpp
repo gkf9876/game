@@ -9,6 +9,17 @@ User::User()
 	this->balloon = NULL;
 }
 
+void User::setUser(StructCustomUser strucrCustomUser)
+{
+	this->sock = strucrCustomUser.sock;
+	strcpy(this->name, strucrCustomUser.name);
+	strcpy(this->password, strucrCustomUser.password);
+	this->xpos = strucrCustomUser.xpos;
+	this->ypos = strucrCustomUser.ypos;
+	strcpy(this->field, strucrCustomUser.field);
+	this->seeDirection = (cocos2d::EventKeyboard::KeyCode)strucrCustomUser.seeDirection;
+}
+
 User::~User()
 {
 	if(sprite != NULL)

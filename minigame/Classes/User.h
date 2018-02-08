@@ -7,6 +7,22 @@ USING_NS_CC;
 
 #define TILE_SIZE	32														//타일 사이즈
 
+#define ACTION_MAP_IN		0
+#define ACTION_MAP_MOVE		1
+#define ACTION_MAP_OUT		2
+
+struct StructCustomUser
+{
+	int sock;
+	char name[50];
+	char password[50];
+	int xpos;
+	int ypos;
+	char field[100];
+	int seeDirection;
+	int action;
+};
+
 class User
 {
 public:
@@ -31,6 +47,7 @@ public:
 	int balloonTime = 0;													//말풍선 떠있는 시간.
 
 	User();
+	void setUser(StructCustomUser strucrCustomUser);
 	~User();
 };
 
