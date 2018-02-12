@@ -235,9 +235,6 @@ void HelloWorld::start()
 	createMonster();
 
 	//플레이어 만들기
-	objects = tmap->getObjectGroup("Objects");
-	this->mainUser->position = Point(com->mainUser->xpos * TILE_SIZE + TILE_SIZE / 2, com->mainUser->ypos * TILE_SIZE);
-
 	this->createSprite();
 	//
 
@@ -292,21 +289,23 @@ void HelloWorld::start()
 		{
 			if (com->inventory_items_Info[i][j] != NULL)
 			{
+				Sprite * sprite;
+				Image* image = new Image();
+				Texture2D* texture = new Texture2D();
 				CustomObject * customObject = com->inventory_items_Info[i][j];
+
 				com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
 
 				//요청한 오브젝트 이미지가 수신되길 기다린다.
 				while (com->getImage != true);
 
 				//수신된 버퍼데이터로 이미지를 만든다.
-				Image* image = new Image();
 				image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
 				com->getImage = false;
 
 				//스프라이트를 만들어 맵에 구현한다.
-				Texture2D* texture = new Texture2D();
 				texture->initWithImage(image);
-				auto sprite = Sprite::createWithTexture(texture);
+				sprite = Sprite::createWithTexture(texture);
 				sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
 				sprite->setAnchorPoint(Point(0, 0));
 
@@ -370,8 +369,6 @@ void HelloWorld::onEnter()
 	_eventDispatcher->addEventListenerWithFixedPriority(listener, 1);
 
 	auto listener1 = EventListenerKeyboard::create();
-
-	//listener->setEnabled(true);
 
 	listener1->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
 	listener1->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
@@ -926,8 +923,6 @@ void HelloWorld::setPlayerPosition(Point position)
 				//맵의 몬스터 구현하기
 				createMonster();
 
-				objects = tmap->getObjectGroup("Objects");
-
 				spawnPoint = objects->getObject(code);
 
 				int x = spawnPoint.at("x").asInt() + tmap->getTileSize().width / 2;
@@ -940,6 +935,7 @@ void HelloWorld::setPlayerPosition(Point position)
 				//맵의 이름을 화면 상단에 출력.
 				mapName->setString(objects->getProperty("Name").asString());
 
+				//Hello World
 				//지금 맵의 다른 유저들을 안보이게 한다.
 				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
@@ -959,12 +955,12 @@ void HelloWorld::setPlayerPosition(Point position)
 				user.seeDirection = (int)this->mainUser->seeDirection;
 				user.action = ACTION_MAP_POTAL;
 
-				writeSize = com->userMoveUpdate(user);
-
-				if (writeSize == -1)
+				if (com->userMoveUpdate(user) == -1)
 				{
 					com->comm = false;
+					CCLOG("setPlayerPosition comm error");
 				}
+
 				this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
 				this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 
@@ -987,12 +983,12 @@ void HelloWorld::setPlayerPosition(Point position)
 	user.seeDirection = (int)this->mainUser->seeDirection;
 	user.action = ACTION_MAP_MOVE;
 
-	writeSize = com->userMoveUpdate(user);
-
-	if (writeSize == -1)
+	if (com->userMoveUpdate(user) == -1)
 	{
 		com->comm = false;
+		CCLOG("setPlayerPosition comm error");
 	}
+
 	this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
 	this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 
@@ -1003,8 +999,6 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
-	CCLOG("onKeyPressed");
-
 	//로그인화면에서는 키동작을 잠근다.
 	if (this->mainUser->isLogin != true)
 	{
@@ -1028,8 +1022,6 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	CustomObject * customObject;
 	int customObjectIndex;
 
-	CCLOG("Key : %d", key);
-
 	switch (key)
 	{
 	case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
@@ -1047,11 +1039,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			user.action = ACTION_MAP_MOVE;
 
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(user);
-
-			if (writeSize == -1)
+			if (com->userMoveUpdate(user) == -1)
 			{
 				com->comm = false;
+				CCLOG("onKeyPressed comm error");
 			}
 		}
 		else
@@ -1074,11 +1065,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			user.action = ACTION_MAP_MOVE;
 
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(user);
-
-			if (writeSize == -1)
+			if (com->userMoveUpdate(user) == -1)
 			{
 				com->comm = false;
+				CCLOG("onKeyPressed comm error");
 			}
 		}
 		else
@@ -1101,11 +1091,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			user.action = ACTION_MAP_MOVE;
 
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(user);
-
-			if (writeSize == -1)
+			if (com->userMoveUpdate(user) == -1)
 			{
 				com->comm = false;
+				CCLOG("onKeyPressed comm error");
 			}
 		}
 		else
@@ -1128,11 +1117,10 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 			user.action = ACTION_MAP_MOVE;
 
 			//방향전환을 서버에 알려준다.
-			writeSize = com->userMoveUpdate(user);
-
-			if (writeSize == -1)
+			if (com->userMoveUpdate(user) == -1)
 			{
 				com->comm = false;
+				CCLOG("onKeyPressed comm error");
 			}
 		}
 		else
@@ -1185,6 +1173,14 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Eve
 	{
 		this->mainUser->isKeepKeyPressed = false;
 		this->mainUser->isRunning = false;
+
+		this->mainUser->action = ACTION_MAP_MOVE_END;
+
+		if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
+		{
+			com->comm = false;
+			CCLOG("onKeyReleased comm error");
+		}
 	}
 	return;
 }
@@ -1296,8 +1292,8 @@ void HelloWorld::setOtherUsersAnimation(User * user, cocos2d::EventKeyboard::Key
 	}
 
 	user->animate = Animate::create(animation);
-	auto actionStartCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionStarted));
-	auto actionFinishCallback = CallFunc::create(this, callfunc_selector(HelloWorld::actionFinished));
+	auto actionStartCallback = CallFuncN::create(CC_CALLBACK_1(HelloWorld::otherUserActionStarted, this, (void*)user));
+	auto actionFinishCallback = CallFuncN::create(CC_CALLBACK_1(HelloWorld::otherUserActionFinished, this, (void*)user));
 
 	auto sequence = Sequence::create(actionStartCallback, user->animate, actionFinishCallback, NULL);
 	user->sprite->runAction(sequence);
@@ -1314,6 +1310,18 @@ void HelloWorld::actionFinished()
 	this->mainUser->isAction = false;
 }
 
+void HelloWorld::otherUserActionStarted(Ref * sender, void * d)
+{
+	// do something on complete
+}
+
+void HelloWorld::otherUserActionFinished(Ref * sender, void * d)
+{
+	// do something on complete
+	User * user = (User*)d;
+	user->isAction = false;
+}
+
 void HelloWorld::update(float fDelta)
 {
 	updateTime += fDelta;
@@ -1321,112 +1329,7 @@ void HelloWorld::update(float fDelta)
 	if (updateTime >= 60)
 		updateTime = 0;
 
-	for (int i = 0; i < com->usersInfo->size(); i++)
-	{
-		User * user = com->usersInfo->at(i);
-
-		if (user->sprite == NULL)
-		{
-			//다른 유저의 모습을 출력한다.
-			SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
-
-			switch (user->seeDirection)
-			{
-			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-				user->sprite = Sprite::createWithSpriteFrameName("man_13.png");
-				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
-				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-				user->sprite = Sprite::createWithSpriteFrameName("man_09.png");
-				break;
-			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-				user->sprite = Sprite::createWithSpriteFrameName("man_05.png");
-				break;
-			default:
-				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
-				break;
-			}
-
-			user->sprite->setAnchorPoint(Point(0.5, 0));
-			user->isAction = false;
-			user->isRunning = false;
-			user->isKeepKeyPressed = false;
-			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
-			user->sprite->setPosition(user->position);
-			this->addChild(user->sprite, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
-
-			//캐릭터 위에 말풍선으로 문자열 출력.
-			user->balloon = Sprite::create("Images/balloon.png");
-			user->balloon->setAnchorPoint(Point(1, 0));
-			user->balloon->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2, user->position.y + user->sprite->getContentSize().height));
-			user->balloon->setVisible(false);
-			this->addChild(user->balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
-
-			user->balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
-			user->balloonContent->setColor(Color3B::BLACK);
-			user->balloonContent->setAnchorPoint(Point(1, 0));
-			user->balloonContent->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2 - 50, user->position.y + user->sprite->getContentSize().height + 50));
-			user->balloonContent->setVisible(false);
-			this->addChild(user->balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
-
-			//채팅창에 다른유저의 접속을 알림
-			element.pushBack(String::createWithFormat("%s is Login !!", user->name));
-			com->chattingInfo.pushBack(String::createWithFormat("%s is Login !!", user->name));
-		}
-		else
-		{
-			if (user->sprite->isVisible() == false)
-			{
-				//채팅창에 다른유저의 접속종료를 알림
-				element.pushBack(String::createWithFormat("%s is Logout !!", user->name));
-				com->chattingInfo.pushBack(String::createWithFormat("%s is Logout !!", user->name));
-
-				this->removeChild(user->sprite);
-				user->sprite = NULL;
-				com->usersInfo->erase(com->usersInfo->begin() + i);
-				i--;
-			}
-			else
-			{
-				if (user->isAction == true && user->isRunning == true)
-				{
-					this->setOtherUsersAnimation(user, user->seeDirection);
-
-					//액션을 취하고 가만히 있을때
-					user->isAction = false;
-					user->isRunning = false;
-				}
-
-				if(user->isAction == true && user->isRunning == false)
-				{
-					switch (user->seeDirection)
-					{
-					case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
-						user->sprite->setSpriteFrame("man_13.png");
-						break;
-					case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
-						user->sprite->setSpriteFrame("man_01.png");
-						break;
-					case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
-						user->sprite->setSpriteFrame("man_09.png");
-						break;
-					case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
-						user->sprite->setSpriteFrame("man_05.png");
-						break;
-					default:
-						user->sprite->setSpriteFrame("man_01.png");
-						break;
-					}
-
-					//액션을 취하고 가만히 있을때
-					user->isAction = false;
-					user->isRunning = false;
-				}
-			}
-		}
-	}
+	createOtherUser();
 
 	if (this->mainUser->isLogin != true)
 	{
@@ -1449,15 +1352,18 @@ void HelloWorld::update(float fDelta)
 			if (com->getUserInfo() == -1)
 			{
 				com->comm = false;
+				CCLOG("fail getUserInfo()");
 			}
 
 			//유저 정보 불러올때까지 대기.
 			while (com->isGetUserInfo != true);
+
 			strcpy(this->mainUser->name, com->mainUser->name);
 			strcpy(this->mainUser->field, com->mainUser->field);
 			this->mainUser->xpos = com->mainUser->xpos;
 			this->mainUser->ypos = com->mainUser->ypos;
 			this->mainUser->seeDirection = com->mainUser->seeDirection;
+			this->mainUser->position = Point(com->mainUser->xpos * TILE_SIZE + TILE_SIZE / 2, com->mainUser->ypos * TILE_SIZE);
 
 			start();
 		}
@@ -1506,7 +1412,7 @@ void HelloWorld::update(float fDelta)
 	{
 		readyCount++;
 
-		if (readyCount == 1)
+		if (readyCount >= 1)
 		{
 			this->mainUser->isRunning = true;
 			readyCount = 0;
@@ -1597,7 +1503,6 @@ void HelloWorld::update(float fDelta)
 		CustomObject * deleteCustomObject = new CustomObject(com->deleteCustomObject);
 		CustomObject * customObject = NULL;
 
-
 		for (int i = 0; i < com->objectInfo->size(); i++)
 		{
 			customObject = com->objectInfo->at(i);
@@ -1619,15 +1524,10 @@ void HelloWorld::update(float fDelta)
 	{
 		for (int i = com->previousItemCount; i < com->objectInfo->size(); i++)
 		{
+			Sprite * sprite;
+			Image* image = new Image();
+			Texture2D* texture = new Texture2D();
 			CustomObject * customObject = (com->objectInfo)->at(i);
-			int idx = customObject->idx;
-			char name[50];
-			strcpy(name, customObject->name);
-			char type[50];
-			strcpy(type, customObject->type);
-			int xpos = customObject->xpos;
-			int ypos = customObject->ypos;
-			int order = customObject->order;
 
 			com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
 
@@ -1635,21 +1535,16 @@ void HelloWorld::update(float fDelta)
 			while (com->getImage != true);
 
 			//수신된 버퍼데이터로 이미지를 만든다.
-			std::vector<byte> * imageBuf = com->imageBuf;
-			int count = customObject->count;
-
-			Image* image = new Image();
-			image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+			image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
 			com->getImage = false;
-			delete imageBuf;
 
 			//스프라이트를 만들어 맵에 구현한다.
-			Texture2D* texture = new Texture2D();
 			texture->initWithImage(image);
-			auto sprite = Sprite::createWithTexture(texture);
-			sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
+
+			sprite = Sprite::createWithTexture(texture);
+			sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
 			sprite->setAnchorPoint(Point(0, 0));
-			this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + idx);
+			this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->idx);
 		}
 		com->isOtherThrowItem = false;
 	}
@@ -2136,6 +2031,7 @@ void HelloWorld::createTileMap(char * mapName)
 	items = tmap->getLayer("Items");
 	metainfo = tmap->getLayer("MetaInfo");
 	metainfo->setVisible(false);
+	objects = tmap->getObjectGroup("Objects");
 	this->addChild(tmap, MAP_PRIORITY_Z_ORDER, MAP_TAG);
 	//
 
@@ -2143,8 +2039,8 @@ void HelloWorld::createTileMap(char * mapName)
 	for (int i = 0; i < com->objectInfo->size(); i++)
 	{
 		CustomObject * imsiObjectInfo = com->objectInfo->at(i);
-		this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
-		this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
+		this->removeChildByTag(OTHERS_TAG + imsiObjectInfo->idx);
+		this->removeChildByTag(OTHERS_TAG + imsiObjectInfo->idx);
 	}
 	com->objectInfo->clear();
 
@@ -2230,5 +2126,87 @@ void HelloWorld::createMonster()
 		sprite->setPosition(Point(customObject->xpos * TILE_SIZE + TILE_SIZE / 2, customObject->ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0.5, 0));
 		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + customObject->idx);
+	}
+}
+
+void HelloWorld::createOtherUser()
+{
+	for (int i = 0; i < com->usersInfo->size(); i++)
+	{
+		User * user = com->usersInfo->at(i);
+
+		if (user->sprite == NULL)
+		{
+			//다른 유저의 모습을 출력한다.
+			SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
+
+			switch (user->seeDirection)
+			{
+			case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_13.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_09.png");
+				break;
+			case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+				user->sprite = Sprite::createWithSpriteFrameName("man_05.png");
+				break;
+			default:
+				user->sprite = Sprite::createWithSpriteFrameName("man_01.png");
+				break;
+			}
+
+			user->sprite->setAnchorPoint(Point(0.5, 0));
+			user->isAction = false;
+			user->isRunning = false;
+			user->isKeepKeyPressed = false;
+			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
+			user->sprite->setPosition(user->position);
+			this->addChild(user->sprite, OTHERS_USERS_Z_ORDER, OTHERS_USERS + i);
+
+			//캐릭터 위에 말풍선으로 문자열 출력.
+			user->balloon = Sprite::create("Images/balloon.png");
+			user->balloon->setAnchorPoint(Point(1, 0));
+			user->balloon->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2, user->position.y + user->sprite->getContentSize().height));
+			user->balloon->setVisible(false);
+			this->addChild(user->balloon, BALLON_PRIORITY_Z_ORDER, CHATTING_BALLOON);
+
+			user->balloonContent = LabelTTF::create("", "NanumBarunGothic", 15);
+			user->balloonContent->setColor(Color3B::BLACK);
+			user->balloonContent->setAnchorPoint(Point(1, 0));
+			user->balloonContent->setPosition(Point(user->position.x + user->sprite->getContentSize().width / 2 - 50, user->position.y + user->sprite->getContentSize().height + 50));
+			user->balloonContent->setVisible(false);
+			this->addChild(user->balloonContent, BALLON_CONTENT_PRIORITY_Z_ORDER, CHATTING_BALLOON_CONTENT);
+
+			//채팅창에 다른유저의 접속을 알림
+			element.pushBack(String::createWithFormat("%s is Login !!", user->name));
+			com->chattingInfo.pushBack(String::createWithFormat("%s is Login !!", user->name));
+		}
+		else
+		{
+			if (user->sprite->isVisible() == false)
+			{
+				//채팅창에 다른유저의 접속종료를 알림
+				element.pushBack(String::createWithFormat("%s is Logout !!", user->name));
+				com->chattingInfo.pushBack(String::createWithFormat("%s is Logout !!", user->name));
+
+				this->removeChild(user->sprite);
+				user->sprite = NULL;
+				com->usersInfo->erase(com->usersInfo->begin() + i);
+				i--;
+			}
+			else
+			{
+				//방향키를 몇초동안 누르고 있느냐에 따라 정지와 이동을 결정
+				if (user->isKeepKeyPressed == true)
+					user->isRunning = true;
+
+				if (user->isRunning == true && user->isAction == false)
+					this->setOtherUsersAnimation(user, user->seeDirection);
+			}
+		}
 	}
 }

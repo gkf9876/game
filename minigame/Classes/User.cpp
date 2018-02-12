@@ -9,31 +9,48 @@ User::User()
 	this->balloon = NULL;
 }
 
-User::User(StructCustomUser strucrCustomUser)
+User::User(StructCustomUser structCustomUser)
 {
 	this->sprite = NULL;
 	this->animate = NULL;
 	this->balloonContent = NULL;
 	this->balloon = NULL;
 
-	this->sock = strucrCustomUser.sock;
-	strcpy(this->name, strucrCustomUser.name);
-	strcpy(this->password, strucrCustomUser.password);
-	this->xpos = strucrCustomUser.xpos;
-	this->ypos = strucrCustomUser.ypos;
-	strcpy(this->field, strucrCustomUser.field);
-	this->seeDirection = (cocos2d::EventKeyboard::KeyCode)strucrCustomUser.seeDirection;
+	this->sock = structCustomUser.sock;
+	strcpy(this->name, structCustomUser.name);
+	strcpy(this->password, structCustomUser.password);
+	this->xpos = structCustomUser.xpos;
+	this->ypos = structCustomUser.ypos;
+	strcpy(this->field, structCustomUser.field);
+	this->seeDirection = (cocos2d::EventKeyboard::KeyCode)structCustomUser.seeDirection;
+	this->action = structCustomUser.action;
 }
 
-void User::setUser(StructCustomUser strucrCustomUser)
+void User::setUser(StructCustomUser structCustomUser)
 {
-	this->sock = strucrCustomUser.sock;
-	strcpy(this->name, strucrCustomUser.name);
-	strcpy(this->password, strucrCustomUser.password);
-	this->xpos = strucrCustomUser.xpos;
-	this->ypos = strucrCustomUser.ypos;
-	strcpy(this->field, strucrCustomUser.field);
-	this->seeDirection = (cocos2d::EventKeyboard::KeyCode)strucrCustomUser.seeDirection;
+	this->sock = structCustomUser.sock;
+	strcpy(this->name, structCustomUser.name);
+	strcpy(this->password, structCustomUser.password);
+	this->xpos = structCustomUser.xpos;
+	this->ypos = structCustomUser.ypos;
+	strcpy(this->field, structCustomUser.field);
+	this->seeDirection = (cocos2d::EventKeyboard::KeyCode)structCustomUser.seeDirection;
+	this->action = structCustomUser.action;
+}
+
+StructCustomUser User::getUser()
+{
+	StructCustomUser structCustomUser;
+	structCustomUser.sock = this->sock;
+	strcpy(structCustomUser.name, this->name);
+	strcpy(structCustomUser.password, this->password);
+	structCustomUser.xpos = this->xpos;
+	structCustomUser.ypos = this->ypos;
+	strcpy(structCustomUser.field, this->field);
+	structCustomUser.seeDirection = (int)this->seeDirection;
+	structCustomUser.action = this->action;
+
+	return structCustomUser;
 }
 
 User::~User()

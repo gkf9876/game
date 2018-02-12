@@ -11,6 +11,7 @@ USING_NS_CC;
 #define ACTION_MAP_MOVE		1
 #define ACTION_MAP_OUT		2
 #define ACTION_MAP_POTAL	3
+#define ACTION_MAP_MOVE_END	4
 
 struct StructCustomUser
 {
@@ -33,6 +34,7 @@ public:
 	int xpos;
 	int ypos;
 	char field[100];
+	int action;
 
 	bool isLogin;
 
@@ -50,6 +52,7 @@ public:
 	User();
 	User(StructCustomUser strucrCustomUser);
 	void setUser(StructCustomUser strucrCustomUser);
+	StructCustomUser getUser();
 	~User();
 };
 

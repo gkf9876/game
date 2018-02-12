@@ -224,6 +224,8 @@ public:
 
 	void actionStarted();
 	void actionFinished();
+	void otherUserActionStarted(Ref * sender, void * d);
+	void otherUserActionFinished(Ref * sender, void * d);
 
 	void joinButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void joinOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
@@ -252,6 +254,7 @@ public:
 	void createTileMap(char * mapName);
 	void createObject();
 	void createMonster();
+	void createOtherUser();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

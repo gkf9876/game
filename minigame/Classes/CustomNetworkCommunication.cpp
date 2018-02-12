@@ -140,29 +140,83 @@ void * RecvMsg(void * arg)
 
 						if (!strcmp(othersUser->name, moveUser.name))
 						{
-							if (othersUser->xpos != moveUser.xpos || othersUser->ypos != moveUser.ypos)
+							//제자리 방향회전
+							switch ((cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection)
 							{
-								//이동
-								othersUser->isAction = true;
-								othersUser->isRunning = true;
-							}
-							else
-							{
-								//제자리 방향회전
-								othersUser->isAction = true;
-								othersUser->isRunning = false;
+							case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+								//제자리에서 방향키눌러 방향전환할때
+								if (othersUser->seeDirection != (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection && othersUser->isRunning != true)
+								{
+									othersUser->sprite->setSpriteFrame("man_13.png");
+								}
+								else
+									othersUser->isRunning = true;
+								othersUser->isKeepKeyPressed = true;
+								othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+								break;
+							case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+								//제자리에서 방향키눌러 방향전환할때
+								if (othersUser->seeDirection != (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection && othersUser->isRunning != true)
+								{
+									othersUser->sprite->setSpriteFrame("man_01.png");
+								}
+								else
+									othersUser->isRunning = true;
+								othersUser->isKeepKeyPressed = true;
+								othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+								break;
+							case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+								//제자리에서 방향키눌러 방향전환할때
+								if (othersUser->seeDirection != (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection && othersUser->isRunning != true)
+								{
+									othersUser->sprite->setSpriteFrame("man_09.png");
+								}
+								else
+									othersUser->isRunning = true;
+								othersUser->isKeepKeyPressed = true;
+								othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+								break;
+							case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+								//제자리에서 방향키눌러 방향전환할때
+								if (othersUser->seeDirection != (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection && othersUser->isRunning != true)
+								{
+									othersUser->sprite->setSpriteFrame("man_05.png");
+								}
+								else
+									othersUser->isRunning = true;
+								othersUser->isKeepKeyPressed = true;
+								othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+								break;
+							default:
+								break;
 							}
 
-							othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
 							othersUser->xpos = moveUser.xpos;
 							othersUser->ypos = moveUser.ypos;
-							othersUser->position = Point(moveUser.xpos * 32 + 32 / 2, moveUser.ypos * 32);
+							othersUser->position = Point(moveUser.xpos * TILE_SIZE + TILE_SIZE / 2, moveUser.ypos * TILE_SIZE);
 							othersUser->sprite->setPosition(othersUser->position);
 
 							//말풍선은 항상 캐릭터를 따라다녀야함
 							othersUser->balloon->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2, othersUser->position.y + othersUser->sprite->getContentSize().height));
 							othersUser->balloonContent->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2 - 50, othersUser->position.y + othersUser->sprite->getContentSize().height + 50));
 							break;
+						}
+					}
+				}
+				else if (moveUser.action == ACTION_MAP_MOVE_END)
+				{
+					for (int i = 0; i < com->usersInfo->size(); i++)
+					{
+						User * othersUser = (User*)com->usersInfo->at(i);
+
+						if (!strcmp(othersUser->name, moveUser.name))
+						{
+							//여러개의 방향키가 눌렸을 경우 가장 마지막으로 키를 땠을때 이동을 중지한다.
+							if (othersUser->seeDirection == (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection)
+							{
+								othersUser->isKeepKeyPressed = false;
+								othersUser->isRunning = false;
+							}
 						}
 					}
 				}
