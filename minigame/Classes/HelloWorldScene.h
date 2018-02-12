@@ -137,7 +137,7 @@ public:
 	bool inventoryItemTouched;												//아이템창의 아이템을 드래그할때
 	cocos2d::Sprite * touchedItem;											//아이템창의 드래그한 아이템
 
-	cocos2d::TMXTiledMap * tmap;											//맵
+	cocos2d::TMXTiledMap * tmap = NULL;										//맵
 	cocos2d::TMXLayer * background;											//맵의 배경 레이어
 	cocos2d::TMXLayer * items;												//맵의 아이템 레이어
 	cocos2d::TMXLayer * metainfo;											//맵의 지표 레이어
@@ -248,6 +248,10 @@ public:
 	void update(float fDelta);			
 
 	int addInventoryItem(CustomObject * customObject);
+
+	void createTileMap(char * mapName);
+	void createObject();
+	void createMonster();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

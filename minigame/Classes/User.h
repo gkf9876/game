@@ -48,6 +48,7 @@ public:
 	int balloonTime = 0;													//말풍선 떠있는 시간.
 
 	User();
+	User(StructCustomUser strucrCustomUser);
 	void setUser(StructCustomUser strucrCustomUser);
 	~User();
 };

@@ -18,6 +18,7 @@ void * SendMsg(void * arg)
 			//일정 주기로 접속시간 업데이트
 			if (com->updateLoginTime(com->mainUser->name) <= 0)
 			{
+				com->MyPrintDebug("updateLoginTime error\n");
 				com->comm = false;
 			}
 		}
@@ -40,16 +41,16 @@ void * RecvMsg(void * arg)
 {
 	CustomNetworkCommunication * com = ((CustomNetworkCommunication*)arg);
 	int code;
-	int str_len;
+	int readLen;
 	char buf[50][BUF_SIZE];
 	User * user;
 	char message[100];
 
 	while (1)
 	{
-		str_len = com->readCommand(&code, com->recvBuf);
+		readLen = com->readCommand(&code, com->recvBuf);
 
-		if (str_len == -1)
+		if (readLen == -1)
 		{
 			com->comm = false;
 			return NULL;
@@ -58,38 +59,42 @@ void * RecvMsg(void * arg)
 		switch (code)
 		{
 		case REQUEST_USER_INFO:
-			StructCustomUser structCustomUser;
-			memcpy(&structCustomUser, com->recvBuf, sizeof(StructCustomUser));
-			com->mainUser->setUser(structCustomUser);
-			com->isGetUserInfo = true;
+			{
+				StructCustomUser structCustomUser;
+				memcpy(&structCustomUser, com->recvBuf, sizeof(StructCustomUser));
+				com->mainUser->setUser(structCustomUser);
+				com->isGetUserInfo = true;
+			}
 			break;
 		case CHATTING_PROCESS:
-			com->SeparateString(com->recvBuf, buf, 50, '\n');
-			com->chattingInfo.pushBack(String::createWithFormat("%s : %s", buf[0], buf[1]));
-
-			//다른 사람들이 채팅하면 그 사람의 말풍선에 대화내용을 넣어준다.
-			for (int i = 0; i < com->usersInfo->size(); i++)
 			{
-				User * othersUser = com->usersInfo->at(i);
+				StructCustomChatting structCustomChatting;
 
-				if (!strcmp(othersUser->name, buf[0]))
+				memcpy(&structCustomChatting, com->recvBuf, sizeof(StructCustomChatting));
+				com->chattingInfo.pushBack(String::createWithFormat("%s : %s", structCustomChatting.name, structCustomChatting.content));
+
+				//다른 사람들이 채팅하면 그 사람의 말풍선에 대화내용을 넣어준다.
+				for (int i = 0; i < com->usersInfo->size(); i++)
 				{
-					//캐릭터 위에 말풍선으로 문자열 출력.
+					User * othersUser = com->usersInfo->at(i);
 
-					String * message = String::createWithFormat("%s", buf[1]);
+					if (!strcmp(othersUser->name, structCustomChatting.name))
+					{
+						//캐릭터 위에 말풍선으로 문자열 출력.
 
-					othersUser->balloon->setVisible(true);
-					othersUser->balloonContent->setString(message->getCString());
-					othersUser->balloonContent->setVisible(true);
-					othersUser->balloonTime = 0;
+						String * message = String::createWithFormat("%s", structCustomChatting.content);
+
+						othersUser->balloon->setVisible(true);
+						othersUser->balloonContent->setString(message->getCString());
+						othersUser->balloonContent->setVisible(true);
+						othersUser->balloonTime = 0;
+					}
 				}
 			}
 			break;
 		case REQUEST_LOGIN:
 			if (!strcmp(com->recvBuf, "login okey"))
-			{
 				com->isLogin = true;
-			}
 			else
 			{
 				com->isLogin = false;
@@ -99,156 +104,159 @@ void * RecvMsg(void * arg)
 		case USER_MOVE_UPDATE:
 			break;
 		case OTHER_USER_MAP_MOVE:
-			com->SeparateString(com->recvBuf, buf, 50, '\n');
-			StructCustomUser moveUser;
-			memcpy(&moveUser, com->recvBuf, sizeof(StructCustomUser));
-
-			if (moveUser.action == ACTION_MAP_OUT)
 			{
-				user = new User();
+				StructCustomUser moveUser;
+				memcpy(&moveUser, com->recvBuf, sizeof(StructCustomUser));
 
-				strcpy(user->name, moveUser.name);
-				user->xpos = moveUser.xpos;
-				user->ypos = moveUser.ypos;
-
-				for (int i = 0; i < com->usersInfo->size(); i++)
+				if (moveUser.action == ACTION_MAP_OUT)
 				{
-					User * othersUser = com->usersInfo->at(i);
-
-					if (!strcmp(othersUser->name, user->name))
+					for (int i = 0; i < com->usersInfo->size(); i++)
 					{
-						othersUser->sprite->setVisible(false);
-						othersUser->balloon->setVisible(false);
-						othersUser->balloonContent->setVisible(false);
-						break;
+						User * othersUser = com->usersInfo->at(i);
+
+						if (!strcmp(othersUser->name, moveUser.name))
+						{
+							othersUser->sprite->setVisible(false);
+							othersUser->balloon->setVisible(false);
+							othersUser->balloonContent->setVisible(false);
+							break;
+						}
 					}
 				}
-			}
-			else if (moveUser.action == ACTION_MAP_IN)
-			{
-				//맵에 진입한 다른 유저를 구현
-				user = new User();
-				strcpy(user->name, moveUser.name);
-				user->xpos = moveUser.xpos;
-				user->ypos = moveUser.ypos;
-				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
-				user->sprite = NULL;
-
-				com->usersInfo->push_back(user);
-			}
-			else if (moveUser.action == ACTION_MAP_MOVE)
-			{
-				user = new User();
-
-				strcpy(user->name, moveUser.name);
-				user->xpos = moveUser.xpos;
-				user->ypos = moveUser.ypos;
-				user->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
-
-				for (int i = 0; i < com->usersInfo->size(); i++)
+				else if (moveUser.action == ACTION_MAP_IN)
 				{
-					User * othersUser = (User*)com->usersInfo->at(i);
+					//맵에 진입한 다른 유저를 구현
+					user = new User(moveUser);
+					user->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+					user->sprite = NULL;
 
-					if (!strcmp(othersUser->name, user->name))
+					com->usersInfo->push_back(user);
+				}
+				else if (moveUser.action == ACTION_MAP_MOVE)
+				{
+					for (int i = 0; i < com->usersInfo->size(); i++)
 					{
-						if (othersUser->xpos != user->xpos || othersUser->ypos != user->ypos)
-						{
-							//이동
-							othersUser->isAction = true;
-							othersUser->isRunning = true;
-						}
-						else
-						{
-							//제자리 방향회전
-							othersUser->isAction = true;
-							othersUser->isRunning = false;
-						}
+						User * othersUser = (User*)com->usersInfo->at(i);
 
-						othersUser->seeDirection = user->seeDirection;
-						othersUser->xpos = user->xpos;
-						othersUser->ypos = user->ypos;
-						othersUser->position = Point(user->xpos * 32 + 32 / 2, user->ypos * 32);
-						othersUser->sprite->setPosition(othersUser->position);
+						if (!strcmp(othersUser->name, moveUser.name))
+						{
+							if (othersUser->xpos != moveUser.xpos || othersUser->ypos != moveUser.ypos)
+							{
+								//이동
+								othersUser->isAction = true;
+								othersUser->isRunning = true;
+							}
+							else
+							{
+								//제자리 방향회전
+								othersUser->isAction = true;
+								othersUser->isRunning = false;
+							}
 
-						//말풍선은 항상 캐릭터를 따라다녀야함
-						othersUser->balloon->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2, othersUser->position.y + othersUser->sprite->getContentSize().height));
-						othersUser->balloonContent->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2 - 50, othersUser->position.y + othersUser->sprite->getContentSize().height + 50));
-						break;
+							othersUser->seeDirection = (cocos2d::EventKeyboard::KeyCode)moveUser.seeDirection;
+							othersUser->xpos = moveUser.xpos;
+							othersUser->ypos = moveUser.ypos;
+							othersUser->position = Point(moveUser.xpos * 32 + 32 / 2, moveUser.ypos * 32);
+							othersUser->sprite->setPosition(othersUser->position);
+
+							//말풍선은 항상 캐릭터를 따라다녀야함
+							othersUser->balloon->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2, othersUser->position.y + othersUser->sprite->getContentSize().height));
+							othersUser->balloonContent->setPosition(Point(othersUser->position.x + othersUser->sprite->getContentSize().width / 2 - 50, othersUser->position.y + othersUser->sprite->getContentSize().height + 50));
+							break;
+						}
 					}
 				}
 			}
 			break;
 		case REQUEST_JOIN:
-			if (!strcmp(com->recvBuf, "join okey"))
 			{
-				com->permissionJoin = 1;
-			}
-			else
-			{
-				com->permissionJoin = -1;
+				if (!strcmp(com->recvBuf, "join okey"))
+					com->permissionJoin = 1;
+				else
+					com->permissionJoin = -1;
 			}
 			break;
 		case REQUEST_TILED_MAP:
-			//맵 정보를 가져온다.
-			com->tiledMapBuf = new std::vector<byte>();
-			for (int i = 0; i < str_len; i++)
 			{
-				com->tiledMapBuf->push_back((byte)com->recvBuf[i]);
+				com->tiledMapBuf->clear();
+
+				//맵 정보를 가져온다.
+				for (int i = 0; i < readLen; i++)
+				{
+					com->tiledMapBuf->push_back((byte)com->recvBuf[i]);
+				}
+				com->getTiledMap = true;
 			}
-			com->getTiledMap = true;
 			break;
 		case REQUEST_IMAGE:
-			//이미지 정보를 가져온다.
-			com->imageBuf = new std::vector<byte>();
-			for (int i = 0; i < str_len; i++)
 			{
-				com->imageBuf->push_back((byte)com->recvBuf[i]);
+				com->imageBuf->clear();
+
+				//이미지 정보를 가져온다.
+				for (int i = 0; i < readLen; i++)
+				{
+					com->imageBuf->push_back((byte)com->recvBuf[i]);
+				}
+				com->getImage = true;
 			}
-			com->getImage = true;
 			break;
 		case DELETE_FIELD_ITEM:
-			//지워진 오브젝트 정보를 저장.
-			memcpy(&com->deleteCustomObject, com->recvBuf, sizeof(StructCustomObject));
+			{
+				//지워진 오브젝트 정보를 저장.
+				memcpy(&com->deleteCustomObject, com->recvBuf, sizeof(StructCustomObject));
 
-			//현재 필드의 오브젝트 변동사항 알림
-			com->isDeleteMapObject = true;
+				//현재 필드의 오브젝트 변동사항 알림
+				com->isDeleteMapObject = true;
+			}
 			break;
 		case REQUEST_FIELD_INFO:
-			int count;
-			memcpy(&count, &com->recvBuf[0], 4);
-			for (int i = 0; i < count; i++)
 			{
-				StructCustomObject imsiStructCustomObject;
-				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
-				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
-				if(!strcmp(customObject->type, "item"))
-					com->objectInfo->push_back(customObject);
-				else if(!strcmp(customObject->type, "monster"))
-					com->monsterInfo->push_back(customObject);
+				int count;
+				memcpy(&count, &com->recvBuf[0], 4);
+				com->objectInfo->clear();
+				com->monsterInfo->clear();
+
+				for (int i = 0; i < count; i++)
+				{
+					StructCustomObject imsiStructCustomObject;
+					memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
+
+					CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+
+					if (!strcmp(customObject->type, "item"))
+						com->objectInfo->push_back(customObject);
+					else if (!strcmp(customObject->type, "monster"))
+						com->monsterInfo->push_back(customObject);
+				}
+				com->isObjectBufferFill = true;
 			}
-			com->isObjectBufferFill = true;
 			break;
 		case REQUEST_INVENTORY_ITEM_INFO:
-			int itemCount;
-			memcpy(&itemCount, &com->recvBuf[0], 4);
-			for (int i = 0; i < itemCount; i++)
 			{
-				StructCustomObject imsiStructCustomObject;
-				memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
-				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
-				com->inventory_items_Info[3 - (customObject->ypos + 1)][customObject->xpos] = customObject;
+				int itemCount;
+				memcpy(&itemCount, &com->recvBuf[0], 4);
+
+				for (int i = 0; i < itemCount; i++)
+				{
+					StructCustomObject imsiStructCustomObject;
+					memcpy(&imsiStructCustomObject, &com->recvBuf[4 + i * sizeof(StructCustomObject)], sizeof(StructCustomObject));
+
+					CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+					com->inventory_items_Info[3 - (customObject->ypos + 1)][customObject->xpos] = customObject;
+				}
+				com->isInventoryFill = true;
 			}
-			com->isInventoryFill = true;
 			break;
 		case THROW_ITEM:
-		{
-			StructCustomObject imsiStructCustomObject;
-			memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
-			CustomObject * customObject = new CustomObject(imsiStructCustomObject);
-			com->previousItemCount = com->objectInfo->size();
-			com->objectInfo->push_back(customObject);
-			com->isOtherThrowItem = true;
-		}
+			{
+				StructCustomObject imsiStructCustomObject;
+				memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
+
+				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+				com->previousItemCount = com->objectInfo->size();
+				com->objectInfo->push_back(customObject);
+				com->isOtherThrowItem = true;
+			}
 			break;
 		default:
 			break;
@@ -264,6 +272,9 @@ void CustomNetworkCommunication::init()
 	this->usersInfo = new std::vector<User*>();
 	this->objectInfo = new std::vector<CustomObject*>();
 	this->monsterInfo = new std::vector<CustomObject*>();
+
+	tiledMapBuf = new std::vector<byte>();
+	imageBuf = new std::vector<byte>();
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
@@ -441,11 +452,14 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 
 int CustomNetworkCommunication::chatting(const char * name, const char * content, const char * field)
 {
-	String * message = String::createWithFormat("%s\n%s\n%s\n", name, content, field);
+	StructCustomChatting structCustomChatting;
+	strcpy(structCustomChatting.name, name);
+	strcpy(structCustomChatting.content, content);
+	strcpy(structCustomChatting.field, field);
 
-	strcpy(this->sendBuf, message->getCString());
+	memcpy(this->sendBuf, &structCustomChatting, sizeof(StructCustomChatting));
 
-	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf, strlen(this->sendBuf));
+	str_len = sendCommand(CHATTING_PROCESS, this->sendBuf, sizeof(StructCustomChatting));
 
 	return str_len;
 }
@@ -498,13 +512,15 @@ int CustomNetworkCommunication::requestJoin(char * userName)
 
 int CustomNetworkCommunication::updateLoginTime(char * userName)
 {
-	String * message = String::createWithFormat("%s", userName);
+	if (userName != NULL)
+	{
+		strcpy(this->sendBuf, userName);
+		str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf, strlen(this->sendBuf));
 
-	strcpy(this->sendBuf, message->getCString());
-
-	str_len = sendCommand(UPDATE_LOGIN_TIME, this->sendBuf, strlen(this->sendBuf));
-
-	return str_len;
+		return str_len;
+	}
+	else
+		return -1;
 }
 
 //유저가 땅에 떨어진 아이템을 먹을시 서버에 알리는 함수

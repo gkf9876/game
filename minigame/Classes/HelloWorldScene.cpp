@@ -226,116 +226,13 @@ bool HelloWorld::init()
 void HelloWorld::start()
 {
 	//맵 세팅. 서버로부터 타일맵 데이터를 받아서 구현한다.
-	address = "TileMaps/KonyangUniv.Daejeon/JukhunDigitalFacilitie/floor_08/";
-	std::string map = address;
-	map.append("floor.tmx");
-
-	com->getTiledMap = false;
-	com->sendCommand(REQUEST_TILED_MAP, this->mainUser->field, strlen(this->mainUser->field));
-
-	while (com->getTiledMap != true);
-
-	tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
-	currentFlag = com->mainUser->field;
-	background = tmap->getLayer("Background");
-	items = tmap->getLayer("Items");
-	metainfo = tmap->getLayer("MetaInfo");
-	metainfo->setVisible(false);
-	this->addChild(tmap, MAP_PRIORITY_Z_ORDER, MAP_TAG);
-	//
+	createTileMap(this->mainUser->field);
 
 	//맵의 오브젝트 정보를 요청한다.
-	com->sendCommand(REQUEST_FIELD_INFO, com->mainUser->field, strlen(com->mainUser->field));
-
-	while (com->isObjectBufferFill != true);
-
-	//맵의 아이템 구현하기
-	for (int i = 0; i < com->objectInfo->size(); i++)
-	{
-		CustomObject * customObject = (com->objectInfo)->at(i);
-		int idx = customObject->idx;
-		char name[50];
-		strcpy(name, customObject->name);
-		char type[50];
-		strcpy(type, customObject->type);
-		int xpos = customObject->xpos;
-		int ypos = customObject->ypos;
-		int order = customObject->order;
-
-		com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
-
-		//요청한 오브젝트 이미지가 수신되길 기다린다.
-		while (com->getImage != true);
-
-		//수신된 버퍼데이터로 이미지를 만든다.
-		std::vector<byte> * imageBuf = com->imageBuf;
-		int count = customObject->count;
-
-		Image* image = new Image();
-		image->initWithImageData(&(imageBuf->front()), imageBuf->size());
-		com->getImage = false;
-		delete imageBuf;
-
-		//스프라이트를 만들어 맵에 구현한다.
-		Texture2D* texture = new Texture2D();
-		texture->initWithImage(image);
-		auto sprite = Sprite::createWithTexture(texture);
-		sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
-		sprite->setAnchorPoint(Point(0, 0));
-		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + idx);
-	}
+	createObject();
 
 	//맵의 몬스터 구현하기
-	for (int i = 0; i < com->monsterInfo->size(); i++)
-	{
-		CustomObject * customObject = (com->monsterInfo)->at(i);
-		int idx = customObject->idx;
-		char name[50];
-		strcpy(name, customObject->name);
-		char type[50];
-		strcpy(type, customObject->type);
-		int xpos = customObject->xpos;
-		int ypos = customObject->ypos;
-		int order = customObject->order;
-		char fileDir[100];
-
-		sprintf(fileDir, "%s.png", customObject->fileDir);
-		com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
-
-		//요청한 오브젝트 이미지가 수신되길 기다린다.
-		while (com->getImage != true);
-
-		//수신된 버퍼데이터로 이미지를 만든다.
-		std::vector<byte> * imageBuf = com->imageBuf;
-		int count = customObject->count;
-
-		Image* image = new Image();
-		image->initWithImageData(&(imageBuf->front()), imageBuf->size());
-		com->getImage = false;
-		delete imageBuf;
-
-		//스프라이트를 만들어 맵에 구현한다.
-		Texture2D* texture = new Texture2D();
-		texture->initWithImage(image);
-
-		//.list 를 요청한다.
-		com->getTiledMap = false;
-		sprintf(fileDir, "%s.plist", customObject->fileDir);
-		com->sendCommand(REQUEST_TILED_MAP, fileDir, strlen(fileDir));
-
-		while (com->getTiledMap != true);
-
-		SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent((char*)com->tiledMapBuf->data(), texture);
-
-		sprintf(fileDir, "%s_01.png", customObject->name);
-		auto sprite = Sprite::createWithSpriteFrameName(fileDir);
-		sprite->setPosition(Point(xpos * TILE_SIZE + TILE_SIZE / 2, ypos * TILE_SIZE));
-		sprite->setAnchorPoint(Point(0.5, 0));
-		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + idx);
-	}
-
-	com->isObjectBufferFill = false;
-	//
+	createMonster();
 
 	//플레이어 만들기
 	objects = tmap->getObjectGroup("Objects");
@@ -396,34 +293,21 @@ void HelloWorld::start()
 			if (com->inventory_items_Info[i][j] != NULL)
 			{
 				CustomObject * customObject = com->inventory_items_Info[i][j];
-				int idx = customObject->idx;
-				char name[50];
-				strcpy(name, customObject->name);
-				char type[50];
-				strcpy(type, customObject->type);
-				int xpos = customObject->xpos;
-				int ypos = customObject->ypos;
-				int order = customObject->order;
-
 				com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
 
 				//요청한 오브젝트 이미지가 수신되길 기다린다.
 				while (com->getImage != true);
 
 				//수신된 버퍼데이터로 이미지를 만든다.
-				std::vector<byte> * imageBuf = com->imageBuf;
-				int count = customObject->count;
-
 				Image* image = new Image();
-				image->initWithImageData(&(imageBuf->front()), imageBuf->size());
+				image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
 				com->getImage = false;
-				delete imageBuf;
 
 				//스프라이트를 만들어 맵에 구현한다.
 				Texture2D* texture = new Texture2D();
 				texture->initWithImage(image);
 				auto sprite = Sprite::createWithTexture(texture);
-				sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
+				sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
 				sprite->setAnchorPoint(Point(0, 0));
 
 				inventory->addChild(sprite, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
@@ -971,7 +855,7 @@ void HelloWorld::setPlayerPosition(Point position)
 
 	Point tileCoord = this->tileCoordForPosition(playerPos);
 
-	int tileGid = this->metainfo->getTileGIDAt(tileCoord);
+	int metaInfoTileGid = this->metainfo->getTileGIDAt(tileCoord);
 
 	Point regionPoint = this->mainUser->position;
 
@@ -996,13 +880,13 @@ void HelloWorld::setPlayerPosition(Point position)
 	//		return;
 	//}
 
-	if (tileGid)
+	if (metaInfoTileGid)
 	{
-		Value properties = tmap->getPropertiesForGID(tileGid);
+		Value metaInfoProperties = tmap->getPropertiesForGID(metaInfoTileGid);
 
-		if (!properties.isNull())
+		if (!metaInfoProperties.isNull())
 		{
-			std::string wall = properties.asValueMap()["Wall"].asString();
+			std::string wall = metaInfoProperties.asValueMap()["Wall"].asString();
 
 			if (wall == "YES")
 			{
@@ -1013,157 +897,34 @@ void HelloWorld::setPlayerPosition(Point position)
 			//현재 위치의 맵의 정보, 목적지 정보를 타일에 담고
 			//목적지 위치의 맵의 정보. 목적지 정보를 이동할 맵의 타일에 담는다.
 
-			std::string exit = properties.asValueMap()["Entrance"].asString();
+			std::string exit = metaInfoProperties.asValueMap()["Entrance"].asString();
 				
 			if (exit == "YES")
 			{
-				std::string stair = properties.asValueMap()["Stair"].asString();
-				std::string frontdoor = properties.asValueMap()["Frontdoor"].asString();
+				std::string stair = metaInfoProperties.asValueMap()["Stair"].asString();
+				std::string frontdoor = metaInfoProperties.asValueMap()["Frontdoor"].asString();
 
 				if (stair == "YES" || frontdoor == "YES")
 				{
-					address = properties.asValueMap()["Address"].asString();
+					address = metaInfoProperties.asValueMap()["Address"].asString();
 				}
 
 				std::string destination = address;
 
-				destination.append(properties.asValueMap()["Destination"].asString());
+				destination.append(metaInfoProperties.asValueMap()["Destination"].asString());
 				destination.append(".tmx");
 
-				std::string code = properties.asValueMap()["Code"].asString();
+				std::string code = metaInfoProperties.asValueMap()["Code"].asString();
 				std::string place = objects->getProperty("Place").asString();
 
 				//기존 타일맵 소스 삭제
-				tmap->setVisible(false);
-				this->removeChildByTag(MAP_TAG);
+				createTileMap((char*)destination.c_str());
 
-				//새 타일맵 서버에 요청
-				com->getTiledMap = false;
-				com->sendCommand(REQUEST_TILED_MAP, (char*)destination.c_str(), strlen((char*)destination.c_str()));
-
-				while (com->getTiledMap != true);
-
-				//서버에서 받은 타일맵 소스를 표시
-				tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
-				tmap->setVisible(true);
-				currentFlag = destination;
-				background = tmap->getLayer("Background");
-				items = tmap->getLayer("Items");
-				metainfo = tmap->getLayer("MetaInfo");
-				metainfo->setVisible(false);
-				this->addChild(tmap, MAP_PRIORITY_Z_ORDER, MAP_TAG);
-
-				//기존의 맵 아이템 소스 삭제
-				for (int i = 0; i < com->objectInfo->size(); i++)
-				{
-					CustomObject * imsiObjectInfo = com->objectInfo->at(i);
-					this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
-					this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
-				}
-				//
-				com->objectInfo->clear();
-
-				//기존의 맵 몬스터 소스 삭제
-				for (int i = 0; i < com->monsterInfo->size(); i++)
-				{
-					CustomObject * imsiMonsterInfo = com->monsterInfo->at(i);
-					this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
-					this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
-				}
-				//
-				com->monsterInfo->clear();
-
-				com->sendCommand(REQUEST_FIELD_INFO, (char*)destination.c_str(), strlen((char*)destination.c_str()));
-
-				//맵의 아이템 구현하기
-				while (com->isObjectBufferFill != true);
-
-				for (int i = 0; i < com->objectInfo->size(); i++)
-				{
-					CustomObject * customObject = (com->objectInfo)->at(i);
-					int idx = customObject->idx;
-					char name[50];
-					strcpy(name, customObject->name);
-					char type[50];
-					strcpy(type, customObject->type);
-					int xpos = customObject->xpos;
-					int ypos = customObject->ypos;
-					int order = customObject->order;
-
-					com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
-
-					//요청한 오브젝트 이미지가 수신되길 기다린다.
-					while (com->getImage != true);
-
-					//수신된 버퍼데이터로 이미지를 만든다.
-					std::vector<byte> * imageBuf = com->imageBuf;
-					int count = customObject->count;
-
-					Image* image = new Image();
-					image->initWithImageData(&(imageBuf->front()), imageBuf->size());
-					com->getImage = false;
-					delete imageBuf;
-
-					//스프라이트를 만들어 맵에 구현한다.
-					Texture2D* texture = new Texture2D();
-					texture->initWithImage(image);
-					auto sprite = Sprite::createWithTexture(texture);
-					sprite->setPosition(Point(xpos * TILE_SIZE, ypos * TILE_SIZE));
-					sprite->setAnchorPoint(Point(0, 0));
-					this->addChild(sprite, MAP_PRIORITY_Z_ORDER + order, MAP_TAG + idx);
-				}
+				//맵의 오브젝트 정보를 요청한다.
+				createObject();
 
 				//맵의 몬스터 구현하기
-				for (int i = 0; i < com->monsterInfo->size(); i++)
-				{
-					CustomObject * customObject = (com->monsterInfo)->at(i);
-					int idx = customObject->idx;
-					char name[50];
-					strcpy(name, customObject->name);
-					char type[50];
-					strcpy(type, customObject->type);
-					int xpos = customObject->xpos;
-					int ypos = customObject->ypos;
-					int order = customObject->order;
-					char fileDir[100];
-
-					sprintf(fileDir, "%s.png", customObject->fileDir);
-					com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
-
-					//요청한 오브젝트 이미지가 수신되길 기다린다.
-					while (com->getImage != true);
-
-					//수신된 버퍼데이터로 이미지를 만든다.
-					std::vector<byte> * imageBuf = com->imageBuf;
-					int count = customObject->count;
-
-					Image* image = new Image();
-					image->initWithImageData(&(imageBuf->front()), imageBuf->size());
-					com->getImage = false;
-					delete imageBuf;
-
-					//스프라이트를 만들어 맵에 구현한다.
-					Texture2D* texture = new Texture2D();
-					texture->initWithImage(image);
-
-					//.list 를 요청한다.
-					com->getTiledMap = false;
-					sprintf(fileDir, "%s.plist", customObject->fileDir);
-					com->sendCommand(REQUEST_TILED_MAP, fileDir, strlen(fileDir));
-
-					while (com->getTiledMap != true);
-
-					SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent((char*)com->tiledMapBuf->data(), texture);
-
-					sprintf(fileDir, "%s_01.png", customObject->name);
-					auto sprite = Sprite::createWithSpriteFrameName(fileDir);
-					sprite->setPosition(Point(xpos * TILE_SIZE + TILE_SIZE / 2, ypos * TILE_SIZE));
-					sprite->setAnchorPoint(Point(0.5, 0));
-					this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + idx);
-				}
-
-				com->isObjectBufferFill = false;
-				//
+				createMonster();
 
 				objects = tmap->getObjectGroup("Objects");
 
@@ -1187,14 +948,14 @@ void HelloWorld::setPlayerPosition(Point position)
 				}
 
 				//이동한 내용을 DB에 반영
-				char sendMapName[100];
-				strcpy(sendMapName, String(currentFlag).getCString());
+				strcpy(this->mainUser->field, String(destination).getCString());
+				strcpy(com->mainUser->field, String(destination).getCString());
 
 				StructCustomUser user;
 				strcpy(user.name, com->mainUser->name);
 				user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
 				user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
-				strcpy(user.field, sendMapName);
+				strcpy(user.field, this->mainUser->field);
 				user.seeDirection = (int)this->mainUser->seeDirection;
 				user.action = ACTION_MAP_POTAL;
 
@@ -1206,8 +967,6 @@ void HelloWorld::setPlayerPosition(Point position)
 				}
 				this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
 				this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
-				strcpy(this->mainUser->field, sendMapName);
-				strcpy(com->mainUser->field, sendMapName);
 
 				return;
 			}
@@ -1218,15 +977,13 @@ void HelloWorld::setPlayerPosition(Point position)
 	this->mainUser->sprite->setPosition(this->mainUser->position);
 
 	//이동한 내용을 DB에 반영
-	Value properties = tmap->getPropertiesForGID(tileGid);
-	char sendMapName[100];
-	strcpy(sendMapName, String(currentFlag).getCString());
+	Value metaInfoProperties = tmap->getPropertiesForGID(metaInfoTileGid);
 
 	StructCustomUser user;
 	strcpy(user.name, com->mainUser->name);
 	user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
 	user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
-	strcpy(user.field, sendMapName);
+	strcpy(user.field, this->mainUser->field);
 	user.seeDirection = (int)this->mainUser->seeDirection;
 	user.action = ACTION_MAP_MOVE;
 
@@ -1238,8 +995,6 @@ void HelloWorld::setPlayerPosition(Point position)
 	}
 	this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
 	this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
-	strcpy(this->mainUser->field, sendMapName);
-	strcpy(com->mainUser->field, sendMapName);
 
 	//플레이어가 화면 가운데로 오게 조절
 	this->setViewpointCenter(this->mainUser->sprite->getPosition());
@@ -1248,6 +1003,8 @@ void HelloWorld::setPlayerPosition(Point position)
 
 void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Event *event)
 {
+	CCLOG("onKeyPressed");
+
 	//로그인화면에서는 키동작을 잠근다.
 	if (this->mainUser->isLogin != true)
 	{
@@ -1271,7 +1028,7 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	CustomObject * customObject;
 	int customObjectIndex;
 
-	CCLOG("Hello World : %d", key);
+	CCLOG("Key : %d", key);
 
 	switch (key)
 	{
@@ -1896,8 +1653,6 @@ void HelloWorld::update(float fDelta)
 		}
 		com->isOtherThrowItem = false;
 	}
-
-	CCLOG("Hello World : %d", com->usersInfo->size());
 }
 
 void HelloWorld::editBoxReturn(EditBox * editBox)
@@ -2357,4 +2112,123 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 	}
 
 	return 0;
+}
+
+void HelloWorld::createTileMap(char * mapName)
+{
+	//기존 타일맵 소스 삭제
+	if (tmap != NULL)
+	{
+		tmap->setVisible(false);
+		this->removeChildByTag(MAP_TAG);
+		tmap = NULL;
+	}
+
+	com->getTiledMap = false;
+	com->sendCommand(REQUEST_TILED_MAP, mapName, strlen(mapName));
+
+	while (com->getTiledMap != true);
+
+	tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
+	background = tmap->getLayer("Background");
+	address = background->getProperty("Address").asString();
+
+	items = tmap->getLayer("Items");
+	metainfo = tmap->getLayer("MetaInfo");
+	metainfo->setVisible(false);
+	this->addChild(tmap, MAP_PRIORITY_Z_ORDER, MAP_TAG);
+	//
+
+	//기존의 맵 아이템 소스 삭제
+	for (int i = 0; i < com->objectInfo->size(); i++)
+	{
+		CustomObject * imsiObjectInfo = com->objectInfo->at(i);
+		this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
+		this->removeChildByTag(MAP_TAG + imsiObjectInfo->idx);
+	}
+	com->objectInfo->clear();
+
+	//기존의 맵 몬스터 소스 삭제
+	for (int i = 0; i < com->monsterInfo->size(); i++)
+	{
+		CustomObject * imsiMonsterInfo = com->monsterInfo->at(i);
+		this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
+		this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
+	}
+	//
+	com->monsterInfo->clear();
+
+	com->sendCommand(REQUEST_FIELD_INFO, mapName, strlen(mapName));
+
+	while (com->isObjectBufferFill != true);
+	com->isObjectBufferFill = false;
+}
+
+void HelloWorld::createObject()
+{	
+	//맵의 아이템 구현하기
+	for (int i = 0; i < (int)com->objectInfo->size(); i++)
+	{
+		Image* image = new Image();
+		Texture2D* texture = new Texture2D();
+		Sprite * sprite;
+		CustomObject * customObject = (com->objectInfo)->at(i);
+
+		com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
+
+		//요청한 오브젝트 이미지가 수신되길 기다린다.
+		while (com->getImage != true);
+
+		//수신된 버퍼데이터로 이미지를 만든다.
+		image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
+		com->getImage = false;
+
+		//스프라이트를 만들어 맵에 구현한다.
+		texture->initWithImage(image);
+
+		sprite = Sprite::createWithTexture(texture);
+		sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
+		sprite->setAnchorPoint(Point(0, 0));
+		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->idx);
+	}
+}
+
+void HelloWorld::createMonster()
+{
+	for (int i = 0; i < com->monsterInfo->size(); i++)
+	{
+		Image* image = new Image();
+		Texture2D* texture = new Texture2D();
+		Sprite * sprite;
+		CustomObject * customObject = (com->monsterInfo)->at(i);
+		char fileDir[100];
+
+		sprintf(fileDir, "%s.png", customObject->fileDir);
+		com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
+
+		//요청한 오브젝트 이미지가 수신되길 기다린다.
+		while (com->getImage != true);
+
+		//수신된 버퍼데이터로 이미지를 만든다.
+		image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
+		com->getImage = false;
+
+		//스프라이트를 만들어 맵에 구현한다.
+		texture->initWithImage(image);
+
+		//.list 를 요청한다.
+		com->getTiledMap = false;
+		sprintf(fileDir, "%s.plist", customObject->fileDir);
+		com->sendCommand(REQUEST_TILED_MAP, fileDir, strlen(fileDir));
+
+		while (com->getTiledMap != true);
+
+		SpriteFrameCache::getInstance()->addSpriteFramesWithFileContent((char*)com->tiledMapBuf->data(), texture);
+
+		sprintf(fileDir, "%s_01.png", customObject->name);
+		sprite = Sprite::createWithSpriteFrameName(fileDir);
+		sprite->setPosition(Point(customObject->xpos * TILE_SIZE + TILE_SIZE / 2, customObject->ypos * TILE_SIZE));
+		sprite->setAnchorPoint(Point(0.5, 0));
+		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + customObject->idx);
+	}
 }

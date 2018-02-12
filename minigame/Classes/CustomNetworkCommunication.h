@@ -19,6 +19,7 @@
 #include "cocos2d.h"
 #include "User.h"
 #include "CustomObject.h"
+#include "CustomChatting.h"
 
 USING_NS_CC;
 
