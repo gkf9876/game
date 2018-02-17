@@ -107,7 +107,7 @@ void * RecvMsg(void * arg)
 			{
 				StructCustomUser moveUser;
 				memcpy(&moveUser, com->recvBuf, sizeof(StructCustomUser));
-
+                
 				if (moveUser.action == ACTION_MAP_OUT)
 				{
 					for (int i = 0; i < com->usersInfo->size(); i++)
@@ -700,7 +700,7 @@ void CustomNetworkCommunication::MyPrintDebug(char * message)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     OutputDebugString(pszCharacterString);
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    printf("%s", pszCharacterString);
+    printf("%s", message);
 #endif
 }
 

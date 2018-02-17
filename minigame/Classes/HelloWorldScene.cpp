@@ -636,6 +636,30 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 			{
 				Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
 					joystickPad->getPosition().y + joystickPad->getContentSize().height / 2);
+                
+                tap = touch->getLocation() + plag;
+                
+                //조이패드 기울기
+                double incline = joystickPad->getContentSize().height / joystickPad->getContentSize().width;
+                
+                //좌측하단에서 우측상단으로 올라가는 그래프 y접점 좌표
+                double yAxisValueUp = joystickPad->getPosition().y
+                - incline * (joystickPad->getPosition().x - joystickPad->getContentSize().width);
+                //좌측상단에서 우측하단으로 내려가는 그래프 y접점 좌표
+                double yAxisValueDown = joystickPad->getPosition().y
+                + incline * joystickPad->getPosition().x;
+                
+                if (tap.y < incline * tap.x + yAxisValueUp)
+                    if (tap.y < -1 * incline * tap.x + yAxisValueDown)
+                        onKeyReleased(cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW, NULL);
+                    else
+                        onKeyReleased(cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW, NULL);
+                    else
+                        if (tap.y < -1 * incline * tap.x + yAxisValueDown)
+                            onKeyReleased(cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW, NULL);
+                        else
+                            onKeyReleased(cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW, NULL);
+                
 				joystick->setPosition(startPoint);
 				joystickTouched = false;
 
