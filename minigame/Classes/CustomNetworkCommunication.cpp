@@ -346,8 +346,9 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	host = gethostbyname("192.168.56.101");
-	//host = gethostbyname("sourcecake.iptime.org");
+	//host = gethostbyname("192.168.56.101");
+	host = gethostbyname("sourcecake.iptime.org");
+    
 	if (!host)
 		error_handling("gethost... error");
 

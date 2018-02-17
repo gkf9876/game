@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.1" orientation="orthogonal" renderorder="right-down" width="10" height="11" tilewidth="32" tileheight="32" infinite="0" nextobjectid="5">
+ <tileset firstgid="1" name="Meta" tilewidth="32" tileheight="32" spacing="1" margin="1" tilecount="60" columns="12">
+  <image source="metaset.png" width="397" height="166"/>
+  <tile id="0">
+   <properties>
+    <property name="Wall" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="Items" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="Code" value="001_01"/>
+    <property name="Destination" value="floor"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="Code" value="001_02"/>
+    <property name="Destination" value="floor"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="Destination" value="floor"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="Destination" value="floor"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="61" name="RPGmaker tile" tilewidth="32" tileheight="32" tilecount="2016" columns="32">
+  <image source="RPGmaker tile.png" width="1024" height="2016"/>
+ </tileset>
+ <layer name="Background" width="10" height="11">
+  <properties>
+   <property name="Address" value="TileMaps/KonyangUniv.Daejeon/JukhunDigitalFacilitie/floor_07/"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJxbxMDAsIhIfIgAHlWHXx22sEQXJxYAAHc1R4k=
+  </data>
+ </layer>
+ <objectgroup name="Objects">
+  <properties>
+   <property name="Name" value="죽헌정보관 7층 1호"/>
+   <property name="Place" value="001"/>
+  </properties>
+  <object id="1" name="SpawnPoint" x="160" y="128" width="32" height="32"/>
+  <object id="3" name="1" x="128" y="288" width="32" height="32"/>
+  <object id="4" name="2" x="160" y="288" width="32" height="32"/>
+ </objectgroup>
+ <layer name="Items" width="10" height="11">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFQxEAAAG4AAE=
+  </data>
+ </layer>
+ <layer name="MetaInfo" width="10" height="11">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgYCQSEwKkqrMlwTx8ageL+2CYAUkMWR0yZgZiFhxyxGAAOkcB3w==
+  </data>
+ </layer>
+</map>

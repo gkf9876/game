@@ -278,44 +278,7 @@ void HelloWorld::start()
 	//
 
 	//플레이어의 인벤토리창 정보를 요청한다.
-	com->sendCommand(REQUEST_INVENTORY_ITEM_INFO, com->mainUser->name, strlen(com->mainUser->name));
-
-	//아이템창 정보를 받아서 구현
-	while (com->isInventoryFill != true);
-
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 5; j++)
-		{
-			if (com->inventory_items_Info[i][j] != NULL)
-			{
-				Sprite * sprite;
-				Image* image = new Image();
-				Texture2D* texture = new Texture2D();
-				CustomObject * customObject = com->inventory_items_Info[i][j];
-
-				com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
-
-				//요청한 오브젝트 이미지가 수신되길 기다린다.
-				while (com->getImage != true);
-
-				//수신된 버퍼데이터로 이미지를 만든다.
-				image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
-				com->getImage = false;
-
-				//스프라이트를 만들어 맵에 구현한다.
-				texture->initWithImage(image);
-				sprite = Sprite::createWithTexture(texture);
-				sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
-				sprite->setAnchorPoint(Point(0, 0));
-
-				inventory->addChild(sprite, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
-			}
-		}
-	}
-
-	com->isInventoryFill = false;
-	//
+    createInventory();
 
 	//화면에 맵이름 띄우기
 	mapName = LabelTTF::create(objects->getProperty("Name").asString(), "Arial", 25);
@@ -2019,12 +1982,17 @@ void HelloWorld::createTileMap(char * mapName)
 		tmap = NULL;
 	}
 
-	com->getTiledMap = false;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 	com->sendCommand(REQUEST_TILED_MAP, mapName, strlen(mapName));
 
 	while (com->getTiledMap != true);
+    com->getTiledMap = false;
 
 	tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    tmap = TMXTiledMap::create(mapName);
+#endif
+    
 	background = tmap->getLayer("Background");
 	address = background->getProperty("Address").asString();
 
@@ -2065,10 +2033,11 @@ void HelloWorld::createObject()
 	//맵의 아이템 구현하기
 	for (int i = 0; i < (int)com->objectInfo->size(); i++)
 	{
+        CustomObject * customObject = (com->objectInfo)->at(i);
+        Sprite * sprite;
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 		Image* image = new Image();
 		Texture2D* texture = new Texture2D();
-		Sprite * sprite;
-		CustomObject * customObject = (com->objectInfo)->at(i);
 
 		com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
 
@@ -2083,6 +2052,10 @@ void HelloWorld::createObject()
 		texture->initWithImage(image);
 
 		sprite = Sprite::createWithTexture(texture);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+        sprite = Sprite::create(customObject->fileDir);
+#endif
+        
 		sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0, 0));
 		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->idx);
@@ -2093,11 +2066,12 @@ void HelloWorld::createMonster()
 {
 	for (int i = 0; i < com->monsterInfo->size(); i++)
 	{
+        CustomObject * customObject = (com->monsterInfo)->at(i);
+        Sprite * sprite;
+        char fileDir[100];
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
 		Image* image = new Image();
 		Texture2D* texture = new Texture2D();
-		Sprite * sprite;
-		CustomObject * customObject = (com->monsterInfo)->at(i);
-		char fileDir[100];
 
 		sprintf(fileDir, "%s.png", customObject->fileDir);
 		com->sendCommand(REQUEST_IMAGE, fileDir, strlen(fileDir));
@@ -2123,6 +2097,13 @@ void HelloWorld::createMonster()
 
 		sprintf(fileDir, "%s_01.png", customObject->name);
 		sprite = Sprite::createWithSpriteFrameName(fileDir);
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+        sprintf(fileDir, "%s.plist", customObject->fileDir);
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile(fileDir);
+        
+        sprintf(fileDir, "%s_01.png", customObject->name);
+        sprite = Sprite::createWithSpriteFrameName(fileDir);
+#endif
 		sprite->setPosition(Point(customObject->xpos * TILE_SIZE + TILE_SIZE / 2, customObject->ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0.5, 0));
 		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + customObject->idx);
@@ -2209,4 +2190,46 @@ void HelloWorld::createOtherUser()
 			}
 		}
 	}
+}
+
+void HelloWorld::createInventory()
+{
+    com->sendCommand(REQUEST_INVENTORY_ITEM_INFO, com->mainUser->name, strlen(com->mainUser->name));
+    
+    //아이템창 정보를 받아서 구현
+    while (com->isInventoryFill != true);
+    
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            if (com->inventory_items_Info[i][j] != NULL)
+            {
+                Sprite * sprite;
+                Image* image = new Image();
+                Texture2D* texture = new Texture2D();
+                CustomObject * customObject = com->inventory_items_Info[i][j];
+                
+                com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
+                
+                //요청한 오브젝트 이미지가 수신되길 기다린다.
+                while (com->getImage != true);
+                
+                //수신된 버퍼데이터로 이미지를 만든다.
+                image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
+                com->getImage = false;
+                
+                //스프라이트를 만들어 맵에 구현한다.
+                texture->initWithImage(image);
+                sprite = Sprite::createWithTexture(texture);
+                sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
+                sprite->setAnchorPoint(Point(0, 0));
+                
+                inventory->addChild(sprite, INVENTORY_PRIORITY_Z_ORDER + 1, INVENTORY_ITEM + customObject->idx);
+            }
+        }
+    }
+    
+    com->isInventoryFill = false;
+    //
 }

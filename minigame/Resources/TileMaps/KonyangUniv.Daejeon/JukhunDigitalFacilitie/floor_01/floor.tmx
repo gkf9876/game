@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" tiledversion="1.1.1" orientation="orthogonal" renderorder="right-down" width="42" height="20" tilewidth="32" tileheight="32" infinite="0" nextobjectid="137">
+ <tileset firstgid="1" name="Meta" tilewidth="32" tileheight="32" spacing="1" margin="1" tilecount="60" columns="12">
+  <image source="metaset.png" width="397" height="166"/>
+  <tile id="0">
+   <properties>
+    <property name="Wall" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="Items" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="Destination" value="TileMaps/LectureRoom_801.tmx"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="Destination" value="TileMaps/LectureRoom_802.tmx"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="Destination" value="TileMaps/LectureRoom_803.tmx"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="Destination" value="TileMaps/LectureRoom_804.tmx"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="001"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="002"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="003"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="004"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="005"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="006"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="007"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="008"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="009"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="Code" value="1"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="001"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="002"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="003"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="004"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="005"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="006"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="007"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="008"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="009"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="Code" value="2"/>
+   </properties>
+  </tile>
+  <tile id="36">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="toiret"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="37">
+   <properties>
+    <property name="Code" value="1"/>
+    <property name="Destination" value="stair"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="38">
+   <properties>
+    <property name="Code" value="3"/>
+   </properties>
+  </tile>
+  <tile id="39">
+   <properties>
+    <property name="Code" value="3"/>
+   </properties>
+  </tile>
+  <tile id="40">
+   <properties>
+    <property name="Code" value="3"/>
+    <property name="Destination" value="005"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="41">
+   <properties>
+    <property name="Code" value="3"/>
+    <property name="Destination" value="006"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="42">
+   <properties>
+    <property name="Code" value="3"/>
+    <property name="Destination" value="007"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="43">
+   <properties>
+    <property name="Code" value="3"/>
+   </properties>
+  </tile>
+  <tile id="44">
+   <properties>
+    <property name="Code" value="3"/>
+    <property name="Destination" value="009"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="45">
+   <properties>
+    <property name="Code" value="3"/>
+   </properties>
+  </tile>
+  <tile id="48">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="toiret"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="49">
+   <properties>
+    <property name="Code" value="2"/>
+    <property name="Destination" value="stair"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="50">
+   <properties>
+    <property name="Code" value="4"/>
+   </properties>
+  </tile>
+  <tile id="51">
+   <properties>
+    <property name="Code" value="4"/>
+   </properties>
+  </tile>
+  <tile id="52">
+   <properties>
+    <property name="Code" value="4"/>
+    <property name="Destination" value="005"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="53">
+   <properties>
+    <property name="Code" value="4"/>
+    <property name="Destination" value="006"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="54">
+   <properties>
+    <property name="Code" value="4"/>
+    <property name="Destination" value="007"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="55">
+   <properties>
+    <property name="Code" value="4"/>
+   </properties>
+  </tile>
+  <tile id="56">
+   <properties>
+    <property name="Code" value="4"/>
+    <property name="Destination" value="009"/>
+    <property name="Entrance" value="YES"/>
+   </properties>
+  </tile>
+  <tile id="57">
+   <properties>
+    <property name="Code" value="4"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="61" name="RPGmaker tile" tilewidth="32" tileheight="32" tilecount="2016" columns="32">
+  <image source="RPGmaker tile.png" width="1024" height="2016"/>
+ </tileset>
+ <layer name="Background" width="42" height="20">
+  <properties>
+   <property name="Address" value="TileMaps/KonyangUniv.Daejeon/JukhunDigitalFacilitie/floor_01/"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJztlG0KwCAIQL3YDrcdpaP4Y+eKwQYi+LHIpjDh/ZBMHlkBxEQzeLs3Kq7eh4DHcydEeqLg+HuOxey5U/BmNOfM9pT6RVHJ0yKDp4fKng8IY+9Gmiuvt9ZpPvNf0mbRjDruohHtuRXx1Oowkad2h7N4cuesc/d4nk6+9qxynis9V9EBSZ4tSQ==
+  </data>
+ </layer>
+ <objectgroup name="Objects">
+  <properties>
+   <property name="Name" value="죽헌정보관 1층"/>
+   <property name="Place" value="floor"/>
+  </properties>
+  <object id="75" name="003_01" x="352" y="160" width="32" height="32"/>
+  <object id="76" name="005_01" x="704" y="96" width="32" height="32"/>
+  <object id="77" name="001_01" x="96" y="160" width="32" height="32"/>
+  <object id="79" name="004_01" x="480" y="160" width="32" height="32"/>
+  <object id="80" name="002_01" x="224" y="160" width="32" height="32"/>
+  <object id="81" name="SpawnPoint" x="544" y="256" width="32" height="32"/>
+  <object id="82" name="001_02" x="128" y="160" width="32" height="32"/>
+  <object id="83" name="002_02" x="256" y="160" width="32" height="32"/>
+  <object id="84" name="003_02" x="384" y="160" width="32" height="32"/>
+  <object id="85" name="004_02" x="512" y="160" width="32" height="32"/>
+  <object id="86" name="005_02" x="704" y="64" width="32" height="32"/>
+  <object id="98" name="stair_01" x="736" y="320" width="32" height="32"/>
+  <object id="99" name="stair_02" x="768" y="320" width="32" height="32"/>
+  <object id="100" name="009_01" x="256" y="320" width="32" height="32"/>
+  <object id="101" name="009_02" x="224" y="320" width="32" height="32"/>
+  <object id="102" name="009_03" x="128" y="320" width="32" height="32"/>
+  <object id="103" name="009_04" x="96" y="320" width="32" height="32"/>
+  <object id="104" name="toiret_01" x="352" y="320" width="32" height="32"/>
+  <object id="105" name="toiret_02" x="384" y="320" width="32" height="32"/>
+ </objectgroup>
+ <layer name="Items" width="42" height="20">
+  <data encoding="base64" compression="zlib">
+   eJztwQENAAAAwqD3T+3sARQAAAA3DSAAAQ==
+  </data>
+ </layer>
+ <layer name="MetaInfo" width="42" height="20">
+  <data encoding="base64" compression="zlib">
+   eJxjYKA+YCQCk6qfFoCQ2cS4kxT15AJS3UFIfii5k5aYVu7kBWJJJD4fEEsh8fmBWBqJLwDEMnR0J73BUHInKWlmoNxJKhhq7oRhSyDWReIrArEoEl8ViA2x6MNlrhoQG2FRRwwf3TxcbiYm/RDK04T8QiygNM6JLXuGsjupZQ+l+okt8ym1h5r6B3O8E1JHrbYCPdxJbXso1T8Y3EkvDAB5VQK1
+  </data>
+ </layer>
+</map>

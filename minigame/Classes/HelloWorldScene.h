@@ -255,6 +255,7 @@ public:
 	void createObject();
 	void createMonster();
 	void createOtherUser();
+    void createInventory();
 };
 
 #endif // __HELLOWORLD_SCENE_H__
