@@ -266,6 +266,12 @@ void HelloWorld::start()
     itemEatButton->setAnchorPoint(Point(0.5, 0.5));
     this->addChild(itemEatButton, ITEM_EAT_BUTTON_Z_ORDER, ITEM_EAT_BUTTON);
     itemEatButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::itemEatButtonTouchEvent, this));
+    
+    //아이템 먹는 버튼
+    attackButton = Button::create("Images/attackButton.png", "Images/attackButton.png");
+    attackButton->setAnchorPoint(Point(0.5, 0.5));
+    this->addChild(attackButton, ATTACK_BUTTON_Z_ORDER, ATTACK_BUTTON);
+    attackButton->addTouchEventListener(CC_CALLBACK_2(HelloWorld::attackButtonTouchEvent, this));
 #endif
 
 	//아이템창 만들기
@@ -813,6 +819,8 @@ void HelloWorld::setViewpointCenter(Point position)
                                        actualPosition.y + TILE_SIZE / 2));
     itemEatButton->setPosition(Point(actualPosition.x + winSize.width / 2 - TILE_SIZE,
                                      actualPosition.y - TILE_SIZE));
+    attackButton->setPosition(Point(actualPosition.x,
+                                     actualPosition.y - winSize.height / 2 + TILE_SIZE));
 #endif
 
 	//통신 실패시 띄우는 창
@@ -2045,6 +2053,28 @@ void HelloWorld::itemEatButtonTouchEvent(Ref * sender, Widget::TouchEventType ty
         case Widget::TouchEventType::MOVED:
             break;
         case Widget::TouchEventType::ENDED:
+            break;
+    }
+}
+
+void HelloWorld::attackButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
+{
+    switch (type)
+    {
+        case Widget::TouchEventType::BEGAN:
+            this->mainUser->isAttack = true;
+            break;
+        case Widget::TouchEventType::MOVED:
+            break;
+        case Widget::TouchEventType::ENDED:
+            this->mainUser->isAttack = false;
+            this->mainUser->action = ACTION_ATTACK_END;
+            
+            if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
+            {
+                com->comm = false;
+                CCLOG("onKeyReleased comm error");
+            }
             break;
     }
 }

@@ -50,6 +50,7 @@ using namespace ui;
 #define INVENTORY_BUTTON  30
 #define ITEM_EAT_BUTTON  31
 #define MONSTER_TAG  20000
+#define ATTACK_BUTTON 32
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
@@ -71,6 +72,7 @@ using namespace ui;
 #define INVENTORY_BUTTON_Z_ORDER        204                                     //아이템창 띄우는 버튼
 #define ITEM_EAT_BUTTON_Z_ORDER         204                                     //아이템 먹는 버튼
 #define MONSTER_PRIORITY_Z_ORDER        200                                     //맵의 몬스터 우선순위
+#define ATTACK_BUTTON_Z_ORDER           204                                     //공격 버튼 우선순위
 
 #define LOGIN_WINDOW_Z_ORDER			1										//로그인 화면 우선순위
 #define JOIN_BUTTON_Z_ORDER				2										//회원가입 버튼
@@ -161,6 +163,7 @@ public:
     
     Button * inventoryButton;                                               //누르면 아이템창이 뜨는 버튼
     Button * itemEatButton;                                                 //아이템 먹는 버튼
+    Button * attackButton;                                                  //공격 버튼
 #endif
 
 	cocos2d::LabelTTF * text;												//테스트 할때 사용하는 객체.
@@ -244,6 +247,7 @@ public:
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     void inventoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
     void itemEatButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
+    void attackButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 #endif
 
 	//매 프레임마다 호출되는 함수.
