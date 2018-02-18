@@ -220,6 +220,30 @@ void * RecvMsg(void * arg)
 						}
 					}
 				}
+                else if (moveUser.action == ACTION_ATTACK)
+                {
+                    for (int i = 0; i < com->usersInfo->size(); i++)
+                    {
+                        User * othersUser = (User*)com->usersInfo->at(i);
+                        
+                        if (!strcmp(othersUser->name, moveUser.name))
+                        {
+                            user->isAttack = true;
+                        }
+                    }
+                }
+                else if (moveUser.action == ACTION_ATTACK_END)
+                {
+                    for (int i = 0; i < com->usersInfo->size(); i++)
+                    {
+                        User * othersUser = (User*)com->usersInfo->at(i);
+                        
+                        if (!strcmp(othersUser->name, moveUser.name))
+                        {
+                            user->isAttack = false;
+                        }
+                    }
+                }
 			}
 			break;
 		case REQUEST_JOIN:

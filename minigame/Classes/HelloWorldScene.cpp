@@ -374,6 +374,7 @@ void HelloWorld::createSprite()
 	this->mainUser->sprite->setPosition(this->mainUser->position);
 	this->mainUser->isAction = false;
 	this->mainUser->isRunning = false;
+    this->mainUser->isAttack = false;
 	this->mainUser->isKeepKeyPressed = false;
 	this->addChild(this->mainUser->sprite, DRAGON_PRIORITY_Z_ORDER, DRAGON_TAG);
 
@@ -1176,6 +1177,13 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Eve
     if(cocos2d::EventKeyboard::KeyCode::KEY_SPACE == key)
     {
         this->mainUser->isAttack = false;
+        this->mainUser->action = ACTION_ATTACK_END;
+        
+        if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
+        {
+            com->comm = false;
+            CCLOG("onKeyReleased comm error");
+        }
     }
 	return;
 }
@@ -1317,6 +1325,39 @@ void HelloWorld::setOtherUsersAnimation(User * user, cocos2d::EventKeyboard::Key
 		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_07.png");
 		animation->addSpriteFrame(frame);
 		break;
+    case cocos2d::EventKeyboard::KeyCode::KEY_SPACE:
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("user/attack.plist");
+        
+        if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("upReady.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("downReady.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("leftReady.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("rightReady.png");
+        animation->addSpriteFrame(frame);
+        
+        if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("upAttack.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("downAttack.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("leftAttack.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("rightAttack.png");
+        animation->addSpriteFrame(frame);
+        
+        if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_15.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_03.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_07.png");
+        else if (user->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_11.png");
+        animation->addSpriteFrame(frame);
+        break;
 	}
 
 	user->animate = Animate::create(animation);
@@ -1483,7 +1524,48 @@ void HelloWorld::update(float fDelta)
     //메인유저가 키를 눌러 공격할때
     if(this->mainUser->isAttack == true && this->mainUser->isAction == false)
     {
+        int targetXpos;
+        int targetYpos;
+        
         this->setAnimation(cocos2d::EventKeyboard::KeyCode::KEY_SPACE);
+        
+        switch (this->mainUser->seeDirection)
+        {
+            case cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW:
+                targetXpos = this->mainUser->xpos;
+                targetYpos = this->mainUser->ypos + 1;
+                break;
+            case cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+                targetXpos = this->mainUser->xpos;
+                targetYpos = this->mainUser->ypos - 1;
+                break;
+            case cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+                targetXpos = this->mainUser->xpos + 1;
+                targetYpos = this->mainUser->ypos;
+                break;
+            case cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+                targetXpos = this->mainUser->xpos - 1;
+                targetYpos = this->mainUser->ypos;
+                break;
+        }
+        
+        this->mainUser->action = ACTION_ATTACK;
+        if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
+        {
+            com->comm = false;
+            CCLOG("setPlayerPosition comm error");
+        }
+        
+        for(int i=0; i<com->monsterInfo->size(); i++)
+        {
+            CustomObject * monster = com->monsterInfo->at(i);
+            
+            if(monster->xpos == targetXpos && monster->ypos == targetYpos)
+            {
+                CCLOG("idx(%d), target(%d, %d)", monster->idx, targetXpos, targetYpos);
+                break;
+            }
+        }
     }
 
 	//말풍선이 떠있으면 일정시간후 없앤다.
@@ -2214,6 +2296,7 @@ void HelloWorld::createOtherUser()
 			user->sprite->setAnchorPoint(Point(0.5, 0));
 			user->isAction = false;
 			user->isRunning = false;
+            user->isAttack = false;
 			user->isKeepKeyPressed = false;
 			user->position = Point(user->xpos * TILE_SIZE + TILE_SIZE / 2, user->ypos * TILE_SIZE);
 			user->sprite->setPosition(user->position);
@@ -2258,6 +2341,9 @@ void HelloWorld::createOtherUser()
 
 				if (user->isRunning == true && user->isAction == false)
 					this->setOtherUsersAnimation(user, user->seeDirection);
+                
+                if (user->isAttack == true && user->isAction == false)
+                    this->setOtherUsersAnimation(user, cocos2d::EventKeyboard::KeyCode::KEY_SPACE);
 			}
 		}
 	}
