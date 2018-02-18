@@ -8,7 +8,7 @@
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 #include <WinSock2.h>
 #include <process.h>
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -50,7 +50,7 @@ private :
 
 	HANDLE hSndThread;
 	HANDLE hRcvThread;
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	int sock;
 	struct sockaddr_in serv_adr;
 
@@ -108,7 +108,7 @@ public :
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	SOCKET getSock();
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	int getSock();
 #endif
 

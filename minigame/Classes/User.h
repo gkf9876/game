@@ -1,4 +1,4 @@
-﻿#ifndef __USER_H__
+#ifndef __USER_H__
 #define __USER_H__
 
 #include "cocos2d.h"
@@ -44,6 +44,7 @@ public:
 	bool isAction;															//드래곤 액션 여부
 	bool isRunning;															//드래곤이 이동중인지
 	bool isKeepKeyPressed;													//키를 누르고 있는지
+    bool isAttack;                                                          //공격 중인지
 	cocos2d::EventKeyboard::KeyCode seeDirection;							//드래곤이 어딜 보고있는지
 	cocos2d::LabelTTF * balloonContent;										//말풍선 내용
 	Sprite * balloon;														//말풍선

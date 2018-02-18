@@ -238,7 +238,7 @@ void HelloWorld::start()
 	this->createSprite();
 	//
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	//조이스틱 구현
@@ -349,7 +349,7 @@ void HelloWorld::onExit()
 
 void HelloWorld::createSprite()
 {
-	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Images/man.plist");
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("user/man.plist");
 
 	switch (this->mainUser->seeDirection)
 	{
@@ -426,7 +426,7 @@ void HelloWorld::onTouchesBegan(const std::vector<Touch *> &touches, cocos2d::Ev
 		{
 			tap = touch->getLocation() + plag;
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 			//조이스틱을 터치했을 경우
@@ -628,7 +628,7 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 		//터치가 된경우
 		if (touch)
 		{
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 			//조이스틱 터치시
@@ -753,7 +753,7 @@ void HelloWorld::onTouchesCancelled(const std::vector<Touch *> &touches, cocos2d
         return;
     }
     
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	Point startPoint = Point(joystickPad->getPosition().x - joystickPad->getContentSize().width / 2,
@@ -794,7 +794,7 @@ void HelloWorld::setViewpointCenter(Point position)
 	this->mainUser->balloon->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height));
 	this->mainUser->balloonContent->setPosition(Point(this->mainUser->position.x + this->mainUser->sprite->getContentSize().width / 2 - 50, this->mainUser->position.y + this->mainUser->sprite->getContentSize().height + 50));
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	//조이스틱은 항상 우측 하단에 붙어야함.
@@ -1147,6 +1147,9 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 				com->objectInfo->erase(com->objectInfo->begin() + customObjectIndex);
 		}
 		break;
+    case cocos2d::EventKeyboard::KeyCode::KEY_SPACE:
+        this->mainUser->isAttack = true;
+        break;
 	}
 }
 
@@ -1169,6 +1172,11 @@ void HelloWorld::onKeyReleased(cocos2d::EventKeyboard::KeyCode key, cocos2d::Eve
 			CCLOG("onKeyReleased comm error");
 		}
 	}
+    
+    if(cocos2d::EventKeyboard::KeyCode::KEY_SPACE == key)
+    {
+        this->mainUser->isAttack = false;
+    }
 	return;
 }
 
@@ -1219,6 +1227,39 @@ void HelloWorld::setAnimation(cocos2d::EventKeyboard::KeyCode key)
 		frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_07.png");
 		animation->addSpriteFrame(frame);
 		break;
+    case cocos2d::EventKeyboard::KeyCode::KEY_SPACE:
+        SpriteFrameCache::getInstance()->addSpriteFramesWithFile("user/attack.plist");
+        
+        if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("upReady.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("downReady.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("leftReady.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("rightReady.png");
+        animation->addSpriteFrame(frame);
+        
+        if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("upAttack.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("downAttack.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("leftAttack.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("rightAttack.png");
+        animation->addSpriteFrame(frame);
+            
+        if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_UP_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_15.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_03.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_07.png");
+        else if (this->mainUser->seeDirection == cocos2d::EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+            frame = SpriteFrameCache::getInstance()->getSpriteFrameByName("man_11.png");
+        animation->addSpriteFrame(frame);
+        break;
 	}
 	
 	this->mainUser->animate = Animate::create(animation);
@@ -1438,6 +1479,12 @@ void HelloWorld::update(float fDelta)
 
 		this->setAnimation(this->mainUser->seeDirection);
 	}
+    
+    //메인유저가 키를 눌러 공격할때
+    if(this->mainUser->isAttack == true && this->mainUser->isAction == false)
+    {
+        this->setAnimation(cocos2d::EventKeyboard::KeyCode::KEY_SPACE);
+    }
 
 	//말풍선이 떠있으면 일정시간후 없앤다.
 	if (this->mainUser->balloon->isVisible() == true)
@@ -1860,7 +1907,7 @@ void HelloWorld::commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEve
 	}
 }
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 void HelloWorld::inventoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type)
@@ -2006,14 +2053,14 @@ void HelloWorld::createTileMap(char * mapName)
 		tmap = NULL;
 	}
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	com->sendCommand(REQUEST_TILED_MAP, mapName, strlen(mapName));
 
 	while (com->getTiledMap != true);
     com->getTiledMap = false;
 
 	tmap = TMXTiledMap::createWithXML((char*)com->tiledMapBuf->data(), "");
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     tmap = TMXTiledMap::create(mapName);
 #endif
     
@@ -2059,7 +2106,7 @@ void HelloWorld::createObject()
 	{
         CustomObject * customObject = (com->objectInfo)->at(i);
         Sprite * sprite;
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		Image* image = new Image();
 		Texture2D* texture = new Texture2D();
 
@@ -2076,7 +2123,7 @@ void HelloWorld::createObject()
 		texture->initWithImage(image);
 
 		sprite = Sprite::createWithTexture(texture);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
         sprite = Sprite::create(customObject->fileDir);
 #endif
         
@@ -2093,7 +2140,7 @@ void HelloWorld::createMonster()
         CustomObject * customObject = (com->monsterInfo)->at(i);
         Sprite * sprite;
         char fileDir[100];
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		Image* image = new Image();
 		Texture2D* texture = new Texture2D();
 
@@ -2121,7 +2168,7 @@ void HelloWorld::createMonster()
 
 		sprintf(fileDir, "%s_01.png", customObject->name);
 		sprite = Sprite::createWithSpriteFrameName(fileDir);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
         sprintf(fileDir, "%s.plist", customObject->fileDir);
         SpriteFrameCache::getInstance()->addSpriteFramesWithFile(fileDir);
         

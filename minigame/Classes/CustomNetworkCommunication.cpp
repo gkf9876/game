@@ -5,7 +5,7 @@
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI SendMsg(void * arg)   // send thread main
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 void * SendMsg(void * arg)
 #endif
 {
@@ -25,7 +25,7 @@ void * SendMsg(void * arg)
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 		Sleep(5000);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 		sleep(5);
 #endif
 	}
@@ -35,7 +35,7 @@ void * SendMsg(void * arg)
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 unsigned WINAPI RecvMsg(void * arg)   // read thread main
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 void * RecvMsg(void * arg)
 #endif
 {
@@ -333,7 +333,7 @@ void CustomNetworkCommunication::init()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 		error_handling("WSAStartup() error!");
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 #endif
 
 	sock = socket(PF_INET, SOCK_STREAM, 0);
@@ -341,7 +341,7 @@ void CustomNetworkCommunication::init()
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 	if (sock == INVALID_SOCKET)
 		error_handling("socket() error");
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     if (sock == -1)
         error_handling("socket() error");
 #endif
@@ -368,7 +368,7 @@ void CustomNetworkCommunication::init()
 		puts("Connected...............");
 		comm = true;
 	}
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     if (connect(sock, (struct sockaddr*)&serv_adr, sizeof(serv_adr)) == -1)
         error_handling("connect() error!");
     else
@@ -382,7 +382,7 @@ void CustomNetworkCommunication::init()
 
 	WaitForSingleObject(hSndThread, 1000);
 	WaitForSingleObject(hRcvThread, 1000);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	if (pthread_create(&hSndThread, NULL, SendMsg, (void*)this) != 0)
 	{
 		puts("pthread_create() error : hSndThread");
@@ -406,7 +406,7 @@ void CustomNetworkCommunication::sockClose()
 	shutdown(sock, SD_SEND);
 	closesocket(sock);
 	WSACleanup();
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 	shutdown(sock, SHUT_WR);
 	close(sock);
 #endif
@@ -414,7 +414,7 @@ void CustomNetworkCommunication::sockClose()
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
 SOCKET CustomNetworkCommunication::getSock()
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 int CustomNetworkCommunication::getSock()
 #endif
 {
@@ -442,7 +442,7 @@ int CustomNetworkCommunication::sendCommand(int code, char * message, int size)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     writeLen = send(this->sock, buf, 8, 0);
     writeLen += send(this->sock, message, size, 0);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     writeLen = write(this->sock, buf, 8);
     writeLen += write(this->sock, message, size);
 #endif
@@ -465,7 +465,7 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     if (recv(this->sock, buf, 4, 0) == -1)
         return -1;
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     if (read(this->sock, buf, 4) == -1)
         return -1;
 #endif
@@ -475,7 +475,7 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     if (recv(this->sock, buf, 4, 0) == -1)
         return -1;
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     if (read(this->sock, buf, 4) == -1)
         return -1;
 #endif
@@ -490,7 +490,7 @@ int CustomNetworkCommunication::readCommand(int * code, char * buf)
 	{
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
         readLen = recv(this->sock, &buf[size], len, 0);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
         readLen = read(this->sock, &buf[size], len);
 #endif
 
@@ -699,7 +699,7 @@ void CustomNetworkCommunication::MyPrintDebug(char * message)
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     OutputDebugString(pszCharacterString);
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+#elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     printf("%s", message);
 #endif
 }

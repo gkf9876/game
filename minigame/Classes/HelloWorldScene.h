@@ -51,7 +51,7 @@ using namespace ui;
 #define ITEM_EAT_BUTTON  31
 #define MONSTER_TAG  20000
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 #define JOYSTICK        11
@@ -92,7 +92,7 @@ using namespace ui;
 #define COMM_ERROR_POPUP_Z_ORDER		206										//통신두절시 종료창
 #define COMM_ERROR_POPUP_OK_Z_ORDER		207										//통신두절시 확인버튼
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 #define JOYSTICK_PRIORITY_Z_ORDER    7											//조이스틱 우선순위
@@ -151,7 +151,7 @@ public:
 
 	cocos2d::ui::EditBox * chattingInput;									//채팅 입력창
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
 
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 	cocos2d::Sprite * joystick;												//조이스틱
@@ -239,7 +239,7 @@ public:
 	void exitButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
 	void commErrorPopUpOkButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
     
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC) || (CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32) || (CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
     
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
     void inventoryButtonTouchEvent(Ref * sender, Widget::TouchEventType type);
