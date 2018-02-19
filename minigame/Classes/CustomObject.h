@@ -19,6 +19,8 @@ struct StructCustomObject
 	int order;
 	char fileDir[100];
 	int count;
+    int hp;
+    int object_number;
 };
 
 class CustomObject
@@ -33,9 +35,11 @@ public:
 	char fileDir[100];
 	std::vector<byte> *imageBuf = NULL;
 	int count;
+    int hp;
+    int object_number;
 
 public:
-	CustomObject(int idx, char * name, char * type, int xpos, int ypos, int order, std::vector<byte> * imageBuf, int count);
+	CustomObject(int idx, char * name, char * type, int xpos, int ypos, int order, std::vector<byte> * imageBuf, int count, int hp, int object_number);
 	CustomObject(StructCustomObject structCustomObject);
 	~CustomObject();
 };

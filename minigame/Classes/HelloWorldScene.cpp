@@ -1570,7 +1570,13 @@ void HelloWorld::update(float fDelta)
             
             if(monster->xpos == targetXpos && monster->ypos == targetYpos)
             {
-                CCLOG("idx(%d), target(%d, %d)", monster->idx, targetXpos, targetYpos);
+                monster->hp -= 5;
+                if(monster->hp <= 0)
+                {
+                    this->removeChildByTag(MONSTER_TAG + monster->object_number);
+                    com->monsterInfo->erase(com->monsterInfo->begin() + i);
+                }
+                CCLOG("number(%d), target(%d, %d), hp : %d", monster->object_number, targetXpos, targetYpos, monster->hp);
                 break;
             }
         }
@@ -2190,8 +2196,7 @@ void HelloWorld::createTileMap(char * mapName)
 	for (int i = 0; i < com->objectInfo->size(); i++)
 	{
 		CustomObject * imsiObjectInfo = com->objectInfo->at(i);
-		this->removeChildByTag(OTHERS_TAG + imsiObjectInfo->idx);
-		this->removeChildByTag(OTHERS_TAG + imsiObjectInfo->idx);
+		this->removeChildByTag(OTHERS_TAG + imsiObjectInfo->object_number);
 	}
 	com->objectInfo->clear();
 
@@ -2199,8 +2204,7 @@ void HelloWorld::createTileMap(char * mapName)
 	for (int i = 0; i < com->monsterInfo->size(); i++)
 	{
 		CustomObject * imsiMonsterInfo = com->monsterInfo->at(i);
-		this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
-		this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->idx);
+		this->removeChildByTag(MONSTER_TAG + imsiMonsterInfo->object_number);
 	}
 	//
 	com->monsterInfo->clear();
@@ -2241,7 +2245,7 @@ void HelloWorld::createObject()
         
 		sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0, 0));
-		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->idx);
+		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->object_number);
 	}
 }
 
@@ -2289,7 +2293,7 @@ void HelloWorld::createMonster()
 #endif
 		sprite->setPosition(Point(customObject->xpos * TILE_SIZE + TILE_SIZE / 2, customObject->ypos * TILE_SIZE));
 		sprite->setAnchorPoint(Point(0.5, 0));
-		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + customObject->idx);
+		this->addChild(sprite, MONSTER_PRIORITY_Z_ORDER, MONSTER_TAG + customObject->object_number);
 	}
 }
 
