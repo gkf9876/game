@@ -721,7 +721,7 @@ void HelloWorld::onTouchesEnded(const std::vector<Touch *> &touches, cocos2d::Ev
 
 					inventory->removeChild(touchedItem);
 					inventoryItem->setPosition(Point(this->mainUser->xpos * TILE_SIZE + TILE_SIZE / 2, this->mainUser->ypos * TILE_SIZE + TILE_SIZE / 2));
-					this->addChild(inventoryItem, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + com->inventory_items_Info[3 - (ypos + 1)][xpos]->idx);
+					this->addChild(inventoryItem, OTHERS_PRIORITY_Z_ORDER + order, OTHERS_TAG + com->inventory_items_Info[3 - (ypos + 1)][xpos]->object_number);
 
 					com->inventory_items_Info[3 - (ypos + 1)][xpos]->xpos = this->mainUser->xpos;
 					com->inventory_items_Info[3 - (ypos + 1)][xpos]->ypos = this->mainUser->ypos;
@@ -943,22 +943,15 @@ void HelloWorld::setPlayerPosition(Point position)
 				strcpy(this->mainUser->field, String(destination).getCString());
 				strcpy(com->mainUser->field, String(destination).getCString());
 
-				StructCustomUser user;
-				strcpy(user.name, com->mainUser->name);
-				user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
-				user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
-				strcpy(user.field, this->mainUser->field);
-				user.seeDirection = (int)this->mainUser->seeDirection;
-				user.action = ACTION_MAP_POTAL;
+				this->mainUser->action = ACTION_MAP_POTAL;
+				this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
+				this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 
-				if (com->userMoveUpdate(user) == -1)
+				if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
 				{
 					com->comm = false;
 					CCLOG("setPlayerPosition comm error");
 				}
-
-				this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
-				this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 
 				return;
 			}
@@ -971,25 +964,19 @@ void HelloWorld::setPlayerPosition(Point position)
 	//이동한 내용을 DB에 반영
 	Value metaInfoProperties = tmap->getPropertiesForGID(metaInfoTileGid);
 
-	StructCustomUser user;
-	strcpy(user.name, com->mainUser->name);
-	user.xpos = this->mainUser->sprite->getPosition().x / TILE_SIZE;
-	user.ypos = this->mainUser->sprite->getPosition().y / TILE_SIZE;
-	strcpy(user.field, this->mainUser->field);
-	user.seeDirection = (int)this->mainUser->seeDirection;
-	user.action = ACTION_MAP_MOVE;
-
-	if (com->userMoveUpdate(user) == -1)
-	{
-		com->comm = false;
-		CCLOG("setPlayerPosition comm error");
-	}
-
+	this->mainUser->action = ACTION_MAP_MOVE;
 	this->mainUser->xpos = (int)(this->mainUser->sprite->getPosition().x / TILE_SIZE);
 	this->mainUser->ypos = (int)(this->mainUser->sprite->getPosition().y / TILE_SIZE);
 
 	//플레이어가 화면 가운데로 오게 조절
 	this->setViewpointCenter(this->mainUser->sprite->getPosition());
+
+	CCLOG("pos(%d, %d)", this->mainUser->xpos, this->mainUser->ypos);
+	if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
+	{
+		com->comm = false;
+		CCLOG("setPlayerPosition comm error");
+	}
 }
 
 
@@ -1017,6 +1004,8 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	//획득한 아이템
 	CustomObject * customObject;
 	int customObjectIndex;
+
+	CCLOG("this->mainUser->isRunning(%d), this->mainUser->isAction(%d)", this->mainUser->isRunning, this->mainUser->isAction);
 
 	switch (key)
 	{
@@ -1640,7 +1629,7 @@ void HelloWorld::update(float fDelta)
 			if (customObject->idx == deleteCustomObject->idx)
 			{
 				com->objectInfo->erase(com->objectInfo->begin() + i);
-				this->removeChildByTag(OTHERS_TAG + com->deleteCustomObject.idx);
+				this->removeChildByTag(OTHERS_TAG + com->deleteCustomObject.object_number);
 				break;
 			}
 		}
@@ -1652,31 +1641,15 @@ void HelloWorld::update(float fDelta)
 	//현재 필드의 추가된 오브젝트 업데이트
 	if (com->isOtherThrowItem == true)
 	{
-		for (int i = com->previousItemCount; i < com->objectInfo->size(); i++)
-		{
-			Sprite * sprite;
-			Image* image = new Image();
-			Texture2D* texture = new Texture2D();
-			CustomObject * customObject = (com->objectInfo)->at(i);
-
-			com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
-
-			//요청한 오브젝트 이미지가 수신되길 기다린다.
-			while (com->getImage != true);
-
-			//수신된 버퍼데이터로 이미지를 만든다.
-			image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
-			com->getImage = false;
-
-			//스프라이트를 만들어 맵에 구현한다.
-			texture->initWithImage(image);
-
-			sprite = Sprite::createWithTexture(texture);
-			sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
-			sprite->setAnchorPoint(Point(0, 0));
-			this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->idx);
-		}
+		createThrowItem();
 		com->isOtherThrowItem = false;
+	}
+
+	//현재 필드의 몬스터 리젠
+	if (com->isMonsterRegen == true)
+	{
+		createMonster();
+		com->isMonsterRegen = false;
 	}
 }
 
@@ -2098,7 +2071,7 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 			if (com->inventory_items_Info[i][j] == NULL)
 			{
 				//아이템을 주워서 아이템창에 추가하는 과정.
-				Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
+				Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->object_number);
 				Sprite * inventoryItem = Sprite::createWithTexture(imsiGetItem->getTexture());
 				inventoryItem->setAnchorPoint(Point(0, 0));
 				inventoryItem->setPosition(Point(j * TILE_SIZE, (3 - (i + 1)) * TILE_SIZE));
@@ -2112,11 +2085,11 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 				imsiStructCustomObject.order = customObject->order;
 				strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
 				imsiStructCustomObject.count = customObject->count;
+				imsiStructCustomObject.object_number = customObject->object_number;
 
 				//아이템 획득 사실을 서버에 알림
 				if (com->eatFieldItem(imsiStructCustomObject) <= 0)
-				{
-				}
+					com->comm = false;
 
 				//인벤토리창에 아이템을 넣고
 				this->removeChild(imsiGetItem);
@@ -2142,13 +2115,13 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 					imsiStructCustomObject.order = customObject->order;
 					strcpy(imsiStructCustomObject.fileDir, customObject->fileDir);
 					imsiStructCustomObject.count = customObject->count;
+					imsiStructCustomObject.object_number = customObject->object_number;
 
 					//아이템 획득 사실을 서버에 알림
 					if (com->eatFieldItem(imsiStructCustomObject) <= 0)
-					{
-					}
+						com->comm = false;
 
-					Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->idx);
+					Sprite * imsiGetItem = (Sprite*)this->getChildByTag(OTHERS_TAG + customObject->object_number);
 					this->removeChild(imsiGetItem);
 
 					com->inventory_items_Info[i][j]->count += customObject->count;
@@ -2163,6 +2136,8 @@ int HelloWorld::addInventoryItem(CustomObject * customObject)
 
 void HelloWorld::createTileMap(char * mapName)
 {
+	CCLOG("Hello World : %s", mapName);
+
 	//기존 타일맵 소스 삭제
 	if (tmap != NULL)
 	{
@@ -2251,7 +2226,7 @@ void HelloWorld::createObject()
 
 void HelloWorld::createMonster()
 {
-	for (int i = 0; i < com->monsterInfo->size(); i++)
+	for (int i = com->previousMonsterCount; i < com->monsterInfo->size(); i++)
 	{
         CustomObject * customObject = (com->monsterInfo)->at(i);
         Sprite * sprite;
@@ -2423,4 +2398,32 @@ void HelloWorld::createInventory()
     
     com->isInventoryFill = false;
     //
+}
+
+void HelloWorld::createThrowItem()
+{
+	for (int i = com->previousItemCount; i < com->objectInfo->size(); i++)
+	{
+		Sprite * sprite;
+		Image* image = new Image();
+		Texture2D* texture = new Texture2D();
+		CustomObject * customObject = (com->objectInfo)->at(i);
+
+		com->sendCommand(REQUEST_IMAGE, customObject->fileDir, strlen(customObject->fileDir));
+
+		//요청한 오브젝트 이미지가 수신되길 기다린다.
+		while (com->getImage != true);
+
+		//수신된 버퍼데이터로 이미지를 만든다.
+		image->initWithImageData(&(com->imageBuf->front()), com->imageBuf->size());
+		com->getImage = false;
+
+		//스프라이트를 만들어 맵에 구현한다.
+		texture->initWithImage(image);
+
+		sprite = Sprite::createWithTexture(texture);
+		sprite->setPosition(Point(customObject->xpos * TILE_SIZE, customObject->ypos * TILE_SIZE));
+		sprite->setAnchorPoint(Point(0, 0));
+		this->addChild(sprite, OTHERS_PRIORITY_Z_ORDER + customObject->order, OTHERS_TAG + customObject->object_number);
+	}
 }

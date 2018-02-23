@@ -39,6 +39,8 @@ USING_NS_CC;
 #define REQUEST_INVENTORY_ITEM_INFO		12
 #define MOVE_INVENTORY_ITEM				13
 #define THROW_ITEM						14
+#define REGEN_MONSTER					15
+#define ATTACK_FILED_OBJECT				16
 
 class CustomNetworkCommunication
 {
@@ -96,6 +98,10 @@ public :
 	//다른유저가 아이템을 떨궜는지
 	bool isOtherThrowItem = false;
 	int previousItemCount;
+
+	//몬스터가 리젠됬는지
+	bool isMonsterRegen = false;
+	int previousMonsterCount;
 
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;

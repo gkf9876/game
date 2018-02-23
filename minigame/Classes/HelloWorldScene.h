@@ -260,6 +260,7 @@ public:
 	void createMonster();
 	void createOtherUser();
     void createInventory();
+	void createThrowItem();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

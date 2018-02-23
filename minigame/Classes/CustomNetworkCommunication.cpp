@@ -294,6 +294,9 @@ void * RecvMsg(void * arg)
 				com->objectInfo->clear();
 				com->monsterInfo->clear();
 
+				com->previousItemCount = 0;
+				com->previousMonsterCount = 0;
+
 				for (int i = 0; i < count; i++)
 				{
 					StructCustomObject imsiStructCustomObject;
@@ -336,6 +339,17 @@ void * RecvMsg(void * arg)
 				com->isOtherThrowItem = true;
 			}
 			break;
+		case REGEN_MONSTER:
+			{
+				StructCustomObject imsiStructCustomObject;
+				memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
+
+				CustomObject * customObject = new CustomObject(imsiStructCustomObject);
+				com->previousMonsterCount = com->objectInfo->size();
+				com->monsterInfo->push_back(customObject);
+				com->isMonsterRegen = true;
+			}
+			break;
 		default:
 			break;
 		}
@@ -370,8 +384,8 @@ void CustomNetworkCommunication::init()
         error_handling("socket() error");
 #endif
 
-	//host = gethostbyname("192.168.56.101");
-	host = gethostbyname("sourcecake.iptime.org");
+	host = gethostbyname("192.168.56.101");
+	//host = gethostbyname("sourcecake.iptime.org");
     
 	if (!host)
 		error_handling("gethost... error");
