@@ -350,6 +350,26 @@ void * RecvMsg(void * arg)
 				com->isMonsterRegen = true;
 			}
 			break;
+		case ATTACK_FILED_OBJECT:
+			{
+				StructCustomObject imsiStructCustomObject;
+				memcpy(&imsiStructCustomObject, com->recvBuf, sizeof(StructCustomObject));
+
+				for (int i = 0; i<com->monsterInfo->size(); i++)
+				{
+					CustomObject * monster = com->monsterInfo->at(i);
+
+					if (monster->xpos == imsiStructCustomObject.xpos && monster->ypos == imsiStructCustomObject.ypos)
+						monster->hp = imsiStructCustomObject.hp;
+
+					if (monster->hp <= 0)
+					{
+						com->killedMonsterNumber = i;
+						com->isMonsterKilled = true;
+					}
+				}
+			}
+			break;
 		default:
 			break;
 		}

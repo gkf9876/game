@@ -41,6 +41,7 @@ public:
 public:
 	CustomObject(int idx, char * name, char * type, int xpos, int ypos, int order, std::vector<byte> * imageBuf, int count, int hp, int object_number);
 	CustomObject(StructCustomObject structCustomObject);
+	StructCustomObject getObject();
 	~CustomObject();
 };
 

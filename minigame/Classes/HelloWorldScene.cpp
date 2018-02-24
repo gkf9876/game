@@ -971,7 +971,6 @@ void HelloWorld::setPlayerPosition(Point position)
 	//플레이어가 화면 가운데로 오게 조절
 	this->setViewpointCenter(this->mainUser->sprite->getPosition());
 
-	CCLOG("pos(%d, %d)", this->mainUser->xpos, this->mainUser->ypos);
 	if (com->userMoveUpdate(this->mainUser->getUser()) == -1)
 	{
 		com->comm = false;
@@ -1004,8 +1003,6 @@ void HelloWorld::onKeyPressed(cocos2d::EventKeyboard::KeyCode key, cocos2d::Even
 	//획득한 아이템
 	CustomObject * customObject;
 	int customObjectIndex;
-
-	CCLOG("this->mainUser->isRunning(%d), this->mainUser->isAction(%d)", this->mainUser->isRunning, this->mainUser->isAction);
 
 	switch (key)
 	{
@@ -1373,6 +1370,7 @@ void HelloWorld::actionStarted()
 void HelloWorld::actionFinished()
 {
 	// do something on complete
+	CCLOG("this->mainUser->isAction = false");
 	this->mainUser->isAction = false;
 }
 
@@ -1560,6 +1558,9 @@ void HelloWorld::update(float fDelta)
             if(monster->xpos == targetXpos && monster->ypos == targetYpos)
             {
                 monster->hp -= 5;
+				memcpy(com->sendBuf, &monster->getObject(), sizeof(StructCustomObject));
+				com->sendCommand(ATTACK_FILED_OBJECT, com->sendBuf, sizeof(StructCustomObject));
+
                 if(monster->hp <= 0)
                 {
                     this->removeChildByTag(MONSTER_TAG + monster->object_number);
@@ -1570,6 +1571,14 @@ void HelloWorld::update(float fDelta)
             }
         }
     }
+
+	if (com->isMonsterKilled == true)
+	{
+		CustomObject * monster = com->monsterInfo->at(com->killedMonsterNumber);
+		this->removeChildByTag(MONSTER_TAG + monster->object_number);
+		com->monsterInfo->erase(com->monsterInfo->begin() + com->killedMonsterNumber);
+		com->isMonsterKilled = false;
+	}
 
 	//말풍선이 떠있으면 일정시간후 없앤다.
 	if (this->mainUser->balloon->isVisible() == true)

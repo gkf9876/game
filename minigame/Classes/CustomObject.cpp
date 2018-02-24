@@ -34,6 +34,23 @@ CustomObject::CustomObject(StructCustomObject structCustomObject)
     this->object_number = structCustomObject.object_number;
 }
 
+StructCustomObject CustomObject::getObject()
+{
+	StructCustomObject structCustomObject;
+	structCustomObject.idx = this->idx;
+	strcpy(structCustomObject.name, this->name);
+	strcpy(structCustomObject.type, this->type);
+	structCustomObject.xpos = this->xpos;
+	structCustomObject.ypos = this->ypos;
+	structCustomObject.order = this->order;
+	strcpy(structCustomObject.fileDir, this->fileDir);
+	structCustomObject.count = this->count;
+	structCustomObject.hp = this->hp;
+	structCustomObject.object_number = this->object_number;
+
+	return structCustomObject;
+}
+
 CustomObject::~CustomObject()
 {
 	if (imageBuf != NULL)

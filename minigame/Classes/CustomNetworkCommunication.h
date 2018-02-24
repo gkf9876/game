@@ -103,6 +103,10 @@ public :
 	bool isMonsterRegen = false;
 	int previousMonsterCount;
 
+	//죽은 몬스터가 있는지
+	bool isMonsterKilled = false;
+	int killedMonsterNumber;
+
 	//0 : 대기, 1 : 승인, -1 : 불허
 	int permissionJoin = 0;
 	char sendBuf[BUF_SIZE];
